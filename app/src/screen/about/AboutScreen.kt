@@ -21,6 +21,7 @@
 package com.github.yumelira.yumebox.screen.about
 
 import androidx.compose.foundation.layout.aspectRatio
+import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
@@ -30,10 +31,11 @@ import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
-import androidx.compose.material3.LinearProgressIndicator
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
@@ -63,6 +65,8 @@ import com.github.yumelira.yumebox.core.bridge.Bridge
 import com.github.yumelira.yumebox.presentation.component.AppDialog
 import com.github.yumelira.yumebox.presentation.component.Card
 import com.github.yumelira.yumebox.presentation.component.DialogButtonRow
+import com.github.yumelira.yumebox.presentation.component.Md3EIndeterminateLinearWavyProgressIndicator
+import com.github.yumelira.yumebox.presentation.component.Md3ELinearWavyProgressIndicator
 import com.github.yumelira.yumebox.presentation.component.Title
 import com.github.yumelira.yumebox.presentation.component.combinePaddingValues
 import com.github.yumelira.yumebox.presentation.component.md3.YumeMd3FilledButton
@@ -336,17 +340,29 @@ private fun UpdateCandidateDialog(
                 onCancelDownload = onCancelDownload,
             )
         } else {
-            UpdateCoverImage(
-                cachedCoverUri = candidate.cachedCoverUri,
-                coverUrl = candidate.coverUrl,
-                coverDataUri = candidate.coverDataUri,
-            )
-            UpdateDialogMessage(message)
-            DialogButtonRow(
-                onCancel = onDismiss,
-                onConfirm = { onDownload(candidate) },
-                confirmText = MLang.Component.Update.Action.DownloadNow,
-            )
+            Column(
+                modifier = Modifier.fillMaxWidth(),
+                verticalArrangement = Arrangement.spacedBy(UiDp.dp16),
+            ) {
+                Column(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .heightIn(max = UiDp.dp420)
+                        .verticalScroll(rememberScrollState()),
+                ) {
+                    UpdateCoverImage(
+                        cachedCoverUri = candidate.cachedCoverUri,
+                        coverUrl = candidate.coverUrl,
+                        coverDataUri = candidate.coverDataUri,
+                    )
+                    UpdateDialogMessage(message)
+                }
+                DialogButtonRow(
+                    onCancel = onDismiss,
+                    onConfirm = { onDownload(candidate) },
+                    confirmText = MLang.Component.Update.Action.DownloadNow,
+                )
+            }
         }
     }
 }
@@ -411,8 +427,8 @@ private fun UpdateDownloadContent(
     Column {
         UpdateDialogMessage(progress.message.ifBlank { MLang.Component.Update.Message.Downloading })
         Spacer(modifier = Modifier.height(UiDp.dp12))
-        LinearProgressIndicator(
-            progress = { progress.progress.coerceIn(0, 100) / 100f },
+        UpdateWavyProgressIndicator(
+            progress = progress.progress,
             modifier = Modifier.fillMaxWidth(),
         )
         Spacer(modifier = Modifier.height(UiDp.dp12))
@@ -421,6 +437,26 @@ private fun UpdateDownloadContent(
             onClick = onCancelDownload,
             destructive = true,
             modifier = Modifier.fillMaxWidth(),
+        )
+    }
+}
+
+@Composable
+private fun UpdateWavyProgressIndicator(
+    progress: Int,
+    modifier: Modifier = Modifier,
+) {
+    val normalizedProgress = progress
+        .takeIf { it > 0 }
+        ?.coerceIn(0, 100)
+        ?.div(100f)
+
+    if (normalizedProgress == null) {
+        Md3EIndeterminateLinearWavyProgressIndicator(modifier = modifier)
+    } else {
+        Md3ELinearWavyProgressIndicator(
+            progress = normalizedProgress,
+            modifier = modifier,
         )
     }
 }
