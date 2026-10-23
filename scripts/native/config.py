@@ -113,6 +113,7 @@ class NdkTools:
         self.config = config
         self.sdk_dir = self._find_sdk_dir()
         self.ndk_dir = self._find_ndk_dir()
+        self.toolchain_bin_dir = self._find_toolchain_bin_dir()
 
     def _find_sdk_dir(self) -> Path:
         configured = self.config.get_string("sdk.dir")
@@ -143,8 +144,24 @@ class NdkTools:
             raise RuntimeError(f"NDK version mismatch: requested {version}, found {actual or 'unknown'} at {ndk_dir}")
         return ndk_dir
 
+    def _find_toolchain_bin_dir(self) -> Path:
+        prebuilt_root = self.ndk_dir / "toolchains" / "llvm" / "prebuilt"
+        candidates = [SystemDetector.host_tag()]
+        if SystemDetector.os_name() == "darwin":
+            # macOS NDK archives ship an x86_64 toolchain only (see their
+            # android.toolchain.cmake), so Apple Silicon hosts use it via Rosetta.
+            candidates.append("darwin-x86_64")
+        candidates = list(dict.fromkeys(candidates))
+        for tag in candidates:
+            bin_dir = prebuilt_root / tag / "bin"
+            if bin_dir.is_dir():
+                return bin_dir
+        raise RuntimeError(
+            f"NDK prebuilt toolchain not found under {prebuilt_root} (tried: {', '.join(candidates)})"
+        )
+
     def _tool(self, relative_path: str) -> Path:
-        path = self.ndk_dir / "toolchains" / "llvm" / "prebuilt" / SystemDetector.host_tag() / "bin" / relative_path
+        path = self.toolchain_bin_dir / relative_path
         if not path.is_file():
             raise RuntimeError(f"NDK tool not found: {path}")
         return path
