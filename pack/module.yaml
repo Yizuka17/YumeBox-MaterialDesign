@@ -1,0 +1,11 @@
+product:
+  type: kmp/lib
+  platforms: [android]
+apply:
+  - //android.module-template.yaml
+settings:
+  android:
+    namespace: com.github.yumeyucca.yumebox.loader
+dependencies:
+  - $libs.hiddenapibypass
+  - $libs.androidx.annotation.jvm
