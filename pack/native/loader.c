@@ -483,7 +483,7 @@ static void throw_io_exception(JNIEnv *env, const char *message) {
 }
 
 __attribute__((visibility("default"))) JNIEXPORT jlong JNICALL
-Java_dev_yume_loader_NativePayloadExtractor_openArchive(
+Java_com_github_yumeyucca_yumebox_loader_NativePayloadExtractor_openArchive(
         JNIEnv *env,
         jclass type,
         jstring apk_path_value) {
@@ -507,7 +507,7 @@ Java_dev_yume_loader_NativePayloadExtractor_openArchive(
 }
 
 __attribute__((visibility("default"))) JNIEXPORT void JNICALL
-Java_dev_yume_loader_NativePayloadExtractor_extract(
+Java_com_github_yumeyucca_yumebox_loader_NativePayloadExtractor_extract(
         JNIEnv *env,
         jclass type,
         jlong archive_value,
@@ -558,7 +558,7 @@ finish:
 }
 
 __attribute__((visibility("default"))) JNIEXPORT void JNICALL
-Java_dev_yume_loader_NativePayloadExtractor_closeArchive(
+Java_com_github_yumeyucca_yumebox_loader_NativePayloadExtractor_closeArchive(
         JNIEnv *env,
         jclass type,
         jlong archive_value) {
