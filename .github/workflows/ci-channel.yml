@@ -49,7 +49,8 @@ jobs:
           test -f lib/native/shell/CMakeLists.txt
           test -f lib/native/shell/shell.c
           test -f kernel.properties
-          ! grep -Eq 'channel: smart|kernel_channel: smart|YumeBox-smart' .github/workflows/ci-channel.yml
+          # Character classes keep this pattern from matching its own line here.
+          ! grep -Eq 'channel:[[:space:]]*smart|YumeBox[-]smart' .github/workflows/ci-channel.yml
 
   # Prebuild Java/Kotlin & module resources in parallel with the native build jobs.
   prebuild-modules-pre:
