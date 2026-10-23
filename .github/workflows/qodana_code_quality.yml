@@ -27,7 +27,7 @@ jobs:
       - name: Setup Java
         uses: actions/setup-java@v6.1.0
         with:
-          distribution: temurin
+          distribution: zulu
           java-version: "25"
       - name: Cache Kotlin Toolchain
         uses: actions/cache@v6.1.0
