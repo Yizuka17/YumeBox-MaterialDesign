@@ -168,11 +168,15 @@ jobs:
 
       - name: Write signing config
         if: inputs.build_type == 'release'
+        env:
+          SIGNING_STORE_PASSWORD: ${{ secrets.SIGNING_STORE_PASSWORD }}
+          SIGNING_KEY_ALIAS: ${{ secrets.SIGNING_KEY_ALIAS }}
+          SIGNING_KEY_PASSWORD: ${{ secrets.SIGNING_KEY_PASSWORD }}
         run: |
-          if [ -n "${{ secrets.SIGNING_STORE_PASSWORD }}" ]; then
-            echo "keystore.password=${{ secrets.SIGNING_STORE_PASSWORD }}" > signing.properties
-            echo "key.alias=${{ secrets.SIGNING_KEY_ALIAS }}" >> signing.properties
-            echo "key.password=${{ secrets.SIGNING_KEY_PASSWORD }}" >> signing.properties
+          if [ -n "${SIGNING_STORE_PASSWORD}" ]; then
+            printf 'keystore.password=%s\n' "${SIGNING_STORE_PASSWORD}" > signing.properties
+            printf 'key.alias=%s\n' "${SIGNING_KEY_ALIAS}" >> signing.properties
+            printf 'key.password=%s\n' "${SIGNING_KEY_PASSWORD}" >> signing.properties
             echo "keystore.path=release.keystore" >> signing.properties
           fi
 

@@ -47,11 +47,16 @@ jobs:
       - name: Check upload availability
         id: check_upload
         shell: bash
+        env:
+          BOT_TOKEN: ${{ secrets.BOT_TOKEN }}
+          CHAT_ID: ${{ secrets.CHAT_ID }}
+          TELEGRAM_API_ID: ${{ secrets.TELEGRAM_API_ID }}
+          TELEGRAM_API_HASH: ${{ secrets.TELEGRAM_API_HASH }}
         run: |
-          if [ -n "${{ secrets.BOT_TOKEN }}" ] \
-            && [ -n "${{ secrets.CHAT_ID }}" ] \
-            && [ -n "${{ secrets.TELEGRAM_API_ID }}" ] \
-            && [ -n "${{ secrets.TELEGRAM_API_HASH }}" ]; then
+          if [ -n "${BOT_TOKEN}" ] \
+            && [ -n "${CHAT_ID}" ] \
+            && [ -n "${TELEGRAM_API_ID}" ] \
+            && [ -n "${TELEGRAM_API_HASH}" ]; then
             echo "UPLOAD=true" >> "$GITHUB_OUTPUT"
           else
             echo "UPLOAD=false" >> "$GITHUB_OUTPUT"
