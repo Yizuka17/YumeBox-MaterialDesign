@@ -42,6 +42,10 @@ public final class UpdateInstrumentation extends Instrumentation {
             check(candidate != null && requestedUrl.endsWith("/releases/latest"), "stable release endpoint and newer version");
             Object release = invoke(candidate, "getRelease");
             check("v0.6.6".equals(invoke(release, "getTag")), "release metadata is decoded in the real app");
+            response = response.replace("Device validation", "![cover](https://raw.githubusercontent.com/Yizuka17/YumeBox-MaterialDesign/test/cover.jpg)\\nRelease notes");
+            Object withCover = suspend(manager, "checkForUpdate", true);
+            check(((String)invoke(withCover, "getCoverUrl")).endsWith("/cover.jpg"), "update dialog resolves the Release body cover image");
+            check("Release notes".equals(invoke(withCover, "getReleaseNotes")), "cover Markdown is not repeated as raw text in update notes");
             invoke(manager, "dismiss", true);
             suspend(manager, "checkForUpdate", false);
             check(value(invoke(manager, "getCandidate")) == null, "ignored release stays quiet on automatic checks");
@@ -110,6 +114,7 @@ public final class UpdateInstrumentation extends Instrumentation {
             try { install.invoke(installerManager, wrongSigner); } catch (InvocationTargetException expected) { /* permission settings path */ }
             check(recording.intent != null, "installer or install-permission intent is dispatched without performing an install");
             verifyLegacyMetadataMigration();
+            verifyUnicodeAndEditor();
             verifyLegacyStatisticsMigration();
             verifySettingsBackup();
             verifyGeoValidation();
@@ -240,7 +245,7 @@ public final class UpdateInstrumentation extends Instrumentation {
         File configs = new File(dir, "configs");
         check(configs.mkdirs(), "isolated metadata fixture directory created");
         File legacy = new File(dir, "metadata.json");
-        String source = "{\"configs\":{\"cfg-legacy\":{\"id\":\"cfg-legacy\",\"name\":\"Legacy\",\"createdAt\":1,\"updatedAt\":2}},\"profileChains\":{\"profile\":{\"profileId\":\"profile\",\"enabled\":false,\"overrideIds\":[\"preset-default\",\"cfg-legacy\"]}}}";
+        String source = "{\"configs\":{\"cfg-legacy\":{\"id\":\"cfg-legacy\",\"name\":\"🦊 中文 🇯🇵 Legacy\",\"createdAt\":1,\"updatedAt\":2}},\"profileChains\":{\"profile\":{\"profileId\":\"profile\",\"enabled\":false,\"overrideIds\":[\"preset-default\",\"cfg-legacy\"]}}}";
         java.nio.file.Files.write(legacy.toPath(), source.getBytes("UTF-8"));
         File oldConfig = new File(configs, "cfg-legacy.json");
         String content = "{\"dns\":{\"enable\":true},\"unknown-field\":\"preserved\"}";
@@ -264,6 +269,36 @@ public final class UpdateInstrumentation extends Instrumentation {
         check(((List<?>)invoke(pipeline, "resolveOverrideSpecs", "profile")).isEmpty(), "disabled override chains stay disabled in the actual compile pipeline");
         java.nio.file.Files.write(yaml.toPath(), converted.replace("enabled: false", "enabled: true").getBytes("UTF-8"));
         check(((List<?>)invoke(pipeline, "resolveOverrideSpecs", "profile")).size() == 2, "enabled legacy chains resolve their preset and custom override files");
+        Object bindings = loader.loadClass("com.github.yumelira.yumebox.data.store.ProfileBindingStore").getConstructor(Context.class).newInstance(isolated);
+        Object store = loader.loadClass("com.github.yumelira.yumebox.data.store.OverrideConfigStore").getConstructors()[0].newInstance(isolated, bindings);
+        Object original = suspend(store, "getById", "cfg-legacy");
+        check("🦊 中文 🇯🇵 Legacy".equals(invoke(original, "getName")), "emoji metadata survives migration and reopening");
+        for (String name : new String[]{"Renamed", "中文配置", "🦊 🇯🇵 测试 🧪"}) {
+            Object renamed = invoke(original, "copy", "cfg-legacy", name, null, invoke(original, "getContentType"), content, 1L, 3L);
+            suspend(store, "save", renamed);
+            check(name.equals(invoke(suspend(store, "getById", "cfg-legacy"), "getName")), "override rename roundtrip: " + name);
+        }
+        String jsonContent = (String)invoke(store, "getConfigJsonContent", "cfg-legacy");
+        check(jsonContent.contains("dns"), "configuration JSON opens after emoji metadata rename");
+        Object binding = suspend(bindings, "getBinding", "profile");
+        suspend(bindings, "setBinding", binding);
+        check(suspend(bindings, "getBinding", "profile") != null, "profile settings can mutate metadata containing emoji");
+    }
+
+    private void verifyUnicodeAndEditor() throws Throwable {
+        Object yaml = loader.loadClass("com.github.yumelira.yumebox.core.util.YamlCodec").getField("INSTANCE").get(null);
+        Map<String, Object> fixture = new LinkedHashMap<>();
+        fixture.put("name", "🦊 中文 🇯🇵"); fixture.put("enabled", true);
+        String encoded = (String)invoke(yaml, "dumpMap", fixture);
+        check(fixture.equals(invoke(yaml, "loadMap", encoded)), "YAML supplementary Unicode characters roundtrip");
+        check("🧪".equals(((Map<?, ?>)invoke(yaml, "loadMap", "name: 🧪\n")).get("name")), "existing raw emoji YAML files remain readable");
+        Class<?> backend = loader.loadClass("org.eclipse.tm4e.core.internal.oniguruma.Oniguruma");
+        check(!((Boolean)invoke(backend.getConstructor().newInstance(), "isUseNativeOniguruma")), "editor uses managed Joni backend on the device");
+        Object scanner = backend.getMethod("newScanner", List.class).invoke(null, Arrays.asList("\\\"[^\\\"]*\\\"", "[0-9]+"));
+        check(scanner.getClass().getName().contains("Joni"), "TextMate retains syntax highlighting without the crashing native backend");
+        Object locale = loader.loadClass("com.github.yumelira.yumebox.common.util.LocaleUtil").getField("INSTANCE").get(null);
+        check("JP".equals(invoke(locale, "normalizeRegionCode", "jp")) && "HK".equals(invoke(locale, "normalizeRegionCode", "hk")), "exit IP country badges retain uppercase region labels");
+        check(((String)invoke(locale, "normalizeFlagUrl", "JP", "https://flags.example/")).endsWith("/jp.svg"), "uppercase country display retains lowercase flag CDN paths");
     }
 
     private String release(String tag, boolean prerelease, boolean draft, String asset, String digest) {

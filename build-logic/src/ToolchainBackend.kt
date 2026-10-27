@@ -70,7 +70,11 @@ class ToolchainBackend(private val root: File, graph: RuntimeGraph, private val 
             }
         }
     """.trimIndent()
-    private val fingerprint = MessageDigest.getInstance("SHA-256").digest(("0.13.0/resource-symbols-v1/nontransitive-true/nonfinal-true\n" + initScript).toByteArray()).take(8).joinToString("") { "%02x".format(it) }
+    // Toolchain 0.13.0 does not invalidate its exported APK when only external
+    // ProGuard files change. Include their contents so a rule fix cannot reuse stale dex.
+    private val shrinkerRules = listOf("app/proguard-rules.pro", "core/consumer-rules.pro")
+        .joinToString("\n") { root.resolve(it).readText() }
+    private val fingerprint = MessageDigest.getInstance("SHA-256").digest(("0.13.0/resource-symbols-v1/nontransitive-true/nonfinal-true\n" + initScript + shrinkerRules).toByteArray()).take(8).joinToString("") { "%02x".format(it) }
     val buildRoot: File = root.resolve("build/toolchain-$fingerprint")
     private val gradleHome = root.resolve(".kotlin/yumebox/gradle-home")
 

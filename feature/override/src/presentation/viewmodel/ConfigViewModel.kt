@@ -322,7 +322,7 @@ class OverrideConfigViewModel(
         editCoordinator.clearEditSession()
     }
 
-    fun importConfigsFromJson(
+    suspend fun importConfigsFromJson(
         jsonString: String,
         sourceName: String? = null,
     ): Result<Int> {
@@ -332,15 +332,14 @@ class OverrideConfigViewModel(
                 jsonString = jsonString,
                 sourceName = sourceName,
             )
-            viewModelScope.launch {
-                _pendingRevealConfigId.value = importedConfigs.lastOrNull()?.id
-                for (importedConfig in importedConfigs) {
-                    configRepo.save(importedConfig)
-                }
-                loadConfigs()
+            for (importedConfig in importedConfigs) {
+                configRepo.save(importedConfig)
             }
+            _pendingRevealConfigId.value = importedConfigs.lastOrNull()?.id
+            loadConfigs()
             Result.success(importedConfigs.size)
         } catch (e: Exception) {
+            if (e is kotlinx.coroutines.CancellationException) throw e
             Timber.tag(TAG).e(e, "Failed to import config")
             Result.failure(e)
         }

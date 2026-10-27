@@ -68,7 +68,6 @@ class App : Application() {
         // Runtime notifications/tiles jump to these activities; the runtime layer must not
         // name app classes, so the entry points are injected here.
         Components.MAIN_ACTIVITY = ComponentName(this, MainActivity::class.java)
-        Components.PROXY_SHEET_ACTIVITY = ComponentName(this, ProxySheetActivity::class.java)
 
         val koinApp = startKoin {
             androidContext(this@App)

@@ -33,14 +33,12 @@ fun runtimeGraph(text: String): RuntimeGraph {
     fun visit(node: Coordinate, inherited: Int) {
         val flags = inherited or when (node.group + ":" + node.artifact) {
             "com.android.tools.smali:smali-dexlib2" -> 1
-            "io.github.rosemoe:language-textmate" -> 2
             else -> 0
         }
         if (!visited.add(node to flags)) return
         included += node
         edges[node].orEmpty().forEach { child ->
             if (flags and 1 != 0 && child.group == "com.google.guava" && child.artifact == "guava") return@forEach
-            if (flags and 2 != 0 && child.group == "org.jruby.joni" && child.artifact == "joni") return@forEach
             visit(child, flags)
         }
     }

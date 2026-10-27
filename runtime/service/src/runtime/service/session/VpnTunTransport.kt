@@ -82,7 +82,8 @@ class VpnTunTransport(
                     vpnService,
                     R.id.nf_vpn_status,
                     Intent()
-                        .setComponent(Components.PROXY_SHEET_ACTIVITY)
+                        .setComponent(Components.MAIN_ACTIVITY)
+                        .setAction(Components.ACTION_OPEN_HOME)
                         .addFlags(
                             Intent.FLAG_ACTIVITY_NEW_TASK or
                                 Intent.FLAG_ACTIVITY_SINGLE_TOP or

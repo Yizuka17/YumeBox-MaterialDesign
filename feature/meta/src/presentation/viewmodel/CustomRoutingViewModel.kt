@@ -30,6 +30,8 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.CancellationException
+import timber.log.Timber
 
 class CustomRoutingViewModel(
     private val overrideConfigRepository: OverrideConfigStore,
@@ -38,11 +40,23 @@ class CustomRoutingViewModel(
 
     private val _config = MutableStateFlow(ConfigurationOverride())
     val config: StateFlow<ConfigurationOverride> = _config.asStateFlow()
+    private val _isLoading = MutableStateFlow(true)
+    val isLoading = _isLoading.asStateFlow()
+    private val _error = MutableStateFlow<String?>(null)
+    val error = _error.asStateFlow()
 
     init {
         viewModelScope.launch {
-            val customConfig = overrideConfigRepository.loadCustomRouting()
-            _config.value = customConfig ?: ConfigurationOverride()
+            try {
+                _config.value = overrideConfigRepository.loadCustomRouting() ?: ConfigurationOverride()
+            } catch (e: CancellationException) {
+                throw e
+            } catch (e: Exception) {
+                Timber.e(e, "Failed to load custom routing")
+                _error.value = "读取自定义分流失败：${e.message}"
+            } finally {
+                _isLoading.value = false
+            }
         }
     }
 
@@ -51,13 +65,29 @@ class CustomRoutingViewModel(
     }
 
     suspend fun saveConfig(updatedConfig: ConfigurationOverride): Boolean {
-        return runCatching {
-            _config.value = updatedConfig
+        return try {
             overrideConfigRepository.saveCustomRouting(updatedConfig)
-            activeProfileOverrideReloader.reapplyActiveProfileIfUsingOverride(
-                OverrideInternalConstants.CUSTOM_ROUTING_OVERRIDE_ID,
-            )
-        }.getOrElse {
+            _config.value = updatedConfig
+            // Persistence succeeded. A runtime reload failure must not trap the user on this page.
+            try {
+                if (!activeProfileOverrideReloader.reapplyActiveProfileIfUsingOverride(
+                        OverrideInternalConstants.CUSTOM_ROUTING_OVERRIDE_ID,
+                    )) {
+                    com.github.yumelira.yumebox.common.util.showToastDialog("分流已保存，重新启动代理后生效")
+                }
+            } catch (e: CancellationException) {
+                throw e
+            } catch (e: Exception) {
+                Timber.w(e, "Custom routing saved but runtime reload failed")
+                com.github.yumelira.yumebox.common.util.showToastDialog("分流已保存，重新启动代理后生效")
+            }
+            _error.value = null
+            true
+        } catch (e: CancellationException) {
+            throw e
+        } catch (e: Exception) {
+            Timber.e(e, "Failed to save custom routing")
+            _error.value = "保存自定义分流失败：${e.message}"
             false
         }
     }

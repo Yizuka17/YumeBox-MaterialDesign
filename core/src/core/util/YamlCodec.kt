@@ -23,6 +23,7 @@ package com.github.yumelira.yumebox.core.util
 import kotlinx.serialization.KSerializer
 import kotlinx.serialization.json.*
 import org.yaml.snakeyaml.DumperOptions
+import org.yaml.snakeyaml.LoaderOptions
 import org.yaml.snakeyaml.Yaml
 import org.yaml.snakeyaml.constructor.SafeConstructor
 import org.yaml.snakeyaml.nodes.Tag
@@ -49,7 +50,11 @@ object YamlCodec {
                 width = 160
                 splitLines = false
             }
-        return Yaml(SafeConstructor(), Representer(), options, JsonBooleanResolver())
+        val loaderOptions = LoaderOptions().apply {
+            // Subscription files can exceed SnakeYAML's default document limit.
+            codePointLimit = 32 * 1024 * 1024
+        }
+        return Yaml(SafeConstructor(loaderOptions), Representer(options), options, loaderOptions, JsonBooleanResolver())
     }
 
     fun <T> encode(serializer: KSerializer<T>, value: T): String {
@@ -80,7 +85,7 @@ object YamlCodec {
 
     fun validate(content: String) {
         if (content.isBlank()) return
-        newYaml().load(content)
+        newYaml().load<Any?>(content)
     }
 
     private fun toYamlNode(element: JsonElement): Any? =

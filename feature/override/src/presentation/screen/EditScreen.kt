@@ -89,7 +89,7 @@ fun OverrideEditScreen(
             when (event) {
                 is OverrideSaveEvent.Saved -> Unit
                 is OverrideSaveEvent.Failed -> {
-                    Timber.tag("OverrideEditScreen").d("Suppress override save toast: %s", event.message)
+                    com.github.yumelira.yumebox.common.util.showToastDialog(event.message)
                 }
             }
         }

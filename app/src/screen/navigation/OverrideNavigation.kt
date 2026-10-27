@@ -44,11 +44,14 @@ import com.ramcosta.composedestinations.generated.destinations.OverrideSubRuleDr
 import com.ramcosta.composedestinations.generated.destinations.OverrideSubRuleMapEditorRouteDestination
 import com.ramcosta.composedestinations.navigation.DestinationsNavigator
 import org.koin.compose.koinInject
+import androidx.compose.ui.platform.LocalContext
+import com.github.yumelira.yumebox.common.util.toast
 
 @Composable
 @Destination<RootGraph>
 fun OverrideScreen(navigator: DestinationsNavigator) {
     val overrideConfigViewModel: OverrideConfigViewModel = koinInject()
+    val context = LocalContext.current
 
     OverrideListScreen(navigator = navigator, onEditConfig = { configId ->
         navigator.navigate(
@@ -56,8 +59,13 @@ fun OverrideScreen(navigator: DestinationsNavigator) {
                 configId = configId,
             )
         )
-    }, onOpenCodeEditor = { configId, configName ->
-        val jsonContent = overrideConfigViewModel.getConfigJsonContent(configId) ?: "{}"
+    }, onOpenCodeEditor = openCode@{ configId, configName ->
+        val jsonContent = try {
+            overrideConfigViewModel.getConfigJsonContent(configId) ?: error("配置文件不存在")
+        } catch (e: Exception) {
+            context.toast("打开配置失败：${e.message}")
+            return@openCode
+        }
         OverrideStructuredEditorStore.setupConfigPreview(
             title = configName,
             content = jsonContent,

@@ -96,17 +96,16 @@ fun AppSettingsScreen(
         ScreenLazyColumn(
             innerPadding = combinePaddingValues(innerPadding, mainLikePadding),
         ) {
-            item { AppBehaviorSettingsSection(viewModel) }
-            item { AppInterfaceSettingsSection(viewModel) }
-            item { AppPrivacySettingsSection(viewModel) }
-            item { AppServiceSettingsSection(viewModel) }
-            item { AppNetworkSettingsSection(viewModel) }
             item {
-                AppExperimentalSettingsSection(
+                AppHomeSettingsSection(
                     viewModel = viewModel,
                     navigator = navigator,
                 )
             }
+            item { AppInterfaceSettingsSection(viewModel) }
+            item { AppServiceSettingsSection(viewModel) }
+            item { AppBehaviorSettingsSection(viewModel) }
+            item { AppPrivacySettingsSection(viewModel) }
         }
     }
 }
@@ -347,7 +346,7 @@ private fun AppServiceSettingsSection(viewModel: AppSettingsViewModel) {
 }
 
 @Composable
-private fun AppNetworkSettingsSection(viewModel: AppSettingsViewModel) {
+internal fun NetworkUserAgentSettingsSection(viewModel: AppSettingsViewModel) {
     val customUserAgent by viewModel.customUserAgent.state.collectAsState()
 
     Title(MLang.AppSettings.Section.Network)
@@ -360,7 +359,7 @@ private fun AppNetworkSettingsSection(viewModel: AppSettingsViewModel) {
 }
 
 @Composable
-private fun AppExperimentalSettingsSection(
+private fun AppHomeSettingsSection(
     viewModel: AppSettingsViewModel,
     navigator: DestinationsNavigator,
 ) {
@@ -373,7 +372,7 @@ private fun AppExperimentalSettingsSection(
     val acgWallpaperBiasX by viewModel.acgWallpaperBiasX.state.collectAsState()
     val acgWallpaperBiasY by viewModel.acgWallpaperBiasY.state.collectAsState()
     val context = LocalContext.current
-    Title(MLang.AppSettings.Section.Experimental)
+    Title(MLang.AppSettings.Section.Home)
     Card {
         PreferenceSwitchItem(
             title = MLang.AppSettings.Experimental.AcgHomeTitle,

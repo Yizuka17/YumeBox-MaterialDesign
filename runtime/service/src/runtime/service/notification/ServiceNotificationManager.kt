@@ -236,7 +236,8 @@ class ServiceNotificationManager(
                 service,
                 0,
                 Intent().apply {
-                    component = Components.PROXY_SHEET_ACTIVITY
+                    component = Components.MAIN_ACTIVITY
+                    action = Components.ACTION_OPEN_HOME
                     addFlags(
                         Intent.FLAG_ACTIVITY_NEW_TASK or
                             Intent.FLAG_ACTIVITY_SINGLE_TOP or

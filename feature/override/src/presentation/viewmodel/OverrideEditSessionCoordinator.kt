@@ -158,9 +158,17 @@ internal class OverrideEditSessionCoordinator(
                 return@launch
             }
 
-            val config = configRepo.getById(configId)
-            _selectedConfig.value = config
-            _editSession.value = config?.let(::createEditSession)
+            try {
+                val config = configRepo.getById(configId)
+                _selectedConfig.value = config
+                _editSession.value = config?.let(::createEditSession)
+            } catch (e: kotlinx.coroutines.CancellationException) {
+                throw e
+            } catch (e: Exception) {
+                Timber.e(e, "Failed to open override editor")
+                _editSession.value = null
+                _events.emit(OverrideSaveEvent.Failed(e.message ?: MLang.Override.Save.Failed))
+            }
         }
     }
 

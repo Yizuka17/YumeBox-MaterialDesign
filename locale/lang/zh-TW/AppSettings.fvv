@@ -9,7 +9,7 @@ AppSettings = {
         Service = "服務"
         Network = "網路"
         Backup = "備份"
-        Experimental = "實驗性內容"
+        Home = "首頁"
     }
 
     Behavior = {
@@ -32,7 +32,7 @@ AppSettings = {
         LanguageTraditionalChinese = "繁體中文"
         LanguageEnglish = "English"
 
-        ColorThemeTitle = "主題配色"
+        ColorThemeTitle = "主題"
         ColorThemeModeTitle = "取色來源"
         ColorThemeModeSummary = "選擇跟隨系統或手動指定主題色"
         ColorThemeModeMonet = "跟隨系統"

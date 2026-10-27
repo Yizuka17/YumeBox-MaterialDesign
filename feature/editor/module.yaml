@@ -15,7 +15,9 @@ dependencies:
   - bom: $libs.editor.bom
   - $libs.rosemoe.editor
   - $libs.rosemoe.language.textmate
-  - $libs.rosemoe.oniguruma
+  # Keep TextMate highlighting on the managed Joni backend. The native backend crashes
+  # inside onig_search on real subscription/JSON documents on HyperOS.
+  - org.jruby.joni:joni:2.2.7
   - $libs.androidx.activity.compose
   - $libs.androidx.lifecycle.viewmodel.ktx
   - $libs.kotlinx.coroutines.android

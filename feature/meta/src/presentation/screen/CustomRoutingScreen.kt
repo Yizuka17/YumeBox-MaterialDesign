@@ -29,6 +29,12 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
+import androidx.compose.material3.AlertDialog
+import androidx.compose.material3.TextButton
+import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
 import com.github.yumelira.yumebox.core.model.ConfigurationOverride
@@ -54,6 +60,9 @@ fun CustomRoutingScreen(
 ) {
     val viewModel: CustomRoutingViewModel = koinViewModel()
     val config by viewModel.config.collectAsState()
+    val isLoading by viewModel.isLoading.collectAsState()
+    val error by viewModel.error.collectAsState()
+    var showExitError by remember { mutableStateOf(false) }
 
     val selectedUrlTestRegions = remember { mutableStateListOf<OverridePresetRegion>() }
     val selectedFallbackRegions = remember { mutableStateListOf<OverridePresetRegion>() }
@@ -65,7 +74,8 @@ fun CustomRoutingScreen(
     var isSaving by remember { mutableStateOf(false) }
     val scope = rememberCoroutineScope()
 
-    LaunchedEffect(config) {
+    LaunchedEffect(config, isLoading) {
+        if (isLoading || error != null) return@LaunchedEffect
         if (hasInitializedSelection && isDirty) return@LaunchedEffect
         val initialSelection = inferPresetTemplateSelection(config)
         selectedUrlTestRegions.clear()
@@ -84,6 +94,11 @@ fun CustomRoutingScreen(
 
     fun saveAndExit() {
         if (isSaving) return
+        if (!isDirty) {
+            onNavigateBack()
+            return
+        }
+        if (!hasInitializedSelection || isLoading) return
         val newSelection = OverridePresetTemplateSelection(
             urlTestRegions = selectedUrlTestRegions.toSet(),
             fallbackRegions = selectedFallbackRegions.toSet(),
@@ -97,16 +112,48 @@ fun CustomRoutingScreen(
         )
         scope.launch {
             isSaving = true
-            val saved = viewModel.saveConfig(newConfig)
-            isSaving = false
-            if (!saved) return@launch
-            isDirty = false
-            onNavigateBack()
+            try {
+                if (viewModel.saveConfig(newConfig)) {
+                    isDirty = false
+                    onNavigateBack()
+                } else {
+                    showExitError = true
+                }
+            } finally {
+                isSaving = false
+            }
         }
     }
 
     BackHandler {
         saveAndExit()
+    }
+
+    if (error != null && !hasInitializedSelection && !isLoading) {
+        AlertDialog(
+            onDismissRequest = onNavigateBack,
+            title = { androidx.compose.material3.Text("读取失败") },
+            text = { androidx.compose.material3.Text(error.orEmpty()) },
+            confirmButton = {
+                TextButton(onClick = onNavigateBack) { androidx.compose.material3.Text("返回") }
+            },
+        )
+    } else if (showExitError) {
+        AlertDialog(
+            onDismissRequest = { showExitError = false },
+            title = { androidx.compose.material3.Text("保存失败") },
+            text = { androidx.compose.material3.Text(error ?: "请重试，或放弃本次修改后返回。") },
+            confirmButton = {
+                TextButton(onClick = { showExitError = false; saveAndExit() }) {
+                    androidx.compose.material3.Text("重试")
+                }
+            },
+            dismissButton = {
+                TextButton(onClick = { showExitError = false; onNavigateBack() }) {
+                    androidx.compose.material3.Text("放弃修改并返回")
+                }
+            },
+        )
     }
 
     Scaffold(
@@ -115,6 +162,11 @@ fun CustomRoutingScreen(
             TopBar(
                 title = MLang.MetaFeature.CustomRouting.Title,
                 scrollBehavior = scrollBehavior,
+                navigationIcon = {
+                    IconButton(onClick = ::saveAndExit) {
+                        Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = "返回")
+                    }
+                },
             )
         },
     ) { paddingValues ->

@@ -294,6 +294,7 @@ fun ProfilesPager(
             },
             onSaveOverrideSettings = { systemPresetEnabled, selectedOverrideIds ->
                 scope.launch {
+                    try {
                     val profileId = currentProfileToEdit.uuid.toString()
                     val normalizedOverrideIds = selectedOverrideIds.distinct()
                     val currentBinding = profileBinding ?: bindingProvider.getBinding(profileId)
@@ -311,6 +312,12 @@ fun ProfilesPager(
 
                     if (isRunning && homeViewModel.isCurrentProfile(currentProfileToEdit.uuid)) {
                         overrideService.applyOverride(profileId)
+                    }
+                    } catch (e: kotlinx.coroutines.CancellationException) {
+                        throw e
+                    } catch (e: Exception) {
+                        timber.log.Timber.e(e, "Failed to save profile override settings")
+                        context.toast("保存覆写设置失败：${e.message}")
                     }
                 }
             },

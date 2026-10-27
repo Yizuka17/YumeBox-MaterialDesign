@@ -41,7 +41,7 @@ data class GitHubReleaseAsset(
 data class UpdateCandidate(val release: GitHubRelease, val asset: GitHubReleaseAsset?) {
     val versionName get() = release.name.ifBlank { release.tag }
     val tag get() = release.tag
-    val releaseNotes get() = release.body
+    val releaseNotes get() = release.body.replace(Regex("!\\[[^]]*]\\(https://[^ )]+\\)"), "").trim()
     val releaseUrl get() = release.htmlUrl
     val coverUrl: String get() = Regex("!\\[[^]]*]\\((https://[^ )]+)\\)").find(release.body)?.groupValues?.get(1).orEmpty()
     val coverDataUri: String get() = ""

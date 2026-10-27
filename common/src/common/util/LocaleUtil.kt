@@ -25,7 +25,7 @@ import java.util.Locale
 object LocaleUtil {
     fun normalizeRegionCode(countryCode: String?): String? = countryCode?.trim()?.takeIf {
         it.length == 2 && it.all(Char::isLetter)
-    }?.lowercase(Locale.ROOT)
+    }?.uppercase(Locale.ROOT)
     const val UNKNOWN_FLAG_CODE = "xx"
 
     private const val FLAG_CDN_BASE_URL = "https://hatscripts.github.io/circle-flags/flags/"

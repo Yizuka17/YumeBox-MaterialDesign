@@ -158,7 +158,7 @@ object MLang {
         "AppSettings.Interface.ColorThemeModeSummary" to "Choose between following system colors and a manual theme seed",
         "AppSettings.Interface.ColorThemeModeTitle" to "Color Source",
         "AppSettings.Interface.ColorThemePickerTitle" to "Pick Theme Color",
-        "AppSettings.Interface.ColorThemeTitle" to "Theme Palette",
+        "AppSettings.Interface.ColorThemeTitle" to "Theme",
         "AppSettings.Interface.LanguageChinese" to "简体中文",
         "AppSettings.Interface.LanguageEnglish" to "English",
         "AppSettings.Interface.LanguageSummary" to "Choose the app language",
@@ -203,7 +203,7 @@ object MLang {
         "AppSettings.Privacy.ScreenshotProtectionTitle" to "Screenshot Protection",
         "AppSettings.Section.Backup" to "Backup",
         "AppSettings.Section.Behavior" to "Behavior",
-        "AppSettings.Section.Experimental" to "Experimental",
+        "AppSettings.Section.Home" to "Home",
         "AppSettings.Section.Interface" to "Interface",
         "AppSettings.Section.Network" to "Network",
         "AppSettings.Section.Privacy" to "Privacy",
@@ -1359,7 +1359,7 @@ object MLang {
         "AppSettings.Interface.ColorThemeModeSummary" to "选择跟随系统或手动指定主题色",
         "AppSettings.Interface.ColorThemeModeTitle" to "取色来源",
         "AppSettings.Interface.ColorThemePickerTitle" to "选择主题色",
-        "AppSettings.Interface.ColorThemeTitle" to "主题配色",
+        "AppSettings.Interface.ColorThemeTitle" to "主题",
         "AppSettings.Interface.LanguageChinese" to "简体中文",
         "AppSettings.Interface.LanguageEnglish" to "English",
         "AppSettings.Interface.LanguageSummary" to "选择应用语言",
@@ -1404,7 +1404,7 @@ object MLang {
         "AppSettings.Privacy.ScreenshotProtectionTitle" to "禁止截图",
         "AppSettings.Section.Backup" to "备份",
         "AppSettings.Section.Behavior" to "行为",
-        "AppSettings.Section.Experimental" to "实验性内容",
+        "AppSettings.Section.Home" to "首页",
         "AppSettings.Section.Interface" to "界面",
         "AppSettings.Section.Network" to "网络",
         "AppSettings.Section.Privacy" to "隐私",
@@ -2560,7 +2560,7 @@ object MLang {
         "AppSettings.Interface.ColorThemeModeSummary" to "選擇跟隨系統或手動指定主題色",
         "AppSettings.Interface.ColorThemeModeTitle" to "取色來源",
         "AppSettings.Interface.ColorThemePickerTitle" to "選擇主題色",
-        "AppSettings.Interface.ColorThemeTitle" to "主題配色",
+        "AppSettings.Interface.ColorThemeTitle" to "主題",
         "AppSettings.Interface.LanguageChinese" to "簡體中文",
         "AppSettings.Interface.LanguageEnglish" to "English",
         "AppSettings.Interface.LanguageSummary" to "選擇應用程式語言",
@@ -2605,7 +2605,7 @@ object MLang {
         "AppSettings.Privacy.ScreenshotProtectionTitle" to "禁止截圖",
         "AppSettings.Section.Backup" to "備份",
         "AppSettings.Section.Behavior" to "行為",
-        "AppSettings.Section.Experimental" to "實驗性內容",
+        "AppSettings.Section.Home" to "首頁",
         "AppSettings.Section.Interface" to "介面",
         "AppSettings.Section.Network" to "網路",
         "AppSettings.Section.Privacy" to "隱私",
@@ -3853,7 +3853,7 @@ object MLang {
         object Section {
             val Backup: String get() = text("AppSettings.Section.Backup")
             val Behavior: String get() = text("AppSettings.Section.Behavior")
-            val Experimental: String get() = text("AppSettings.Section.Experimental")
+            val Home: String get() = text("AppSettings.Section.Home")
             val Interface: String get() = text("AppSettings.Section.Interface")
             val Network: String get() = text("AppSettings.Section.Network")
             val Privacy: String get() = text("AppSettings.Section.Privacy")

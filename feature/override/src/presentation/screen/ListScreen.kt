@@ -60,6 +60,7 @@ import org.koin.androidx.compose.koinViewModel
 import sh.calvin.reorderable.ReorderableCollectionItemScope
 import sh.calvin.reorderable.ReorderableItem
 import sh.calvin.reorderable.rememberReorderableLazyListState
+import kotlinx.coroutines.launch
 
 private val OverrideConfigItemGap = Spacing().space12
 
@@ -75,6 +76,7 @@ fun OverrideListScreen(
     val pendingRevealConfigId by viewModel.pendingRevealConfigId.collectAsState()
 
     val context = LocalContext.current
+    val scope = rememberCoroutineScope()
     val lifecycleOwner = LocalLifecycleOwner.current
 
     val showCreateDialog = remember { mutableStateOf(false) }
@@ -126,30 +128,35 @@ fun OverrideListScreen(
                 .orEmpty()
         }
 
-        runCatching {
-            context.contentResolver.openInputStream(uri)
-                ?.bufferedReader()
-                ?.use { reader -> reader.readText() }
-                ?: error(MLang.Override.Import.ReadError)
-        }.onSuccess { jsonText ->
-            val importResult = viewModel.importConfigsFromJson(
-                jsonString = jsonText,
-                sourceName = displayName,
-            )
-            if (importResult.isSuccess) {
-                val importedCount = importResult.getOrNull() ?: 0
-                val importMessage = if (displayName.isNotBlank()) {
-                    MLang.Override.Import.Success.format(displayName, importedCount)
-                } else {
-                    MLang.Override.Import.SuccessDefault.format(importedCount)
+        scope.launch {
+            runCatching {
+                kotlinx.coroutines.withContext(kotlinx.coroutines.Dispatchers.IO) {
+                    context.contentResolver.openInputStream(uri)
+                        ?.bufferedReader()
+                        ?.use { reader -> reader.readText() }
+                        ?: error(MLang.Override.Import.ReadError)
                 }
-                context.toast(importMessage)
-                showCreateDialog.value = false
-            } else {
-                context.toast(MLang.Override.Import.Failed.format(importResult.exceptionOrNull()?.message))
+            }.onSuccess { jsonText ->
+                val importResult = viewModel.importConfigsFromJson(
+                    jsonString = jsonText,
+                    sourceName = displayName,
+                )
+                if (importResult.isSuccess) {
+                    val importedCount = importResult.getOrNull() ?: 0
+                    val importMessage = if (displayName.isNotBlank()) {
+                        MLang.Override.Import.Success.format(displayName, importedCount)
+                    } else {
+                        MLang.Override.Import.SuccessDefault.format(importedCount)
+                    }
+                    context.toast(importMessage)
+                    showCreateDialog.value = false
+                } else {
+                    context.toast(MLang.Override.Import.Failed.format(importResult.exceptionOrNull()?.message))
+                }
+            }.onFailure { throwable ->
+                if (throwable is kotlinx.coroutines.CancellationException) throw throwable
+                context.toast(MLang.Override.Import.FileError.format(throwable.message))
             }
-        }.onFailure { throwable ->
-            context.toast(MLang.Override.Import.FileError.format(throwable.message))
         }
     }
 

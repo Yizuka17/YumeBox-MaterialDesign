@@ -64,6 +64,7 @@ fun NetworkSettingsScreen(
     navigator: DestinationsNavigator,
 ) {
     val viewModel = koinViewModel<NetworkSettingsViewModel>()
+    val appSettingsViewModel = koinViewModel<AppSettingsViewModel>()
     val uiState by viewModel.uiState.collectAsState()
     val tunServiceOptionsUiState by viewModel.tunServiceOptionsUiState.collectAsState()
     val rootTunServiceOptionsUiState by viewModel.rootTunServiceOptionsUiState.collectAsState()
@@ -96,6 +97,7 @@ fun NetworkSettingsScreen(
         ScreenLazyColumn(
             innerPadding = combinePaddingValues(innerPadding, mainLikePadding),
         ) {
+            item { NetworkUserAgentSettingsSection(appSettingsViewModel) }
             item {
                 NetworkVpnServiceSection(
                     viewModel = viewModel,

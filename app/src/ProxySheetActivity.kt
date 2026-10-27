@@ -22,52 +22,20 @@
 
 package com.github.yumelira.yumebox
 
-import android.content.Context
+import android.app.Activity
+import android.content.Intent
 import android.os.Bundle
-import androidx.activity.ComponentActivity
-import androidx.activity.compose.setContent
-import androidx.compose.runtime.collectAsState
-import com.github.yumelira.yumebox.common.util.AppLanguageManager
-import com.github.yumelira.yumebox.presentation.theme.ProvideAndroidPlatformTheme
-import com.github.yumelira.yumebox.presentation.theme.YumeTheme
-import com.github.yumelira.yumebox.screen.settings.AppSettingsViewModel
-import org.koin.androidx.compose.koinViewModel
+import com.github.yumelira.yumebox.runtime.api.Components
 
-class ProxySheetActivity : ComponentActivity() {
-    override fun attachBaseContext(newBase: Context) {
-        super.attachBaseContext(AppLanguageManager.wrap(newBase))
-    }
-
+/** Redirect notification PendingIntents left over from older installations to the home page. */
+class ProxySheetActivity : Activity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        setFinishOnTouchOutside(true)
-        @Suppress("DEPRECATION")
-        overridePendingTransition(0, 0)
-
-        setContent {
-            val appSettingsViewModel = koinViewModel<AppSettingsViewModel>()
-            val themeMode = appSettingsViewModel.themeMode.state.collectAsState().value
-            val colorTheme = appSettingsViewModel.colorTheme.state.collectAsState().value
-            val themeSeedColorArgb = appSettingsViewModel.themeSeedColorArgb.state.collectAsState().value
-            val invertOnPrimaryColors = appSettingsViewModel.invertOnPrimaryColors.state.collectAsState().value
-
-            ProvideAndroidPlatformTheme {
-                YumeTheme(
-                    themeMode = themeMode,
-                    colorTheme = colorTheme,
-                    themeSeedColorArgb = themeSeedColorArgb,
-                    invertOnPrimaryColors = invertOnPrimaryColors,
-                ) {
-                    ProxySheetContent(
-                        onDismiss = {
-                            finish()
-                            @Suppress("DEPRECATION")
-                            overridePendingTransition(0, 0)
-                        },
-                    )
-                }
-            }
-        }
+        startActivity(Intent(this, MainActivity::class.java).apply {
+            action = Components.ACTION_OPEN_HOME
+            addFlags(Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_SINGLE_TOP)
+        })
+        finish()
     }
 }
 

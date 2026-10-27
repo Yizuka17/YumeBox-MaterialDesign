@@ -28,7 +28,7 @@ hiddenApiBypass = "6.2"
 biometric = "1.4.0-alpha07"
 xz = "1.12"
 shapes = "1.2.1"
-snakeYaml = "v1.18-android"
+snakeYaml = "2.6"
 libsu = "6.0.0"
 shizuku = "13.1.5"
 animation = "1.12.1"
@@ -94,7 +94,7 @@ aboutlibraries-core = { module = "com.mikepenz:aboutlibraries-core", version.ref
 aboutlibraries-compose = { module = "com.mikepenz:aboutlibraries-compose", version.ref = "aboutLibraries" }
 hiddenapibypass = { module = "org.lsposed.hiddenapibypass:hiddenapibypass", version.ref = "hiddenApiBypass" }
 shapes = { module = "io.github.kyant0:shapes", version.ref = "shapes" }
-snake-yaml = { module = "com.github.bmoliveira:snake-yaml", version.ref = "snakeYaml" }
+snake-yaml = { module = "org.yaml:snakeyaml", version.ref = "snakeYaml" }
 commons-compress = { module = "org.apache.commons:commons-compress", version.ref = "commonsCompress" }
 javet-node-android = { module = "com.caoccao.javet:javet-node-android", version.ref = "javetNodeAndroid" }
 ktor-client-core = { module = "io.ktor:ktor-client-core", version.ref = "ktor" }

@@ -39,6 +39,8 @@ import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.mutableIntStateOf
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.unit.Density
@@ -100,6 +102,7 @@ class MainActivity : FragmentActivity() {
     private val updateManager: GitHubUpdateManager by inject()
 
     private lateinit var intentController: IntentController
+    private var openHomeRequest by mutableIntStateOf(0)
 
     override fun attachBaseContext(newBase: Context) {
         super.attachBaseContext(AppLanguageManager.wrap(newBase))
@@ -204,6 +207,16 @@ class MainActivity : FragmentActivity() {
                                     navController = navController,
                                     defaultTransitions = NavigationTransitions.defaultStyle,
                                 )
+                                LaunchedEffect(openHomeRequest) {
+                                    if (openHomeRequest > 0) {
+                                        navController.navigate(
+                                            com.ramcosta.composedestinations.generated.destinations.MainScreenDestination(0).route,
+                                        ) {
+                                            popUpTo(navController.graph.id)
+                                            launchSingleTop = true
+                                        }
+                                    }
+                                }
                                 ToastDialogHost()
                                 com.github.yumelira.yumebox.update.ReleaseUpdateHost()
                             }
@@ -268,6 +281,9 @@ class MainActivity : FragmentActivity() {
     @Suppress("SpellCheckingInspection")
     private fun handleIntent(intent: Intent?) {
         intent?.let { safeIntent ->
+            if (safeIntent.action == com.github.yumelira.yumebox.runtime.api.Components.ACTION_OPEN_HOME) {
+                openHomeRequest++
+            }
             if (safeIntent.getBooleanExtra(EXTRA_EXIT_UI_WHEN_BACKGROUND, false)) {
                 finishAndRemoveTask()
                 return

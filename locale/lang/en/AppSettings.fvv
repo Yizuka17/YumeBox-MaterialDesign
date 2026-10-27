@@ -9,7 +9,7 @@ AppSettings = {
         Service = "Service"
         Network = "Network"
         Backup = "Backup"
-        Experimental = "Experimental"
+        Home = "Home"
     }
 
     Behavior = {
@@ -32,7 +32,7 @@ AppSettings = {
         LanguageTraditionalChinese = "繁體中文"
         LanguageEnglish = "English"
 
-        ColorThemeTitle = "Theme Palette"
+        ColorThemeTitle = "Theme"
         ColorThemeModeTitle = "Color Source"
         ColorThemeModeSummary = "Choose between following system colors and a manual theme seed"
         ColorThemeModeMonet = "Follow System"
