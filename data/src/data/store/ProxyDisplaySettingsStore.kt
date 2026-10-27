@@ -14,11 +14,9 @@
  * You should have received a copy of the GNU Affero General Public License
  * along with this program. If not, see <https://www.gnu.org/licenses/>.
  *
- * Copyright (c)  YumeLira 2025 - Present
+ * Copyright (c)  YumeYucca 2025 - Present
  *
  */
-
-
 
 package com.github.yumelira.yumebox.data.store
 
@@ -29,12 +27,11 @@ import com.github.yumelira.yumebox.data.model.ProxySortMode
 import com.tencent.mmkv.MMKV
 
 class ProxyDisplaySettingsStore(externalMmkv: MMKV) : MMKVPreference(externalMmkv = externalMmkv) {
-
     val sortMode by enumFlow(ProxySortMode.DEFAULT)
     val displayMode by enumFlow(ProxyDisplayMode.SINGLE_DETAILED)
     val proxyMode by enumFlow(TunnelState.Mode.Rule)
+    val sheetHeightFraction by floatFlow(PROXY_SHEET_HEIGHT_FRACTION_DEFAULT)
     var ruleProfileUuid by str("")
     var globalProfileUuid by str("")
     var directProfileUuid by str("")
-    val sheetHeightFraction by floatFlow(PROXY_SHEET_HEIGHT_FRACTION_DEFAULT)
 }

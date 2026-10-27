@@ -14,11 +14,9 @@
  * You should have received a copy of the GNU Affero General Public License
  * along with this program. If not, see <https://www.gnu.org/licenses/>.
  *
- * Copyright (c)  YumeLira 2025 - Present
+ * Copyright (c)  YumeYucca 2025 - Present
  *
  */
-
-
 
 package com.github.yumelira.yumebox.core.model
 
@@ -33,28 +31,31 @@ data class FetchStatus(
     val args: List<String>,
     val progress: Int,
     val max: Int,
+    val subUpload: Long? = null,
+    val subDownload: Long? = null,
+    val subTotal: Long? = null,
+    val subExpire: Long? = null,
+    val subUpdateInterval: Long? = null,
+    val subTitle: String? = null,
+    val subFilename: String? = null,
 ) : Parcelable {
     enum class Action {
         FetchConfiguration,
         FetchProviders,
+        SubscriptionInfo,
         Verifying,
     }
 
-    override fun describeContents(): Int {
-        return 0
-    }
+    override fun describeContents(): Int = 0
 
     override fun writeToParcel(dest: Parcel, flags: Int) {
         Parcelizer.encodeToParcel(serializer(), dest, this)
     }
 
     companion object CREATOR : Parcelable.Creator<FetchStatus> {
-        override fun createFromParcel(parcel: Parcel): FetchStatus {
-            return Parcelizer.decodeFromParcel(serializer(), parcel)
-        }
+        override fun createFromParcel(parcel: Parcel): FetchStatus =
+            Parcelizer.decodeFromParcel(serializer(), parcel)
 
-        override fun newArray(size: Int): Array<FetchStatus?> {
-            return arrayOfNulls(size)
-        }
+        override fun newArray(size: Int): Array<FetchStatus?> = arrayOfNulls(size)
     }
 }

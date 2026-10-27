@@ -14,23 +14,40 @@
  * You should have received a copy of the GNU Affero General Public License
  * along with this program. If not, see <https://www.gnu.org/licenses/>.
  *
- * Copyright (c)  YumeLira 2025 - Present
+ * Copyright (c)  YumeYucca 2025 - Present
  *
  */
 
-
+@file:Suppress("UnusedSymbol")
 
 package com.github.yumelira.yumebox.core.model
+
 
 import kotlinx.serialization.Serializable
 
 @Serializable
+data class OverrideSpec(
+    val path: String,
+    val ext: String,
+)
+
+@Serializable
 data class CompileRequest(
+    val schemaVersion: Int = 1,
     val profileUuid: String,
     val profileDir: String,
     val profilePath: String,
-    val overridePaths: List<String> = emptyList(),
+    val overrides: List<OverrideSpec> = emptyList(),
     val outputPath: String,
+    val ageSecretKey: String? = null,
+    // Forwarded to liboverride: Root Tun and native eBPF keep the profile authoritative, while
+    // VpnService protects its app-owned file-descriptor tunnel.
+    val runMode: RunMode = RunMode.VpnService,
+    // Root Tun + disable-all and native eBPF. Skips broad compiler runtime patches so the raw
+    // profile stays authoritative; eBPF still receives the narrow safety guard that disables Tun.
+    val skipRuntimePatches: Boolean = false,
+    /** Internal launch role. Preview is not a user-selectable [RunMode]. */
+    val preview: Boolean = false,
 )
 
 @Serializable
@@ -40,4 +57,21 @@ data class CompileResult(
     val finalYaml: String = "",
     val warnings: List<String> = emptyList(),
     val error: String? = null,
+)
+
+@Serializable
+data class NativeInspectResult(
+    val success: Boolean,
+    val payload: String = "",
+    val error: String? = null,
+)
+
+@Serializable
+data class CompileRawSummary(
+    val success: Boolean,
+    val fingerprint: String = "",
+    val warnings: List<String> = emptyList(),
+    val error: String? = null,
+    val tunIncludePackage: List<String> = emptyList(),
+    val tunExcludePackage: List<String> = emptyList(),
 )

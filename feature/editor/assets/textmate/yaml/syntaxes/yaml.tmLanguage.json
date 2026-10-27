@@ -1,116 +1,387 @@
 {
-	"information_for_contributors": [
-		"This file has been converted from https://github.com/RedCMD/YAML-Syntax-Highlighter/blob/master/syntaxes/yaml.tmLanguage.json",
-		"If you want to provide a fix or improvement, please create a pull request against the original repository.",
-		"Once accepted there, we are happy to receive an update request."
-	],
-	"version": "https://github.com/RedCMD/YAML-Syntax-Highlighter/commit/c42cf86959ba238dc8a825bdd07bed6f5e97c978",
-	"name": "YAML Ain't Markup Language",
-	"scopeName": "source.yaml",
-	"patterns": [
-		{
-			"comment": "Default to YAML version 1.2",
-			"begin": "\\A",
-			"while": "^",
-			"patterns": [
-				{
-					"include": "source.yaml.1.2"
-				}
-			]
-		},
-		{
-			"comment": "Support legacy FrontMatter integration",
-			"//": "https://github.com/microsoft/vscode-markdown-tm-grammar/pull/162",
-			"begin": "(?<=^-{3,}\\s*+)\\G$",
-			"while": "^(?! {3,0}-{3,}[ \t]*+$|[ \t]*+\\.{3}$)",
-			"patterns": [
-				{
-					"include": "source.yaml.1.2"
-				}
-			]
-		},
-		{
-			"comment": "Basic version for embedding",
-			"include": "source.yaml.embedded"
-		}
-	],
-	"repository": {
-		"parity": {
-			"comment": "Yes... That is right. Due to the changes with \\x2028, \\x2029, \\x85 and 'tags'. This is all the code I was able to reuse between all YAML versions 1.3, 1.2, 1.1 and 1.0"
-		},
-		"block-map-key-single": {
-			"comment": "https://yaml.org/spec/1.2.2/#rule-c-single-quoted (BLOCK-KEY)",
-			"begin": "\\G'",
-			"end": "'(?!')",
-			"beginCaptures": {
-				"0": {
-					"name": "punctuation.definition.string.begin.yaml"
-				}
-			},
-			"endCaptures": {
-				"0": {
-					"name": "punctuation.definition.string.end.yaml"
-				}
-			},
-			"name": "meta.map.key.yaml string.quoted.single.yaml entity.name.tag.yaml",
-			"patterns": [
-				{
-					"match": ".[\t ]*+$",
-					"name": "invalid.illegal.multiline-key.yaml"
-				},
-				{
-					"match": "[^\t -\\x{10FFFF}]++",
-					"name": "invalid.illegal.character.yaml"
-				},
-				{
-					"match": "''",
-					"name": "constant.character.escape.single-quote.yaml"
-				}
-			]
-		},
-		"key-single": {
-			"comment": "https://yaml.org/spec/1.2.2/#rule-c-single-quoted (FLOW-OUT)",
-			"begin": "'",
-			"end": "'(?!')",
-			"beginCaptures": {
-				"0": {
-					"name": "punctuation.definition.string.begin.yaml"
-				}
-			},
-			"endCaptures": {
-				"0": {
-					"name": "punctuation.definition.string.end.yaml"
-				}
-			},
-			"name": "meta.map.key.yaml string.quoted.single.yaml entity.name.tag.yaml",
-			"patterns": [
-				{
-					"match": "[^\r\n\t -\\x{10FFFF}]++",
-					"name": "invalid.illegal.character.yaml"
-				},
-				{
-					"match": "''",
-					"name": "constant.character.escape.single-quote.yaml"
-				}
-			]
-		},
-		"non-printable": {
-			"//": {
-				"85": "",
-				"2028": "",
-				"2029": "",
-				"10000": "𐀀",
-				"A0": " ",
-				"D7FF": "퟿",
-				"E000": "",
-				"FFFD": "�",
-				"FEFF": "﻿",
-				"FFFF": "￿",
-				"10FFFF": "􏿿"
-			},
-			"//match": "[\\p{Cntrl}\\p{Surrogate}\\x{FFFE FFFF}&&[^\t\n\r\\x{85}]]++",
-			"match": "[^\t\n\r -~\\x{85}\\x{A0}-\\x{D7FF}\\x{E000}-\\x{FFFD}\\x{010000}-\\x{10FFFF}]++",
-			"name": "invalid.illegal.non-printable.yaml"
-		}
-	}
+  "name": "YAML",
+  "scopeName": "source.yaml",
+  "patterns": [
+    {
+      "include": "#comment"
+    },
+    {
+      "include": "#directive"
+    },
+    {
+      "include": "#document-marker"
+    },
+    {
+      "include": "#block-sequence"
+    },
+    {
+      "include": "#merge-key"
+    },
+    {
+      "include": "#mapping-key"
+    },
+    {
+      "include": "#flow-mapping"
+    },
+    {
+      "include": "#flow-sequence"
+    },
+    {
+      "include": "#anchor"
+    },
+    {
+      "include": "#alias"
+    },
+    {
+      "include": "#tag"
+    },
+    {
+      "include": "#block-scalar"
+    },
+    {
+      "include": "#string"
+    },
+    {
+      "include": "#constant"
+    },
+    {
+      "include": "#number"
+    }
+  ],
+  "repository": {
+    "comment": {
+      "match": "(?:(?<=\\s)|^)(#).*$",
+      "name": "comment.line.number-sign.yaml",
+      "captures": {
+        "1": {
+          "name": "punctuation.definition.comment.yaml"
+        }
+      }
+    },
+    "directive": {
+      "match": "^(%)(YAML|TAG)\\b.*$",
+      "name": "meta.directive.yaml",
+      "captures": {
+        "1": {
+          "name": "punctuation.definition.directive.yaml"
+        },
+        "2": {
+          "name": "keyword.other.directive.yaml"
+        }
+      }
+    },
+    "document-marker": {
+      "match": "^(?:(---)|(\\.\\.\\.))\\s*$",
+      "captures": {
+        "1": {
+          "name": "keyword.control.document.begin.yaml"
+        },
+        "2": {
+          "name": "keyword.control.document.end.yaml"
+        }
+      }
+    },
+    "block-sequence": {
+      "match": "(?:^|(?<=\\s))(-)(?=\\s|$)",
+      "captures": {
+        "1": {
+          "name": "punctuation.definition.block.sequence.item.yaml"
+        }
+      }
+    },
+    "merge-key": {
+      "match": "(<<)(\\s*)(:)(?=\\s|$)",
+      "captures": {
+        "1": {
+          "name": "entity.name.tag.yaml"
+        },
+        "3": {
+          "name": "punctuation.separator.key-value.mapping.yaml"
+        }
+      }
+    },
+    "mapping-key": {
+      "patterns": [
+        {
+          "match": "(\")((?:[^\"\\\\]|\\\\.)*)(\")(\\s*)(:)(?=\\s|$)",
+          "captures": {
+            "1": {
+              "name": "punctuation.definition.string.begin.yaml"
+            },
+            "2": {
+              "name": "entity.name.tag.yaml string.quoted.double.yaml"
+            },
+            "3": {
+              "name": "punctuation.definition.string.end.yaml"
+            },
+            "5": {
+              "name": "punctuation.separator.key-value.mapping.yaml"
+            }
+          }
+        },
+        {
+          "match": "(')((?:[^']|'')*)(')(\\s*)(:)(?=\\s|$)",
+          "captures": {
+            "1": {
+              "name": "punctuation.definition.string.begin.yaml"
+            },
+            "2": {
+              "name": "entity.name.tag.yaml string.quoted.single.yaml"
+            },
+            "3": {
+              "name": "punctuation.definition.string.end.yaml"
+            },
+            "5": {
+              "name": "punctuation.separator.key-value.mapping.yaml"
+            }
+          }
+        },
+        {
+          "match": "(?:^|(?<=[-\\s{\\[,]))([^-?:\\s\\[\\]{}#,&*!|>'\"%@`][^#:]*?)(\\s*)(:)(?=\\s|$)",
+          "captures": {
+            "1": {
+              "name": "entity.name.tag.yaml"
+            },
+            "3": {
+              "name": "punctuation.separator.key-value.mapping.yaml"
+            }
+          }
+        }
+      ]
+    },
+    "flow-mapping": {
+      "begin": "(\\{)",
+      "beginCaptures": {
+        "1": {
+          "name": "punctuation.definition.mapping.begin.yaml"
+        }
+      },
+      "end": "(\\})",
+      "endCaptures": {
+        "1": {
+          "name": "punctuation.definition.mapping.end.yaml"
+        }
+      },
+      "patterns": [
+        {
+          "include": "#comment"
+        },
+        {
+          "match": ",",
+          "name": "punctuation.separator.mapping.yaml"
+        },
+        {
+          "match": "([^-?:\\s\\[\\]{}#,&*!|>'\"%@`][^:,}\\]]*?)(\\s*)(:)(?=\\s|,|$)",
+          "captures": {
+            "1": {
+              "name": "entity.name.tag.yaml"
+            },
+            "3": {
+              "name": "punctuation.separator.key-value.mapping.yaml"
+            }
+          }
+        },
+        {
+          "match": ":",
+          "name": "punctuation.separator.key-value.mapping.yaml"
+        },
+        {
+          "include": "#flow-mapping"
+        },
+        {
+          "include": "#flow-sequence"
+        },
+        {
+          "include": "#anchor"
+        },
+        {
+          "include": "#alias"
+        },
+        {
+          "include": "#tag"
+        },
+        {
+          "include": "#string"
+        },
+        {
+          "include": "#constant"
+        },
+        {
+          "include": "#number"
+        }
+      ]
+    },
+    "flow-sequence": {
+      "begin": "(\\[)",
+      "beginCaptures": {
+        "1": {
+          "name": "punctuation.definition.sequence.begin.yaml"
+        }
+      },
+      "end": "(\\])",
+      "endCaptures": {
+        "1": {
+          "name": "punctuation.definition.sequence.end.yaml"
+        }
+      },
+      "patterns": [
+        {
+          "include": "#comment"
+        },
+        {
+          "match": ",",
+          "name": "punctuation.separator.sequence.yaml"
+        },
+        {
+          "include": "#flow-mapping"
+        },
+        {
+          "include": "#flow-sequence"
+        },
+        {
+          "include": "#anchor"
+        },
+        {
+          "include": "#alias"
+        },
+        {
+          "include": "#tag"
+        },
+        {
+          "include": "#string"
+        },
+        {
+          "include": "#constant"
+        },
+        {
+          "include": "#number"
+        }
+      ]
+    },
+    "anchor": {
+      "match": "(&)([^\\s\\[\\]{},]+)",
+      "captures": {
+        "1": {
+          "name": "punctuation.definition.anchor.yaml"
+        },
+        "2": {
+          "name": "keyword.control.flow.anchor.yaml"
+        }
+      }
+    },
+    "alias": {
+      "match": "(\\*)([^\\s\\[\\]{},]+)",
+      "captures": {
+        "1": {
+          "name": "punctuation.definition.alias.yaml"
+        },
+        "2": {
+          "name": "variable.other.alias.yaml"
+        }
+      }
+    },
+    "tag": {
+      "match": "!(?:!|<)?[^\\s\\[\\]{},]*",
+      "name": "storage.type.tag.yaml"
+    },
+    "block-scalar": {
+      "match": "(?:(\\|)|(>))([1-9])?([-+])?(?=\\s|$)",
+      "captures": {
+        "1": {
+          "name": "keyword.control.flow.block-scalar.literal.yaml"
+        },
+        "2": {
+          "name": "keyword.control.flow.block-scalar.folded.yaml"
+        },
+        "3": {
+          "name": "constant.numeric.indentation-indicator.yaml"
+        },
+        "4": {
+          "name": "storage.modifier.chomping-indicator.yaml"
+        }
+      }
+    },
+    "string": {
+      "patterns": [
+        {
+          "begin": "\"",
+          "beginCaptures": {
+            "0": {
+              "name": "punctuation.definition.string.begin.yaml"
+            }
+          },
+          "end": "\"",
+          "endCaptures": {
+            "0": {
+              "name": "punctuation.definition.string.end.yaml"
+            }
+          },
+          "name": "string.quoted.double.yaml",
+          "patterns": [
+            {
+              "match": "\\\\(?:[0abtnvfre \"/\\\\N_LP]|x[0-9A-Fa-f]{2}|u[0-9A-Fa-f]{4}|U[0-9A-Fa-f]{8})",
+              "name": "constant.character.escape.yaml"
+            }
+          ]
+        },
+        {
+          "begin": "'",
+          "beginCaptures": {
+            "0": {
+              "name": "punctuation.definition.string.begin.yaml"
+            }
+          },
+          "end": "'(?!')",
+          "endCaptures": {
+            "0": {
+              "name": "punctuation.definition.string.end.yaml"
+            }
+          },
+          "name": "string.quoted.single.yaml",
+          "patterns": [
+            {
+              "match": "''",
+              "name": "constant.character.escape.yaml"
+            }
+          ]
+        }
+      ]
+    },
+    "constant": {
+      "patterns": [
+        {
+          "match": "(?<![\\w$.\\-])(?:true|True|TRUE|false|False|FALSE|yes|Yes|YES|no|No|NO|on|On|ON|off|Off|OFF)(?![\\w$.\\-])",
+          "name": "constant.language.boolean.yaml"
+        },
+        {
+          "match": "(?<![\\w$.\\-])(?:null|Null|NULL|~)(?![\\w$.\\-])",
+          "name": "constant.language.null.yaml"
+        }
+      ]
+    },
+    "number": {
+      "patterns": [
+        {
+          "match": "(?<![\\w$.\\-])[-+]?0x[0-9A-Fa-f]+(?![\\w$.\\-])",
+          "name": "constant.numeric.integer.hexadecimal.yaml"
+        },
+        {
+          "match": "(?<![\\w$.\\-])[-+]?0o[0-7]+(?![\\w$.\\-])",
+          "name": "constant.numeric.integer.octal.yaml"
+        },
+        {
+          "match": "(?<![\\w$.\\-])[-+]?(?:\\.inf|\\.Inf|\\.INF)(?![\\w$.\\-])",
+          "name": "constant.numeric.float.yaml"
+        },
+        {
+          "match": "(?<![\\w$.\\-])(?:\\.nan|\\.NaN|\\.NAN)(?![\\w$.\\-])",
+          "name": "constant.numeric.float.yaml"
+        },
+        {
+          "match": "(?<![\\w$.\\-])[-+]?(?:\\d+\\.\\d*|\\.\\d+|\\d+)(?:[eE][-+]?\\d+)?(?![\\w$.\\-])",
+          "name": "constant.numeric.yaml"
+        }
+      ]
+    }
+  }
 }

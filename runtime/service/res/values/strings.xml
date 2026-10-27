@@ -1,4 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
     <string name="tile_proxy_label">YumeBox</string>
+    <string name="wifi_automation_channel_name">Wi-Fi automation</string>
+    <string name="wifi_automation_notification_title">Wi-Fi automation is active</string>
+    <string name="wifi_automation_notification_text">Checking the connected Wi-Fi name</string>
 </resources>

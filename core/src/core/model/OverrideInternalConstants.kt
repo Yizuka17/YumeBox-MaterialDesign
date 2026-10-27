@@ -14,14 +14,18 @@
  * You should have received a copy of the GNU Affero General Public License
  * along with this program. If not, see <https://www.gnu.org/licenses/>.
  *
- * Copyright (c)  YumeLira 2025 - Present
+ * Copyright (c)  YumeYucca 2025 - Present
  *
  */
 
 package com.github.yumelira.yumebox.core.model
 
 object OverrideInternalConstants {
-    const val INTERNAL_DIR_NAME = "internal"
     const val CUSTOM_ROUTING_OVERRIDE_ID = "__custom_routing__"
-    const val CUSTOM_ROUTING_FILE_NAME = "custom-routing.json"
+    const val CUSTOM_ROUTING_FILE_NAME = "custom-routing.yaml"
+
+    /** Stable id prefix for APK-bundled built-in overrides (not user-owned, not reordered). */
+    const val BUILTIN_OVERRIDE_PREFIX = "builtin-"
+
+    fun isBuiltInOverrideId(id: String): Boolean = id.startsWith(BUILTIN_OVERRIDE_PREFIX)
 }

@@ -1,0 +1,4 @@
+generated/
+tmp/
+logs/
+configure-codacy-summary.json

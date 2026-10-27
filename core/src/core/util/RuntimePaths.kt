@@ -14,11 +14,14 @@
  * You should have received a copy of the GNU Affero General Public License
  * along with this program. If not, see <https://www.gnu.org/licenses/>.
  *
- * Copyright (c)  YumeLira 2025 - Present
+ * Copyright (c)  YumeYucca 2025 - Present
  *
  */
 
+@file:Suppress("UnusedSymbol")
+
 package com.github.yumelira.yumebox.core.util
+
 
 import android.content.Context
 import java.io.File
@@ -29,16 +32,27 @@ const val PROFILE_PROVIDERS_DIR_NAME = "providers"
 const val RULE_PROVIDER_SCOPE = "rules"
 const val PROXY_PROVIDER_SCOPE = "proxies"
 
+// Kept as the literal "acg" so wallpapers copied under the old path stay resolvable after the rename.
+const val MOE_ASSETS_DIR_NAME = "acg"
+const val MOE_WALLPAPER_FILE_NAME = "wallpaper.dat"
+
 val Context.runtimeHomeDir: File
     get() = filesDir.resolve(RUNTIME_HOME_DIR_NAME)
+
+val Context.moeAssetsDir: File
+    get() = filesDir.resolve(MOE_ASSETS_DIR_NAME)
+
+/**
+ * Stable app-private slot for the locally copied home wallpaper. The directory is created on access
+ * so callers can stream-copy into the returned file directly.
+ */
+fun Context.moeWallpaperFile(): File =
+    moeAssetsDir.apply { mkdirs() }.resolve(MOE_WALLPAPER_FILE_NAME)
 
 val Context.legacyRuntimeHomeDir: File
     get() = filesDir.resolve(LEGACY_RUNTIME_HOME_DIR_NAME)
 
-fun profileProvidersRoot(profileDir: File): File {
-    return profileDir.resolve(PROFILE_PROVIDERS_DIR_NAME)
-}
+fun profileProvidersRoot(profileDir: File): File = profileDir.resolve(PROFILE_PROVIDERS_DIR_NAME)
 
-fun profileProviderScopeDir(profileDir: File, scope: String): File {
-    return profileProvidersRoot(profileDir).resolve(scope)
-}
+fun profileProviderScopeDir(profileDir: File, scope: String): File =
+    profileProvidersRoot(profileDir).resolve(scope)

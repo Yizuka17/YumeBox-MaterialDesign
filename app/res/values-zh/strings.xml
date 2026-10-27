@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="shortcut_start_clash_short">启动 Clash</string>
+    <string name="shortcut_start_clash_long">启动 Clash</string>
+    <string name="shortcut_stop_clash_short">停止 Clash</string>
+    <string name="shortcut_stop_clash_long">停止 Clash</string>
+</resources>

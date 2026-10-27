@@ -162,7 +162,7 @@ fun HomePager(
                         trafficNow = if (isRunning) {
                             TrafficData.from(trafficNow)
                         } else {
-                            TrafficData.ZERO
+                            TrafficData.zero
                         },
                         profileName = currentProfile?.name?.takeIf { isRunning },
                         tunnelMode = tunnelMode.takeIf { isRunning },
@@ -221,8 +221,8 @@ fun HomePager(
 
 private fun handleProxyToggle(
     isRunning: Boolean,
-    recommendedProfile: com.github.yumelira.yumebox.service.runtime.entity.Profile?,
-    onStart: (com.github.yumelira.yumebox.service.runtime.entity.Profile) -> Unit,
+    recommendedProfile: com.github.yumelira.yumebox.runtime.api.Profile?,
+    onStart: (com.github.yumelira.yumebox.runtime.api.Profile) -> Unit,
     onStop: () -> Unit
 ) {
     if (!isRunning) {

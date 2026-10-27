@@ -14,52 +14,35 @@
  * You should have received a copy of the GNU Affero General Public License
  * along with this program. If not, see <https://www.gnu.org/licenses/>.
  *
- * Copyright (c)  YumeLira 2025 - Present
+ * Copyright (c)  YumeYucca 2025 - Present
  *
  */
 
-
+@file:Suppress("UnusedSymbol")
 
 package com.github.yumelira.yumebox.runtime.client
 
-import android.annotation.SuppressLint
-import android.content.BroadcastReceiver
+
 import android.content.Context
-import android.content.Intent
-import android.content.IntentFilter
-import android.net.VpnService
-import android.os.Build
-import com.github.yumelira.yumebox.core.Clash
 import com.github.yumelira.yumebox.core.model.*
-import com.github.yumelira.yumebox.core.util.PollingTimerSpecs
-import com.github.yumelira.yumebox.core.util.PollingTimers
-import com.github.yumelira.yumebox.data.model.ProxyMode
+import com.github.yumelira.yumebox.core.util.AppVisibilityTracker
 import com.github.yumelira.yumebox.data.store.MMKVProvider
 import com.github.yumelira.yumebox.data.store.NetworkSettingsStore
-import com.github.yumelira.yumebox.data.store.ProxyDisplaySettingsStore
+import com.github.yumelira.yumebox.data.store.RemoteControllerStore
+import com.github.yumelira.yumebox.domain.model.ProxyDelayTestProgressCallback
 import com.github.yumelira.yumebox.domain.model.ProxyGroupInfo
-import com.github.yumelira.yumebox.remote.ServiceClient
-import com.github.yumelira.yumebox.remote.VpnPermissionRequired
-import com.github.yumelira.yumebox.runtime.client.root.RootTunController
-import com.github.yumelira.yumebox.service.LocalRuntimePhase
-import com.github.yumelira.yumebox.service.RootTunService
-import com.github.yumelira.yumebox.service.StatusProvider
-import com.github.yumelira.yumebox.service.common.constants.Intents
-import com.github.yumelira.yumebox.service.common.util.appContextOrSelf
-import com.github.yumelira.yumebox.service.root.RootTunStateStore
-import com.github.yumelira.yumebox.service.root.RootTunStatus
-import com.github.yumelira.yumebox.service.runtime.entity.Profile
-import com.github.yumelira.yumebox.service.runtime.records.SelectionDao
-import com.github.yumelira.yumebox.service.runtime.state.RuntimeOwner
-import com.github.yumelira.yumebox.service.runtime.state.RuntimePhase
-import com.github.yumelira.yumebox.service.runtime.state.RuntimeSnapshot
-import com.tencent.mmkv.MMKV
+import com.github.yumelira.yumebox.domain.model.toInfo
+import com.github.yumelira.yumebox.runtime.api.*
+import com.github.yumelira.yumebox.runtime.client.access.RuntimeAccess
+import com.github.yumelira.yumebox.runtime.client.session.RuntimeCoreOps
+import com.github.yumelira.yumebox.runtime.client.session.RuntimeGroupHub
+import com.github.yumelira.yumebox.runtime.client.session.RuntimeSession
+import com.github.yumelira.yumebox.runtime.client.session.RuntimeSessionDeps
+import com.github.yumelira.yumebox.domain.model.ProxyDelayStore
+import com.github.yumelira.yumebox.runtime.service.preview.PreviewRuntimeManager
 import kotlinx.coroutines.*
 import kotlinx.coroutines.flow.*
-import kotlinx.coroutines.sync.Mutex
-import kotlinx.coroutines.sync.withLock
 import timber.log.Timber
-import java.util.*
 
 enum class ProxyGroupSyncPriority {
     OFF,
@@ -67,109 +50,126 @@ enum class ProxyGroupSyncPriority {
     FAST,
 }
 
+/** The controller that produced the current node snapshot. Preview data is read-only. */
+enum class NodeDataSource {
+    None,
+    Preview,
+    Active,
+}
+
+/** Keeps the last successful node snapshot through real-core handoff and reload transitions. */
+data class NodeSessionState(
+    val source: NodeDataSource = NodeDataSource.None,
+    val groups: List<ProxyGroupInfo> = emptyList(),
+    val available: Boolean = false,
+    val everReady: Boolean = false,
+)
+
+/**
+ * UI-facing runtime facade. Runtime lifecycle/state live in [RuntimeSession]; proxy-group ops live
+ * in [RuntimeGroupHub].
+ */
 class ProxyFacade(
-    private val context: Context,
+    context: Context,
+    private val networkSettingsStorage: NetworkSettingsStore =
+        NetworkSettingsStore(MMKVProvider().getMMKV("network_settings")),
+    private val remoteControllerStore: RemoteControllerStore =
+        RemoteControllerStore(MMKVProvider().getMMKV("remote_controller")),
 ) {
     private companion object {
-        const val TRAFFIC_TOTAL_POLL_TICKS = 10
         const val RUNTIME_PAYLOAD_REFRESH_TICKS = 15
         const val DEFAULT_SYNC_PRIORITY_SOURCE = "default"
-        const val PROXY_SELECT_FULL_REFRESH_DELAY_MS = 400L
-        const val ROOT_TUN_BOOTSTRAP_ATTEMPTS = 20
-        const val ROOT_TUN_BOOTSTRAP_DELAY_MS = 300L
-        const val GLOBAL_GROUP_NAME = "GLOBAL"
-        const val ZAKO_GROUP_NAME = "zako"
     }
 
     private val appContext: Context = context.appContextOrSelf
     private val scope = CoroutineScope(SupervisorJob() + Dispatchers.Default)
-    private val networkSettingsStorage by lazy {
-        NetworkSettingsStore(MMKVProvider().getMMKV("network_settings"))
-    }
-    private val proxyDisplaySettingsStorage by lazy {
-        ProxyDisplaySettingsStore(MMKVProvider().getMMKV("proxy_display"))
-    }
-    private val rootTunStateStore by lazy { RootTunStateStore(appContext) }
-    private val runtimeControl = ProxyRuntimeControl(appContext) { actionClashRequestStop }
-    private val previewCache = ProxyGroupPreviewCache()
-    private val _rootTunStatus = MutableStateFlow(RootTunStatus())
-    val rootTunStatus: StateFlow<RootTunStatus> = _rootTunStatus.asStateFlow()
-    private val _runtimeSnapshot = MutableStateFlow(
-        RuntimeStateMapper.idleSnapshot(networkSettingsStorage.proxyMode.value),
-    )
-    val runtimeSnapshot: StateFlow<RuntimeSnapshot> = _runtimeSnapshot.asStateFlow()
-    private val _preferredTunnelMode = MutableStateFlow(proxyDisplaySettingsStorage.proxyMode.value)
-    val preferredTunnelMode: StateFlow<TunnelState.Mode> = _preferredTunnelMode.asStateFlow()
+    private val delayStore = ProxyDelayStore()
+    private val session: RuntimeSession
+    private val coreOps = RuntimeCoreOps(connect = { session.connectBackend() })
+    private val groups: RuntimeGroupHub
+    private val preview = PreviewRuntimeManager(appContext, delayStore)
+    private val _nodeSession = MutableStateFlow(NodeSessionState())
+    private var lastNodeSource: NodeDataSource? = null
 
-    private val actionServiceRecreated: String get() = Intents.actionServiceRecreated(appContext.packageName)
-    private val actionClashStarted: String get() = Intents.actionClashStarted(appContext.packageName)
-    private val actionClashStopped: String get() = Intents.actionClashStopped(appContext.packageName)
-    private val actionClashRequestStop: String get() = Intents.actionClashRequestStop(appContext.packageName)
-    private val actionProfileChanged: String get() = Intents.actionProfileChanged(appContext.packageName)
-    private val actionProfileLoaded: String get() = Intents.actionProfileLoaded(appContext.packageName)
-    private val actionOverrideChanged: String get() = Intents.actionOverrideChanged(appContext.packageName)
-    private val actionRootRuntimeFailed: String get() = Intents.actionRootRuntimeFailed(appContext.packageName)
-
-    private val _isRunning = MutableStateFlow(false)
-    val isRunning: StateFlow<Boolean> = _isRunning.asStateFlow()
-
-    private val _proxyGroups = MutableStateFlow<List<ProxyGroupInfo>>(emptyList())
-    val proxyGroups: StateFlow<List<ProxyGroupInfo>> = _proxyGroups.asStateFlow()
-    private val _resolvedPrimaryNode = MutableStateFlow<Proxy?>(null)
-    val resolvedPrimaryNode: StateFlow<Proxy?> = _resolvedPrimaryNode.asStateFlow()
-
-    private val _currentProfile = MutableStateFlow<Profile?>(null)
-    val currentProfile: StateFlow<Profile?> = _currentProfile.asStateFlow()
-
-    private val _trafficNow = MutableStateFlow(0L)
-    val trafficNow: StateFlow<Traffic> = _trafficNow.asStateFlow()
-
-    private val _trafficTotal = MutableStateFlow(0L)
-    val trafficTotal: StateFlow<Traffic> = _trafficTotal.asStateFlow()
-
-    private var trafficPollingJob: Job? = null
-    private var proxyGroupSyncJob: Job? = null
     private var previewWarmupJob: Job? = null
-    private var rootTunBootstrapJob: Job? = null
-    private val refreshProxyGroupsMutex = Mutex()
-    private val operationMutex = Mutex()
-    private val syncPriorityRequests = MutableStateFlow<Map<String, ProxyGroupSyncPriority>>(emptyMap())
-    private var activeProxyGroupSyncPriority = ProxyGroupSyncPriority.OFF
-    private var lastProxyGroupsSummary: String? = null
-    private var generationCounter = 0L
+    private val syncPriorityRequests =
+        MutableStateFlow<Map<String, ProxyGroupSyncPriority>>(emptyMap())
 
-    private val serviceEventsReceiver = object : BroadcastReceiver() {
-        override fun onReceive(context: Context?, intent: Intent?) {
-            when (intent?.action ?: return) {
-                actionClashStarted -> {
-                    scope.launch { reconcileAndRefreshRuntimeState() }
-                }
-
-                actionClashStopped -> {
-                    scope.launch { handleRuntimeStopped(intent.getStringExtra(Intents.EXTRA_STOP_REASON)) }
-                }
-
-                actionProfileLoaded,
-                actionProfileChanged,
-                actionOverrideChanged,
-                actionServiceRecreated -> {
-                    scope.launch { reconcileAndRefreshRuntimeState() }
-                }
-
-                actionRootRuntimeFailed -> {
-                    val error = intent.getStringExtra("error")
-                    Timber.w("Root runtime failed: $error")
-                    scope.launch { handleRuntimeFailure(error) }
-                }
-            }
-        }
-    }
+    val runtimeSnapshot: StateFlow<RuntimeSnapshot>
+    val isRunning: StateFlow<Boolean>
+    val isConfigReloading: StateFlow<Boolean>
+    val currentProfile: StateFlow<Profile?>
+    val trafficNow: StateFlow<Traffic>
+    val trafficTotal: StateFlow<Traffic>
+    val proxyGroups: StateFlow<List<ProxyGroupInfo>>
+    val nodeSession: StateFlow<NodeSessionState> = _nodeSession.asStateFlow()
+    val resolvedPrimaryNode: StateFlow<Proxy?>
 
     init {
-        registerServiceEventReceiver()
+        session =
+            RuntimeSession(
+                RuntimeSessionDeps(
+                    context = context,
+                    scope = scope,
+                    networkSettingsStorage = networkSettingsStorage,
+                    remoteControllerStore = remoteControllerStore,
+                    queryTrafficNowAction = { coreOps.queryTrafficNow() },
+                    queryTrafficTotalAction = { coreOps.queryTrafficTotal() },
+                    onAfterRunning = {
+                        preview.stop()
+                        if (AppVisibilityTracker.isForeground.value) {
+                            refreshAllSafely()
+                        }
+                    },
+                    onAfterIdle = {
+                        if (AppVisibilityTracker.isForeground.value) {
+                            refreshPreviewStateSafely()
+                        }
+                    },
+                    onGroupTick = { groups.refreshSafely() },
+                    onTrafficTickExtra = { tick ->
+                        if (
+                            tick % RUNTIME_PAYLOAD_REFRESH_TICKS == 0 &&
+                                session.shouldRefreshRuntimePayload(groups.isGroupsEmpty())
+                        ) {
+                            refreshAllSafely()
+                        }
+                    },
+                    onClearGroups = { reset -> groups.clear(reset) },
+                    probeRemote = { RuntimeAccess.probeRemoteController() },
+                )
+            )
+        groups =
+            RuntimeGroupHub(
+                scope = scope,
+                session = session,
+                coreOps = coreOps,
+                isRemoteControllerActive = { session.isRemoteControllerActive() },
+                delayStore = delayStore,
+            )
+        runtimeSnapshot = session.runtimeSnapshot
+        isRunning = session.isRunning
+        isConfigReloading = session.isConfigReloading
+        currentProfile = session.currentProfile
+        trafficNow = session.trafficNow
+        trafficTotal = session.trafficTotal
+        proxyGroups =
+            nodeSession
+                .map { state -> state.groups }
+                .stateIn(scope, SharingStarted.Eagerly, emptyList())
+        resolvedPrimaryNode = groups.resolvedPrimaryNode
+        session.bootstrap()
+        observeNodeSession()
+        observePreviewRuntime()
         observeProxyGroupSyncPriority()
-        initializeRuntimeSnapshot()
+        observeAppVisibility()
     }
+
+    fun isRemoteControllerActive(): Boolean = session.isRemoteControllerActive()
+
+    fun proxyDelayFlow(name: String) = delayStore.delayFlow(name)
+
+    fun applyRemoteControllerState() = session.applyRemoteControllerState()
 
     fun setProxyGroupSyncPriority(
         priority: ProxyGroupSyncPriority,
@@ -190,1429 +190,268 @@ class ProxyFacade(
     }
 
     suspend fun awaitProxyGroupWarmUp() {
-        previewWarmupJob?.let { existing ->
-            when {
-                existing.isActive -> {
-                    existing.join()
-                    return
-                }
-
-                existing.isCompleted -> return
-            }
-        }
-
-        val job = launchPreviewWarmup()
-        previewWarmupJob = job
+        val existing = previewWarmupJob
+        if (existing?.isCompleted == true) return
+        val job = existing?.takeIf { it.isActive } ?: launchPreviewWarmup().also { previewWarmupJob = it }
         job.join()
     }
 
-    suspend fun reconcileRuntimeState() {
-        operationMutex.withLock {
-            val configuredMode = networkSettingsStorage.proxyMode.value
-            StatusProvider.reconcilePersistedRuntimeState()
-            val shouldBootstrapRootTun = shouldBootstrapRootTunRuntime()
-            val rootStatus = resolveObservedRootTunStatus()
-            applyRootTunStatus(rootStatus)
-            val owner = ProxyRuntimeOwnership.detectOwner(rootStatus, ::isLocalSessionActive)
+    suspend fun reconcileRuntimeState() = session.reconcile()
 
-            if (owner == RuntimeOwner.None) {
-                stopTrafficPolling()
-                clearRuntimeState(resetGroups = false)
-                publishRuntimeSnapshot(RuntimeStateMapper.idleSnapshot(configuredMode))
-                if (shouldBootstrapRootTun) {
-                    scheduleRootTunBootstrap()
-                } else {
-                    stopRootTunBootstrap()
-                }
-                refreshPreviewStateSafely()
-                return
-            }
+    suspend fun reloadProxy(mode: RunMode = networkSettingsStorage.runMode.value) {
+        session.reload(mode)
+    }
 
-            if (owner != RuntimeOwner.RootTun) {
-                stopRootTunBootstrap()
-            }
-            if (owner == RuntimeOwner.RootTun) {
-                ensureRootTunServiceAttached(rootStatus)
-            }
-
-            publishRuntimeSnapshot(
-                ProxyRuntimeOwnership.activeSnapshot(
-                    owner = owner,
-                    configuredMode = configuredMode,
-                    rootStatus = rootStatus,
-                    localPhase = localRuntimePhaseForOwner(owner),
-                    localStartedAt = localRuntimeStartedAtForOwner(owner),
-                ),
-            )
-
-            if (_runtimeSnapshot.value.phase.running) {
-                applyPreferredTunnelModeSafely()
-                startTrafficPolling()
-                refreshAllSafely()
-            } else {
-                stopTrafficPolling()
-                refreshPreviewStateSafely()
-            }
-            if (owner == RuntimeOwner.RootTun) {
-                scheduleRootTunBootstrap()
-            }
+    suspend fun startProxy(request: RuntimeStartRequest) {
+        preview.stop()
+        try {
+            session.start(request)
+        } catch (error: Throwable) {
+            resumePreviewWhenEligible()
+            throw error
         }
     }
 
-    private suspend fun reconcileAndRefreshRuntimeState() {
-        reconcileRuntimeState()
-        if (_runtimeSnapshot.value.phase == RuntimePhase.Running) {
-            refreshAllSafely()
+    suspend fun startProxy(mode: RunMode = networkSettingsStorage.runMode.value) =
+        startProxy(RuntimeStartRequest(mode = mode))
+
+    suspend fun stopProxy(request: RuntimeStopRequest) {
+        try {
+            session.stop(request)
+        } finally {
+            resumePreviewWhenEligible()
+        }
+    }
+
+    suspend fun stopProxy(reason: String? = null) = stopProxy(RuntimeStopRequest(reason = reason))
+
+    suspend fun selectProxy(group: String, proxyName: String): Boolean =
+        if (nodeSession.value.source == NodeDataSource.Active) {
+            groups.selectProxy(group, proxyName)
         } else {
-            refreshPreviewStateSafely()
+            false
+        }
+
+    suspend fun healthCheck(
+        group: String,
+        onProgress: ProxyDelayTestProgressCallback? = null,
+    ) {
+        when (nodeSession.value.source) {
+            NodeDataSource.Active -> groups.healthCheck(group, onProgress)
+            NodeDataSource.Preview -> preview.healthCheck(group, onProgress)
+            NodeDataSource.None -> Unit
         }
     }
 
-    private fun launchPreviewWarmup(): Job {
-        return scope.launch {
-            runCatching { refreshProxyGroups() }
-                .onFailure { error -> Timber.d(error, "Warm up proxy groups skipped") }
+    suspend fun healthCheckAll(onProgress: ProxyDelayTestProgressCallback? = null) {
+        when (nodeSession.value.source) {
+            NodeDataSource.Active -> groups.healthCheckAll(onProgress)
+            NodeDataSource.Preview -> preview.healthCheckAll(onProgress)
+            NodeDataSource.None -> Unit
         }
     }
 
-    suspend fun startProxy(mode: ProxyMode = networkSettingsStorage.proxyMode.value) {
-        Timber.i("Start proxy: mode=$mode")
-        ServiceClient.connect(appContext)
-
-        val activeProfile = ServiceClient.profile().queryActive()
-        check(activeProfile != null) { "No profile selected" }
-
-        if (mode == ProxyMode.Tun) {
-            val vpnIntent = VpnService.prepare(context)
-            if (vpnIntent != null) {
-                throw VpnPermissionRequired(vpnIntent)
-            }
+    suspend fun healthCheckProxy(proxyName: String): Int =
+        when (nodeSession.value.source) {
+            NodeDataSource.Active -> groups.healthCheckProxy(proxyName)
+            NodeDataSource.Preview -> preview.healthCheckProxy(proxyName)
+            NodeDataSource.None -> 0
         }
-
-        operationMutex.withLock {
-            val targetOwner = ProxyRuntimeOwnership.ownerForMode(mode)
-            val currentOwner = detectActiveOwner().takeIf { it != RuntimeOwner.None } ?: _runtimeSnapshot.value.owner
-            if (currentOwner != RuntimeOwner.None) {
-                stopProxyInternal(targetMode = mode, completeImmediately = true)
-            }
-
-            val generation = nextGeneration()
-
-            clearRuntimeState(resetGroups = false)
-            _currentProfile.value = activeProfile
-            publishRuntimeSnapshot(
-                ProxyRuntimeOwnership.startingSnapshot(
-                    owner = targetOwner,
-                    targetMode = mode,
-                    profile = activeProfile,
-                    generation = generation,
-                ),
-            )
-
-            runCatching {
-                runtimeControl.start(targetOwner, mode)
-            }.onFailure { error ->
-                clearRuntimeState(resetGroups = false)
-                publishRuntimeSnapshot(
-                    RuntimeStateMapper.idleSnapshot(
-                        configuredMode = mode,
-                        generation = generation,
-                        lastError = error.message,
-                    ),
-                )
-                stopTrafficPolling()
-                scope.launch { refreshPreviewStateSafely() }
-                throw error
-            }
-            if (targetOwner == RuntimeOwner.RootTun) {
-                applyRootTunStatus(RootTunStatus(state = com.github.yumelira.yumebox.service.root.RootTunState.Starting))
-                scheduleRootTunBootstrap()
-                handleRuntimeStarted(forceOwner = RuntimeOwner.RootTun)
-            }
-        }
-    }
-
-    suspend fun stopProxy(mode: ProxyMode? = null) {
-        val targetMode = mode ?: networkSettingsStorage.proxyMode.value
-
-        operationMutex.withLock {
-            stopProxyInternal(targetMode)
-        }
-    }
-
-    suspend fun queryProxyGroupNames(excludeNotSelectable: Boolean = false): List<String> {
-        if (_runtimeSnapshot.value.owner == RuntimeOwner.RootTun) {
-            return RootTunController.queryProxyGroupNames(appContext, excludeNotSelectable)
-        }
-        connectCurrentBackend()
-        return ServiceClient.clash().queryProxyGroupNames(excludeNotSelectable)
-    }
-
-    suspend fun queryProfileProxyGroups(excludeNotSelectable: Boolean = false): List<ProxyGroup> {
-        connectCurrentBackend()
-        return ServiceClient.clash().queryProfileProxyGroups(excludeNotSelectable)
-    }
-
-    suspend fun queryProxyGroup(name: String, sort: ProxySort = ProxySort.Default): ProxyGroup {
-        if (_runtimeSnapshot.value.owner == RuntimeOwner.RootTun) {
-            return RootTunController.queryProxyGroup(appContext, name, sort)
-        }
-        connectCurrentBackend()
-        return ServiceClient.clash().queryProxyGroup(name, sort)
-    }
-
-    suspend fun selectProxy(group: String, proxyName: String): Boolean {
-        Timber.d("Select proxy: group=$group proxy=$proxyName")
-        if (!_runtimeSnapshot.value.running) {
-            return selectProxyForNextStart(group, proxyName)
-        }
-
-        val ok = if (_runtimeSnapshot.value.owner == RuntimeOwner.RootTun) {
-            RootTunController.patchSelector(appContext, group, proxyName)
-        } else {
-            connectCurrentBackend()
-            ServiceClient.clash().patchSelector(group, proxyName)
-        }
-        if (ok) {
-            PollingTimers.awaitTick(
-                PollingTimerSpecs.dynamic(
-                    name = "proxy_select_refresh",
-                    intervalMillis = 200L,
-                    initialDelayMillis = 200L,
-                ),
-            )
-            refreshProxyGroup(group)
-            scheduleRuntimeProxyGroupsRefresh(PROXY_SELECT_FULL_REFRESH_DELAY_MS)
-        }
-        return ok
-    }
-
-    private suspend fun selectProxyForNextStart(group: String, proxyName: String): Boolean {
-        if (group.isBlank() || proxyName.isBlank()) return false
-        if (_proxyGroups.value.isEmpty()) {
-            refreshProxyGroups()
-        }
-        val targetGroup = _proxyGroups.value.firstOrNull { it.name == group } ?: return false
-        if (targetGroup.type != Proxy.Type.Selector) return false
-        if (targetGroup.proxies.none { it.name == proxyName }) return false
-
-        connectCurrentBackend()
-        val activeProfile = ServiceClient.profile().queryActive() ?: return false
-        SelectionDao.upsertManualSelection(activeProfile.uuid, group, proxyName)
-        val updatedGroups = updateCachedProxyGroup(targetGroup.copy(now = proxyName))
-        publishProxyGroups(updatedGroups, cacheForPreview = true, mode = proxyDisplaySettingsStorage.proxyMode.value)
-        return true
-    }
-
-    suspend fun healthCheck(group: String) {
-        Timber.d("Health check request: group=%s", group)
-        if (_runtimeSnapshot.value.owner == RuntimeOwner.RootTun) {
-            RootTunController.healthCheck(appContext, group)
-        } else {
-            connectCurrentBackend()
-            ServiceClient.clash().healthCheck(group)
-        }
-        Timber.d("Health check dispatched: group=%s", group)
-    }
-
-    suspend fun healthCheckAll() {
-        Timber.d("Health check all request")
-        if (_runtimeSnapshot.value.owner == RuntimeOwner.RootTun) {
-            RootTunController.queryAllProxyGroups(appContext, excludeNotSelectable = false)
-                .map { it.name }
-                .forEach { groupName ->
-                    RootTunController.healthCheck(appContext, groupName)
-                    scheduleRuntimeGroupRefresh(groupName, PollingTimerSpecs.ProxyHealthcheckRefresh.intervalMillis)
-                }
-        } else {
-            connectCurrentBackend()
-            Clash.healthCheckAll()
-        }
-        scheduleRuntimeProxyGroupsRefresh(PollingTimerSpecs.ProxyHealthcheckRefresh.intervalMillis)
-    }
-
-    suspend fun healthCheckProxy(group: String, proxyName: String): Int {
-        Timber.d("Health check proxy request: group=%s proxy=%s", group, proxyName)
-        val delay = if (_runtimeSnapshot.value.owner == RuntimeOwner.RootTun) {
-            RootTunController.healthCheckProxy(appContext, group, proxyName).toIntOrNull() ?: 0
-        } else {
-            connectCurrentBackend()
-            ServiceClient.clash().healthCheckProxy(group, proxyName)
-        }
-        Timber.d("Health check proxy done: group=%s proxy=%s delay=%s", group, proxyName, delay)
-        return delay
-    }
-
-    suspend fun queryTunnelState(): TunnelState {
-        if (_runtimeSnapshot.value.owner == RuntimeOwner.RootTun) {
-            return RootTunController.queryTunnelState(appContext)
-        }
-        connectCurrentBackend()
-        return ServiceClient.clash().queryTunnelState()
-    }
-
-    suspend fun switchPreferredTunnelMode(mode: TunnelState.Mode) {
-        proxyDisplaySettingsStorage.proxyMode.set(mode)
-        _preferredTunnelMode.value = mode
-
-        cachedProxyGroupsForMode(mode)?.let { cachedGroups ->
-            publishProxyGroups(cachedGroups, cacheForPreview = false, mode = mode)
-        } ?: run {
-            _proxyGroups.value = emptyList()
-            lastProxyGroupsSummary = null
-            updateResolvedPrimaryNode(emptyList())
-        }
-        if (_runtimeSnapshot.value.running) {
-            setTunnelMode(mode)
-            refreshAll()
-        } else {
-            refreshPreviewStateSafely()
-        }
-    }
-
-    suspend fun setTunnelMode(mode: TunnelState.Mode): Boolean {
-        if (!_runtimeSnapshot.value.running) return false
-        val ok = if (_runtimeSnapshot.value.owner == RuntimeOwner.RootTun) {
-            RootTunController.setTunnelMode(appContext, mode)
-        } else {
-            connectCurrentBackend()
-            ServiceClient.clash().setTunnelMode(mode)
-        }
-        if (ok) {
-            closeRuntimeConnectionsSafely()
-            scheduleRuntimeProxyGroupsRefresh(PROXY_SELECT_FULL_REFRESH_DELAY_MS)
-        }
-        return ok
-    }
 
     suspend fun queryConnections(): ConnectionSnapshot {
-        if (!_runtimeSnapshot.value.running) {
+        if (!session.snapshotValue().running) {
             return ConnectionSnapshot()
         }
-        return if (_runtimeSnapshot.value.owner == RuntimeOwner.RootTun) {
-            RootTunController.queryConnections(appContext)
-        } else {
-            connectCurrentBackend()
-            ServiceClient.clash().queryConnections()
-        }
+        return coreOps.queryConnections()
     }
 
-    suspend fun queryTrafficTotal(): Long {
-        if (!_runtimeSnapshot.value.running) {
-            _trafficTotal.value = 0L
-            return 0L
-        }
-        val traffic = if (_runtimeSnapshot.value.owner == RuntimeOwner.RootTun) {
-            RootTunController.queryTrafficTotal(appContext)
-        } else {
-            connectCurrentBackend()
-            ServiceClient.clash().queryTrafficTotal()
-        }
-        _trafficTotal.value = traffic
-        updateTrafficReady()
-        return traffic
+    suspend fun queryTrafficTotal(): Long = session.queryTrafficTotal {
+        coreOps.queryTrafficTotal()
     }
 
-    suspend fun queryTrafficNow(): Long {
-        if (!_runtimeSnapshot.value.running) {
-            _trafficNow.value = 0L
-            return 0L
-        }
-        val traffic = if (_runtimeSnapshot.value.owner == RuntimeOwner.RootTun) {
-            RootTunController.queryTrafficNow(appContext)
-        } else {
-            connectCurrentBackend()
-            ServiceClient.clash().queryTrafficNow()
-        }
-        _trafficNow.value = traffic
-        updateTrafficReady()
-        return traffic
-    }
-
-    suspend fun reloadCurrentProfile(): Result<Unit> {
-        return runCatching {
-            val profileManager = ServiceClient.profile()
-            val currentProfile = profileManager.queryActive()
-            if (currentProfile != null) {
-                profileManager.setActive(currentProfile)
-                _currentProfile.value = currentProfile
-                PollingTimers.awaitTick(
-                    PollingTimerSpecs.dynamic(
-                        name = "runtime_profile_reload_refresh",
-                        intervalMillis = 600L,
-                        initialDelayMillis = 600L,
-                    ),
-                )
-                refreshAll()
-            }
-        }
-    }
-
-    fun updateServiceState(isRunning: Boolean) {
-        _isRunning.value = isRunning
-    }
+    suspend fun queryTrafficNow(): Long = session.queryTrafficNow { coreOps.queryTrafficNow() }
 
     suspend fun refreshProxyGroups() {
-        refreshProxyGroupsMutex.withLock {
-            val snapshot = _runtimeSnapshot.value
-            val requestedMode = proxyDisplaySettingsStorage.proxyMode.value
-            var missingLocalRuntime = false
-            val groups = withContext(Dispatchers.IO) {
-                runCatching {
-                    if (!snapshot.running) {
-                        return@runCatching queryPreviewProxyGroups()
-                    }
-
-                    if (snapshot.owner == RuntimeOwner.RootTun && !isRootSessionActive()) {
-                        error("RootTun runtime not ready")
-                    }
-
-                    if (snapshot.owner == RuntimeOwner.RootTun) {
-                        RootTunController.queryAllProxyGroups(
-                            context = appContext,
-                            excludeNotSelectable = false,
-                        ).map(::toProxyGroupInfo)
-                    } else {
-                        connectCurrentBackend()
-                        ServiceClient.clash().queryAllProxyGroups(excludeNotSelectable = false).map(::toProxyGroupInfo)
-                    }
-                }.getOrElse { error ->
-                    Timber.e(error, "Failed to refresh proxy groups")
-                    missingLocalRuntime = isMissingLocalRuntime(snapshot)
-                    null
-                }
-            }
-
-            if (groups != null) {
-                if (snapshot.phase == RuntimePhase.Running) {
-                    syncObservedRuntimeSelections(groups)
-                }
-                val normalizedGroups = groupsForMode(requestedMode, groups)
-                val groupsToPublish = normalizedGroups.ifEmpty {
-                    if (!snapshot.running) fallbackPreviewGroups(snapshot, requestedMode).orEmpty() else emptyList()
-                }
-                if (proxyDisplaySettingsStorage.proxyMode.value == requestedMode) {
-                    publishProxyGroups(
-                        groups = groupsToPublish,
-                        cacheForPreview = normalizedGroups.isNotEmpty(),
-                        mode = requestedMode,
-                    )
-                }
-            } else if (missingLocalRuntime) {
-                handleMissingLocalRuntime(snapshot, "runtime backend unavailable")
-            } else if (!snapshot.running) {
-                fallbackPreviewGroups(snapshot, requestedMode)?.let { cached ->
-                    if (proxyDisplaySettingsStorage.proxyMode.value == requestedMode) {
-                        publishProxyGroups(cached, cacheForPreview = false, mode = requestedMode)
-                    }
-                }
-            }
+        if (shouldUsePreviewRuntime()) {
+            preview.ensureRunning()
+        } else {
+            groups.refreshProxyGroups()
         }
     }
 
     suspend fun refreshProxyGroup(name: String, sort: ProxySort = ProxySort.Default) {
-        if (!_runtimeSnapshot.value.running) {
-            if (_proxyGroups.value.isEmpty()) {
-                refreshProxyGroups()
-            }
-            return
-        }
-
-        refreshProxyGroupsMutex.withLock {
-            val snapshot = _runtimeSnapshot.value
-            val updatedGroup = withContext(Dispatchers.IO) {
-                runCatching {
-                    if (snapshot.owner == RuntimeOwner.RootTun && !isRootSessionActive()) {
-                        error("RootTun runtime not ready")
-                    }
-
-                    if (snapshot.owner == RuntimeOwner.RootTun) {
-                        toProxyGroupInfo(RootTunController.queryProxyGroup(appContext, name, sort))
-                    } else {
-                        connectCurrentBackend()
-                        toProxyGroupInfo(ServiceClient.clash().queryProxyGroup(name, sort))
-                    }
-                }.getOrElse { error ->
-                    Timber.e(error, "Failed to refresh proxy group: %s", name)
-                    null
-                }
-            } ?: return
-
-            val requestedMode = proxyDisplaySettingsStorage.proxyMode.value
-            syncObservedRuntimeSelections(listOf(updatedGroup))
-            val updatedGroups = groupsForMode(requestedMode, updateCachedProxyGroup(updatedGroup))
-            if (proxyDisplaySettingsStorage.proxyMode.value == requestedMode) {
-                publishProxyGroups(updatedGroups, cacheForPreview = true, mode = requestedMode)
-            }
+        if (nodeSession.value.source == NodeDataSource.Preview) {
+            preview.refreshGroup(name, sort)
+        } else {
+            groups.refreshProxyGroup(name, sort)
         }
     }
 
     suspend fun refreshCurrentProfile() {
-        when {
-            _runtimeSnapshot.value.owner == RuntimeOwner.RootTun &&
-                _runtimeSnapshot.value.phase == RuntimePhase.Running -> {
-                val status = currentRootTunStatus()
-                applyRootTunStatus(status)
-                refreshRootCurrentProfile(status)
-            }
-
-            else -> {
-                runCatching {
-                    val profile = ServiceClient.profile().queryActive()
-                    _currentProfile.value = profile
-                    updateProfileReady(profile)
-                }.onFailure { error ->
-                    Timber.e(error, "Failed to refresh current profile")
-                }
-            }
+        if (isRemoteControllerActive()) {
+            session.setCurrentProfile(null)
+            return
         }
+        runCatching {
+            session.connectBackend()
+            session.setCurrentProfile(RuntimeAccess.profile().queryActive())
+        }
+            .onFailure { error ->
+                if (error is CancellationException) throw error
+                Timber.e(error, "Failed to refresh current profile")
+            }
     }
 
     suspend fun refreshAll() {
         refreshCurrentProfile()
         refreshProxyGroups()
-        if (_runtimeSnapshot.value.phase == RuntimePhase.Running) {
-            queryTrafficNow()
-            queryTrafficTotal()
-        } else {
-            _trafficNow.value = 0L
-            _trafficTotal.value = 0L
-        }
+        queryTrafficNow()
+        queryTrafficTotal()
     }
 
-    private suspend fun stopProxyInternal(targetMode: ProxyMode, completeImmediately: Boolean = false) {
-        val owner = detectActiveOwner().takeIf { it != RuntimeOwner.None } ?: _runtimeSnapshot.value.owner
-        val generation = nextGeneration()
-
-        if (owner == RuntimeOwner.None) {
-            stopRootTunBootstrap()
-            clearRuntimeState(resetGroups = false)
-            publishRuntimeSnapshot(RuntimeStateMapper.idleSnapshot(targetMode, generation = generation))
-            stopTrafficPolling()
-            scope.launch { refreshPreviewStateSafely() }
-            return
-        }
-
-        val previousSnapshot = _runtimeSnapshot.value
-        publishRuntimeSnapshot(
-            previousSnapshot.copy(
-                owner = owner,
-                phase = RuntimePhase.Stopping,
-                targetMode = targetMode,
-                profileReady = false,
-                groupsReady = false,
-                trafficReady = false,
-                lastError = null,
-                generation = generation,
-            ),
-        )
-
-        runCatching {
-            runtimeControl.stop(owner)
-        }.onFailure {
-            publishRuntimeSnapshot(previousSnapshot)
-            throw it
-        }
-        if (owner == RuntimeOwner.RootTun) {
-            stopRootTunBootstrap()
-            applyRootTunStatus(RootTunStatus(state = com.github.yumelira.yumebox.service.root.RootTunState.Stopping))
-        }
-
-        stopTrafficPolling()
-        if (!completeImmediately) {
-            return
-        }
-
-        clearRuntimeState(resetGroups = false)
-        publishRuntimeSnapshot(RuntimeStateMapper.idleSnapshot(targetMode, generation = generation))
-        scope.launch { refreshPreviewStateSafely() }
-    }
-
-    private fun startTrafficPolling() {
-        if (trafficPollingJob?.isActive == true) return
-        trafficPollingJob = scope.launch {
-            var tick = 0
-            PollingTimers.ticks(PollingTimerSpecs.RuntimeTrafficPolling).collect {
-                val snapshot = _runtimeSnapshot.value
-                if (!snapshot.running) {
-                    return@collect
-                }
-
-                runCatching {
-                    queryTrafficNow()
-                    if (tick % TRAFFIC_TOTAL_POLL_TICKS == 0) {
-                        queryTrafficTotal()
-                    }
-                }.onFailure { error ->
-                    Timber.d(error, "Traffic polling skipped")
-                }
-                tick++
-
-                if (tick % RUNTIME_PAYLOAD_REFRESH_TICKS == 0 && shouldRefreshRuntimePayload()) {
-                    refreshAllSafely()
-                }
+    private fun launchPreviewWarmup(): Job = scope.launch {
+        runCatching { refreshProxyGroups() }
+            .onFailure { error ->
+                if (error is CancellationException) throw error
+                Timber.d(error, "Warm up proxy groups skipped")
             }
-        }
-    }
-
-    private fun stopTrafficPolling() {
-        trafficPollingJob?.cancel()
-        trafficPollingJob = null
-    }
-
-    private fun stopProxyGroupSync() {
-        proxyGroupSyncJob?.cancel()
-        proxyGroupSyncJob = null
-    }
-
-    private fun stopRootTunBootstrap() {
-        rootTunBootstrapJob?.cancel()
-        rootTunBootstrapJob = null
-    }
-
-    @SuppressLint("UnspecifiedRegisterReceiverFlag")
-    private fun registerServiceEventReceiver() {
-        val filter = IntentFilter().apply {
-            addAction(actionClashStarted)
-            addAction(actionClashStopped)
-            addAction(actionProfileChanged)
-            addAction(actionProfileLoaded)
-            addAction(actionOverrideChanged)
-            addAction(actionServiceRecreated)
-            addAction(actionRootRuntimeFailed)
-        }
-        runCatching {
-            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
-                appContext.registerReceiver(serviceEventsReceiver, filter, Context.RECEIVER_NOT_EXPORTED)
-            } else {
-                appContext.registerReceiver(serviceEventsReceiver, filter)
-            }
-        }.onFailure { error ->
-            Timber.w(error, "Failed to register service event receiver")
-        }
-    }
-
-    private fun initializeRuntimeSnapshot() {
-        val configuredMode = networkSettingsStorage.proxyMode.value
-        clearLegacyRuntimeCaches()
-        StatusProvider.reconcilePersistedRuntimeState()
-        val persistedRootStatus = rootTunStateStore.snapshot()
-        val shouldBootstrapRootTun = shouldBootstrapRootTunRuntime(persistedRootStatus)
-        val rootStatus = persistedRootStatus.takeIf(::shouldAttachRootTunForegroundService) ?: RootTunStatus()
-        applyRootTunStatus(rootStatus)
-        val owner = ProxyRuntimeOwnership.detectOwner(rootStatus, ::isLocalSessionActive)
-
-        if (owner == RuntimeOwner.None) {
-            clearRuntimeState(resetGroups = false)
-            publishRuntimeSnapshot(RuntimeStateMapper.idleSnapshot(configuredMode))
-            if (shouldBootstrapRootTun) {
-                scheduleRootTunBootstrap()
-            } else {
-                stopRootTunBootstrap()
-            }
-            scope.launch { refreshPreviewStateSafely() }
-            return
-        }
-
-        if (owner != RuntimeOwner.RootTun) {
-            stopRootTunBootstrap()
-        }
-        if (owner == RuntimeOwner.RootTun) {
-            ensureRootTunServiceAttached(rootStatus)
-        }
-
-        publishRuntimeSnapshot(
-            ProxyRuntimeOwnership.activeSnapshot(
-                owner = owner,
-                configuredMode = configuredMode,
-                rootStatus = rootStatus,
-                localPhase = localRuntimePhaseForOwner(owner),
-                localStartedAt = localRuntimeStartedAtForOwner(owner),
-            ),
-        )
-        if (_runtimeSnapshot.value.phase.running) {
-            scope.launch {
-                applyPreferredTunnelModeSafely()
-                startTrafficPolling()
-                refreshAllSafely()
-            }
-        } else {
-            stopTrafficPolling()
-            scope.launch { refreshPreviewStateSafely() }
-        }
-        if (owner == RuntimeOwner.RootTun) {
-            scheduleRootTunBootstrap()
-            scope.launch { reconcileRootTunRuntimeStateSafely() }
-        }
-    }
-
-    private fun detectActiveOwner(): RuntimeOwner {
-        StatusProvider.reconcilePersistedRuntimeState()
-        return ProxyRuntimeOwnership.detectOwner(_rootTunStatus.value, ::isLocalSessionActive)
-    }
-
-    private suspend fun resolveObservedRootTunStatus(): RootTunStatus {
-        val shouldProbeRuntime = shouldBootstrapRootTunRuntime() ||
-            _runtimeSnapshot.value.owner == RuntimeOwner.RootTun
-        if (!shouldProbeRuntime) {
-            return RootTunStatus()
-        }
-
-        return runCatching {
-            RootTunController.queryStatus(appContext)
-        }.onSuccess { status ->
-            rootTunStateStore.updateStatus(status)
-        }.getOrElse { error ->
-            Timber.d(error, "RootTun live status unavailable during runtime reconcile")
-            rootTunStateStore.snapshot()
-        }
-    }
-
-    private fun shouldBootstrapRootTunRuntime(status: RootTunStatus = rootTunStateStore.snapshot()): Boolean {
-        return shouldAttachRootTunForegroundService(status)
-    }
-
-    private fun shouldAttachRootTunForegroundService(status: RootTunStatus): Boolean {
-        return status.state.isActive || status.runtimeReady
-    }
-
-    private fun isRootSessionActive(): Boolean {
-        val status = _rootTunStatus.value
-        return status.state.isActive || status.runtimeReady
-    }
-
-    private fun isLocalSessionActive(mode: ProxyMode?): Boolean {
-        if (mode == null) return false
-        return StatusProvider.isRuntimeActive(mode)
-    }
-
-    private fun localRuntimePhaseForOwner(owner: RuntimeOwner): LocalRuntimePhase {
-        val localMode = localModeForOwner(owner) ?: return LocalRuntimePhase.Idle
-        return StatusProvider.queryRuntimePhase(localMode)
-    }
-
-    private fun localRuntimeStartedAtForOwner(owner: RuntimeOwner): Long? {
-        val localMode = localModeForOwner(owner) ?: return null
-        return StatusProvider.queryRuntimeStartedAt(localMode)
-            ?: _runtimeSnapshot.value.startedAt?.takeIf { _runtimeSnapshot.value.owner == owner }
-    }
-
-    private fun localModeForOwner(owner: RuntimeOwner): ProxyMode? {
-        return when (owner) {
-            RuntimeOwner.LocalTun -> ProxyMode.Tun
-            RuntimeOwner.LocalHttp -> ProxyMode.Http
-            RuntimeOwner.RootTun,
-            RuntimeOwner.None,
-                -> null
-        }
-    }
-
-    private suspend fun handleRuntimeStarted(forceOwner: RuntimeOwner? = null) {
-        val currentSnapshot = _runtimeSnapshot.value
-        val owner = forceOwner
-            ?: currentSnapshot.owner.takeIf { it != RuntimeOwner.None }
-            ?: detectActiveOwner()
-        if (owner == RuntimeOwner.None) return
-
-        publishRuntimeSnapshot(
-            ProxyRuntimeOwnership.startedSnapshot(
-                current = currentSnapshot,
-                owner = owner,
-                configuredMode = networkSettingsStorage.proxyMode.value,
-            ),
-        )
-        applyPreferredTunnelModeSafely()
-        startTrafficPolling()
-        refreshAllSafely()
-    }
-
-    private suspend fun applyPreferredTunnelModeSafely() {
-        val preferredMode = proxyDisplaySettingsStorage.proxyMode.value
-        _preferredTunnelMode.value = preferredMode
-        runCatching {
-            if (_runtimeSnapshot.value.owner == RuntimeOwner.RootTun) {
-                RootTunController.setTunnelMode(appContext, preferredMode)
-            } else {
-                connectCurrentBackend()
-                ServiceClient.clash().setTunnelMode(preferredMode)
-            }
-        }.onFailure { error ->
-            Timber.d(error, "Apply preferred tunnel mode skipped")
-        }
-    }
-
-    private suspend fun handleRuntimeStopped(reason: String?) {
-        val configuredMode = networkSettingsStorage.proxyMode.value
-        val generation = nextGeneration()
-        stopRootTunBootstrap()
-
-        if (!isRootSessionActive()) {
-            val status = rootTunStateStore.snapshot()
-            if (status.state.isActive) {
-                rootTunStateStore.markIdle(reason ?: status.lastError)
-            }
-            applyRootTunStatus(rootTunStateStore.snapshot())
-        }
-
-        clearRuntimeState(resetGroups = false)
-        publishRuntimeSnapshot(
-            RuntimeStateMapper.idleSnapshot(
-                configuredMode = configuredMode,
-                generation = generation,
-                lastError = reason,
-            ),
-        )
-        stopTrafficPolling()
-        scope.launch { refreshPreviewStateSafely() }
-    }
-
-    private fun handleRuntimeFailure(error: String?) {
-        val generation = nextGeneration()
-        stopRootTunBootstrap()
-        if (!isRootSessionActive()) {
-            rootTunStateStore.markIdle(error)
-            applyRootTunStatus(rootTunStateStore.snapshot())
-        }
-        clearRuntimeState(resetGroups = false)
-        publishRuntimeSnapshot(
-            RuntimeStateMapper.idleSnapshot(
-                configuredMode = networkSettingsStorage.proxyMode.value,
-                generation = generation,
-                lastError = error ?: "root runtime failed",
-            ),
-        )
-        stopTrafficPolling()
-        scope.launch { refreshPreviewStateSafely() }
     }
 
     private suspend fun refreshAllSafely() {
-        if (_runtimeSnapshot.value.phase != RuntimePhase.Running) {
-            return
-        }
+        if (!session.snapshotValue().servesNodes) return
         runCatching { refreshAll() }
-            .onFailure { error -> Timber.d(error, "Refresh runtime data skipped") }
+            .onFailure { error ->
+                if (error is CancellationException) throw error
+                Timber.d(error, "Refresh runtime data skipped")
+            }
     }
 
     private suspend fun refreshPreviewStateSafely() {
         runCatching {
             refreshCurrentProfile()
-            refreshProxyGroups()
-        }.onFailure { error ->
-            Timber.d(error, "Refresh preview data skipped")
+            resumePreviewWhenEligible()
         }
-    }
-
-    private fun shouldRefreshRuntimePayload(): Boolean {
-        val snapshot = _runtimeSnapshot.value
-        return snapshot.phase == RuntimePhase.Running &&
-            (!snapshot.profileReady || !snapshot.groupsReady || _proxyGroups.value.isEmpty() || _currentProfile.value == null)
+            .onFailure { error ->
+                if (error is CancellationException) throw error
+                Timber.d(error, "Refresh preview data skipped")
+            }
     }
 
     private fun observeProxyGroupSyncPriority() {
         scope.launch {
-            combine(_runtimeSnapshot, syncPriorityRequests) { snapshot, requests ->
-                resolveEffectiveProxyGroupSyncPriority(snapshot, requests)
-            }.distinctUntilChanged().collect { priority ->
-                restartProxyGroupSyncLoop(priority)
-            }
+            combine(
+                session.runtimeSnapshot,
+                syncPriorityRequests,
+                AppVisibilityTracker.isForeground,
+            ) { snapshot, requests, isForeground ->
+                    resolveEffectiveProxyGroupSyncPriority(snapshot, requests, isForeground)
+                }
+                .distinctUntilChanged()
+                .collect { priority -> session.startGroupPolling(priority) }
         }
     }
+
+    private fun observeAppVisibility() {
+        scope.launch {
+            AppVisibilityTracker.isForeground
+                .collect { isForeground ->
+                    if (isForeground) {
+                        session.reconcile()
+                    } else {
+                        session.stopTrafficPolling()
+                    }
+                }
+        }
+    }
+
+    private fun observePreviewRuntime() {
+        scope.launch {
+            combine(
+                    AppVisibilityTracker.isForeground,
+                    session.runtimeSnapshot,
+                ) { foreground, snapshot ->
+                    foreground to snapshot
+                }
+                .collectLatest { (foreground, snapshot) ->
+                    val realCoreOwnsRuntime =
+                        snapshot.phase.isActiveOrStopping ||
+                            snapshot.owner == RuntimeOwner.RemoteController
+                    when {
+                        !foreground || realCoreOwnsRuntime -> preview.stop()
+                        !preview.hasActiveProfile() -> preview.reset()
+                        else ->
+                            runCatching { preview.ensureRunning() }
+                                .onFailure { error ->
+                                    if (error is CancellationException) throw error
+                                    Timber.d(error, "Preview runtime unavailable")
+                                }
+                    }
+                }
+        }
+    }
+
+    private fun observeNodeSession() {
+        scope.launch {
+            combine(
+                    session.currentProfile,
+                    session.runtimeSnapshot,
+                    groups.groups,
+                    preview.state,
+                ) { profile, snapshot, activeGroups, previewState ->
+                    NodeInputs(profile != null, snapshot, activeGroups, previewState.groups, previewState.ready)
+                }
+                .collect { input ->
+                    val previewGroups = input.previewGroups.map(ProxyGroup::toInfo)
+                    when {
+                        input.activeGroups.isNotEmpty() && input.snapshot.servesNodes ->
+                            publishNodeSession(NodeDataSource.Active, input.activeGroups)
+                        input.previewReady && previewGroups.isNotEmpty() ->
+                            publishNodeSession(NodeDataSource.Preview, previewGroups)
+                        !input.hasProfile && input.snapshot.owner != RuntimeOwner.RemoteController ->
+                            _nodeSession.value = NodeSessionState()
+                        _nodeSession.value.everReady ->
+                            _nodeSession.value = _nodeSession.value.copy(available = false)
+                    }
+                }
+        }
+    }
+
+    private suspend fun resumePreviewWhenEligible() {
+        if (AppVisibilityTracker.isForeground.value && shouldUsePreviewRuntime()) {
+            preview.ensureRunning()
+        }
+    }
+
+    /** The first node refresh happens before [NodeDataSource.Preview] can be published. */
+    private fun shouldUsePreviewRuntime(): Boolean =
+        !session.snapshotValue().phase.isActiveOrStopping &&
+            !session.isRemoteControllerActive() &&
+            preview.hasActiveProfile()
+
+    /** Callers only publish non-empty groups. */
+    private fun publishNodeSession(source: NodeDataSource, nodeGroups: List<ProxyGroupInfo>) {
+        if (source != lastNodeSource) {
+            lastNodeSource = source
+            delayStore.publish(nodeGroups)
+        }
+        _nodeSession.value =
+            NodeSessionState(source = source, groups = nodeGroups, available = true, everReady = true)
+    }
+
+    private data class NodeInputs(
+        val hasProfile: Boolean,
+        val snapshot: RuntimeSnapshot,
+        val activeGroups: List<ProxyGroupInfo>,
+        val previewGroups: List<ProxyGroup>,
+        val previewReady: Boolean,
+    )
 
     private fun resolveEffectiveProxyGroupSyncPriority(
         snapshot: RuntimeSnapshot,
         requests: Map<String, ProxyGroupSyncPriority>,
+        isForeground: Boolean,
     ): ProxyGroupSyncPriority {
-        if (snapshot.phase != RuntimePhase.Running) {
-            return ProxyGroupSyncPriority.OFF
-        }
-        val requested = requests.values.maxByOrNull { it.ordinal } ?: ProxyGroupSyncPriority.OFF
-        return if (requested.ordinal > ProxyGroupSyncPriority.SLOW.ordinal) requested else ProxyGroupSyncPriority.SLOW
-    }
-
-    private fun restartProxyGroupSyncLoop(priority: ProxyGroupSyncPriority) {
-        if (activeProxyGroupSyncPriority == priority && proxyGroupSyncJob?.isActive == true) {
-            return
-        }
-        activeProxyGroupSyncPriority = priority
-        stopProxyGroupSync()
-        if (priority == ProxyGroupSyncPriority.OFF) {
-            return
-        }
-
-        val timerSpec = when (priority) {
-            ProxyGroupSyncPriority.FAST -> PollingTimerSpecs.RuntimeProxyGroupSyncFast
-            ProxyGroupSyncPriority.SLOW -> PollingTimerSpecs.RuntimeProxyGroupSyncSlow
-            ProxyGroupSyncPriority.OFF -> return
-        }
-        proxyGroupSyncJob = scope.launch {
-            PollingTimers.ticks(timerSpec).collect {
-                refreshRuntimeProxyGroupsSafely()
-            }
-        }
-    }
-
-    private suspend fun refreshRuntimeProxyGroupsSafely() {
-        if (_runtimeSnapshot.value.phase != RuntimePhase.Running) {
-            return
-        }
-        runCatching { refreshProxyGroups() }
-            .onFailure { error -> Timber.d(error, "Runtime proxy group sync skipped") }
-    }
-
-    private fun scheduleRuntimeGroupRefresh(groupName: String, delayMillis: Long = 0L) {
-        if (groupName.isBlank()) return
-        scope.launch {
-            awaitDelay(delayMillis, "runtime_proxy_group_refresh_$groupName")
-            runCatching { refreshProxyGroup(groupName) }
-                .onFailure { error -> Timber.d(error, "Deferred proxy group refresh skipped: %s", groupName) }
-        }
-    }
-
-    private fun scheduleRuntimeProxyGroupsRefresh(delayMillis: Long = 0L) {
-        scope.launch {
-            awaitDelay(delayMillis, "runtime_proxy_groups_refresh")
-            refreshRuntimeProxyGroupsSafely()
-        }
-    }
-
-    private suspend fun awaitDelay(delayMillis: Long, name: String) {
-        if (delayMillis <= 0L) {
-            return
-        }
-        PollingTimers.awaitTick(
-            PollingTimerSpecs.dynamic(
-                name = name,
-                intervalMillis = delayMillis,
-                initialDelayMillis = delayMillis,
-            ),
-        )
-    }
-
-    private suspend fun queryRuntimeProxyGroupInfo(
-        snapshot: RuntimeSnapshot,
-        name: String,
-        sort: ProxySort = ProxySort.Default,
-    ): ProxyGroupInfo? {
-        return runCatching {
-            if (snapshot.owner == RuntimeOwner.RootTun) {
-                toProxyGroupInfo(RootTunController.queryProxyGroup(appContext, name, sort))
-            } else {
-                connectCurrentBackend()
-                toProxyGroupInfo(ServiceClient.clash().queryProxyGroup(name, sort))
-            }
-        }.getOrNull()
-    }
-
-    private suspend fun closeRuntimeConnectionsSafely() {
-        runCatching {
-            if (_runtimeSnapshot.value.owner == RuntimeOwner.RootTun) {
-                RootTunController.closeAllConnections(appContext)
-            } else {
-                connectCurrentBackend()
-                ServiceClient.clash().closeAllConnections()
-            }
-        }.onFailure { error ->
-            Timber.d(error, "Close connections after tunnel mode switch skipped")
-        }
-    }
-
-    private suspend fun currentRootTunStatus(): RootTunStatus {
-        return runCatching { RootTunController.queryStatus(appContext) }
-            .getOrElse { rootTunStateStore.snapshot() }
-    }
-
-    private suspend fun reconcileRootTunRuntimeStateSafely() {
-        runCatching {
-            val persistedStatus = rootTunStateStore.snapshot()
-            if (!shouldAttachRootTunForegroundService(persistedStatus)) {
-                return@runCatching
-            }
-            ensureRootTunServiceAttached(persistedStatus)
-            val status = RootTunController.queryStatus(appContext)
-            rootTunStateStore.updateStatus(status)
-            applyRootTunStatus(status)
-            val configuredMode = networkSettingsStorage.proxyMode.value
-            publishRuntimeSnapshot(
-                ProxyRuntimeOwnership.activeSnapshot(
-                    owner = RuntimeOwner.RootTun,
-                    configuredMode = configuredMode,
-                    rootStatus = status,
-                    localPhase = LocalRuntimePhase.Idle,
-                ),
-            )
-            if (status.state == com.github.yumelira.yumebox.service.root.RootTunState.Running) {
-                applyPreferredTunnelModeSafely()
-                startTrafficPolling()
-                refreshAllSafely()
-            }
-        }.onFailure { error ->
-            Timber.d(error, "RootTun bootstrap reconcile skipped")
-        }
-    }
-
-    private fun ensureRootTunServiceAttached(status: RootTunStatus = rootTunStateStore.snapshot()) {
-        if (!shouldAttachRootTunForegroundService(status)) {
-            return
-        }
-        runCatching { RootTunService.start(appContext) }
-            .onFailure { error -> Timber.d(error, "Attach RootTun foreground service skipped") }
-    }
-
-    private fun scheduleRootTunBootstrap() {
-        if (rootTunBootstrapJob?.isActive == true) return
-        rootTunBootstrapJob = scope.launch {
-            repeat(ROOT_TUN_BOOTSTRAP_ATTEMPTS) { attempt ->
-                val persistedStatus = rootTunStateStore.snapshot()
-                if (!shouldAttachRootTunForegroundService(persistedStatus)) {
-                    return@launch
-                }
-
-                val status = runCatching {
-                    ensureRootTunServiceAttached(persistedStatus)
-                    RootTunController.queryStatus(appContext)
-                }.getOrNull()
-
-                if (status != null) {
-                    rootTunStateStore.updateStatus(status)
-                    applyRootTunStatus(status)
-                    val configuredMode = networkSettingsStorage.proxyMode.value
-                    publishRuntimeSnapshot(
-                        ProxyRuntimeOwnership.activeSnapshot(
-                            owner = RuntimeOwner.RootTun,
-                            configuredMode = configuredMode,
-                            rootStatus = status,
-                            localPhase = LocalRuntimePhase.Idle,
-                        ),
-                    )
-                    if (status.state == com.github.yumelira.yumebox.service.root.RootTunState.Running) {
-                        applyPreferredTunnelModeSafely()
-                        startTrafficPolling()
-                        refreshAllSafely()
-                        return@launch
-                    }
-                }
-
-                if (attempt < ROOT_TUN_BOOTSTRAP_ATTEMPTS - 1) {
-                    delay(ROOT_TUN_BOOTSTRAP_DELAY_MS)
-                }
-            }
-        }
-    }
-
-    private fun clearLegacyRuntimeCaches() {
-        StatusProvider.clearLegacyStateFiles()
-        StatusProvider.reconcilePersistedRuntimeState()
-        val rootStatus = rootTunStateStore.snapshot()
-        if (!rootStatus.state.isActive && !rootStatus.runtimeReady) {
-            runCatching {
-                rootTunStateStore.clear()
-            }
-        }
-        applyRootTunStatus(RootTunStatus())
-        if (!StatusProvider.serviceRunning) {
-            runCatching {
-                MMKV.mmkvWithID("runtime_snapshot", MMKV.MULTI_PROCESS_MODE).clearAll()
-            }
-        }
-    }
-
-    private fun isMissingLocalRuntime(snapshot: RuntimeSnapshot): Boolean {
-        if (snapshot.owner == RuntimeOwner.RootTun || snapshot.owner == RuntimeOwner.None) {
-            return false
-        }
-        val mode = RuntimeStateMapper.modeForOwner(snapshot.owner) ?: return false
-        return !StatusProvider.isLocalRuntimeServiceAlive(mode)
-    }
-
-    private suspend fun handleMissingLocalRuntime(snapshot: RuntimeSnapshot, reason: String?) {
-        val mode = RuntimeStateMapper.modeForOwner(snapshot.owner) ?: return
-        StatusProvider.markRuntimeIdle(mode)
-        clearRuntimeState(resetGroups = false)
-        publishRuntimeSnapshot(
-            RuntimeStateMapper.idleSnapshot(
-                configuredMode = networkSettingsStorage.proxyMode.value,
-                generation = nextGeneration(),
-                lastError = reason,
-            ),
-        )
-        stopTrafficPolling()
-        runCatching { queryPreviewProxyGroups() }
-            .onSuccess { groups ->
-                publishProxyGroups(groups, cacheForPreview = true, mode = proxyDisplaySettingsStorage.proxyMode.value)
-            }
-            .onFailure { error ->
-                Timber.d(error, "Fallback preview refresh skipped after stale runtime reset")
-            }
-    }
-
-    private fun applyRootTunStatus(status: RootTunStatus) {
-        _rootTunStatus.value = status
-    }
-
-    private fun publishRuntimeSnapshot(snapshot: RuntimeSnapshot) {
-        val normalized = snapshot.copy(running = snapshot.phase.running)
-        _runtimeSnapshot.value = normalized
-        _isRunning.value = normalized.running
-    }
-
-    private fun nextGeneration(): Long {
-        generationCounter += 1L
-        return generationCounter
-    }
-
-    private suspend fun connectCurrentBackend() {
-        ServiceClient.connect(appContext)
-    }
-
-    private suspend fun refreshRootCurrentProfile(status: RootTunStatus) {
-        runCatching {
-            connectCurrentBackend()
-            val profile = status.profileUuid
-                ?.takeIf { it.isNotBlank() }
-                ?.let { uuid -> ServiceClient.profile().queryByUUID(UUID.fromString(uuid)) }
-                ?: ServiceClient.profile().queryActive()
-
-            if (profile != null) {
-                _currentProfile.value = profile
-            }
-            updateProfileReady(profile)
-        }.onFailure { error ->
-            Timber.d(error, "Failed to refresh root current profile")
-        }
-    }
-
-    private suspend fun queryPreviewProxyGroups(): List<ProxyGroupInfo> {
-        val activeProfile = ServiceClient.profile().queryActive().also {
-            _currentProfile.value = it
-            updateProfileReady(it)
-        }
-
-        if (activeProfile == null) {
-            return groupsForMode(proxyDisplaySettingsStorage.proxyMode.value, emptyList())
-        }
-        connectCurrentBackend()
-        val groups = ServiceClient.clash()
-            .queryProfileProxyGroups(excludeNotSelectable = false)
-            .map(::toProxyGroupInfo)
-
-        return groupsForMode(
-            mode = proxyDisplaySettingsStorage.proxyMode.value,
-            groups = applyStoredSelectionsToPreviewGroups(activeProfile, groups),
-        )
-    }
-
-    private fun applyStoredSelectionsToPreviewGroups(
-        profile: Profile,
-        groups: List<ProxyGroupInfo>,
-    ): List<ProxyGroupInfo> {
-        if (groups.isEmpty()) return groups
-        val selections = SelectionDao.querySelections(profile.uuid)
-            .associate { it.proxy.trim() to it.selected.trim() }
-            .filterKeys(String::isNotBlank)
-            .filterValues(String::isNotBlank)
-        if (selections.isEmpty()) return groups
-
-        return groups.map { group ->
-            val selectedProxy = selections[group.name] ?: return@map group
-            if (group.type != Proxy.Type.Selector) return@map group
-            if (group.proxies.none { it.name == selectedProxy }) return@map group
-            group.copy(now = selectedProxy)
-        }
-    }
-
-    private fun backfillPreviewCache(groups: List<ProxyGroupInfo>, mode: TunnelState.Mode) {
-        val profile = _currentProfile.value ?: return
-        previewCache.store(
-            profile = profile,
-            excludeNotSelectable = false,
-            overrideSignature = previewOverrideSignature(profile),
-            mode = mode,
-            groups = groups,
-        )
-    }
-
-    private fun fallbackPreviewGroups(snapshot: RuntimeSnapshot, mode: TunnelState.Mode): List<ProxyGroupInfo>? {
-        val profile = _currentProfile.value
-        return previewCache.fallback(
-            phase = snapshot.phase,
-            profile = profile,
-            excludeNotSelectable = false,
-            overrideSignature = profile?.let(::previewOverrideSignature).orEmpty(),
-            mode = mode,
-        )
-    }
-
-    private fun cachedProxyGroupsForMode(mode: TunnelState.Mode): List<ProxyGroupInfo>? {
-        val profile = _currentProfile.value ?: return null
-        return previewCache.cached(
-            profile = profile,
-            excludeNotSelectable = false,
-            overrideSignature = previewOverrideSignature(profile),
-            mode = mode,
-        )
-    }
-
-    private fun groupsForMode(mode: TunnelState.Mode, groups: List<ProxyGroupInfo>): List<ProxyGroupInfo> {
-        return when (mode) {
-            TunnelState.Mode.Direct -> directProxyGroups()
-            TunnelState.Mode.Global -> globalProxyGroups(groups)
-            else -> groups.filterNot { it.name.equals(GLOBAL_GROUP_NAME, ignoreCase = true) }
-                .ifEmpty { groups }
-        }
-    }
-
-    private fun globalProxyGroups(groups: List<ProxyGroupInfo>): List<ProxyGroupInfo> {
-        if (groups.isEmpty()) return groups
-        val globalGroup = groups.firstOrNull { it.name.equals(GLOBAL_GROUP_NAME, ignoreCase = true) }
-            ?.withRememberedGlobalSelection()
-            ?: return emptyList()
-        val otherGroups = groups.filterNot { group ->
-            group.name.equals(GLOBAL_GROUP_NAME, ignoreCase = true) ||
-                group.name.equals(ZAKO_GROUP_NAME, ignoreCase = true)
-        }
-        return buildList(capacity = otherGroups.size + 2) {
-            add(globalGroup)
-            add(zakoProxyGroup())
-            addAll(otherGroups)
-        }
-    }
-
-    private fun zakoProxyGroup(): ProxyGroupInfo {
-        return ProxyGroupInfo(
-            name = ZAKO_GROUP_NAME,
-            type = Proxy.Type.Selector,
-            proxies = emptyList(),
-            now = "",
-            icon = null,
-            hidden = false,
-        )
-    }
-
-    private fun ProxyGroupInfo.withRememberedGlobalSelection(): ProxyGroupInfo {
-        val selected = rememberedGlobalSelection()
-            ?.takeIf { remembered -> proxies.any { it.name == remembered } }
-            ?: now.takeIf { current -> proxies.any { it.name == current } }
-            ?: proxies.firstOrNull()?.name
-            ?: now
-        return copy(now = selected)
-    }
-
-    private fun rememberedGlobalSelection(): String? {
-        val profile = _currentProfile.value ?: return null
-        return SelectionDao.querySelections(profile.uuid)
-            .firstOrNull { it.proxy.equals(GLOBAL_GROUP_NAME, ignoreCase = true) }
-            ?.selected
-            ?.trim()
-            ?.takeIf(String::isNotEmpty)
-    }
-
-    private fun directProxyGroups(): List<ProxyGroupInfo> {
-        val directProxy = Proxy(
-            name = "DIRECT",
-            title = "DIRECT",
-            subtitle = "Direct",
-            type = Proxy.Type.Direct,
-            delay = 0,
-        )
-        return listOf(
-            ProxyGroupInfo(
-                name = "DIRECT",
-                type = Proxy.Type.Selector,
-                proxies = listOf(directProxy),
-                now = directProxy.name,
-                icon = null,
-                hidden = false,
-            ),
-        )
-    }
-
-    private suspend fun syncObservedRuntimeSelections(groups: List<ProxyGroupInfo>) {
-        val snapshot = _runtimeSnapshot.value
-        if (snapshot.phase != RuntimePhase.Running || !snapshot.running || groups.isEmpty()) {
-            return
-        }
-        val profileUuid = _currentProfile.value?.uuid
-            ?: snapshot.profileUuid?.let { raw -> runCatching { UUID.fromString(raw) }.getOrNull() }
-            ?: return
-
-        withContext(Dispatchers.IO) {
-            val rememberedSelections = SelectionDao.querySelections(profileUuid)
-                .associate { selection -> selection.proxy.trim() to selection.selected.trim() }
-            groups.forEach { group ->
-                val groupName = group.name.trim()
-                val selectedProxy = group.now.trim()
-                if (!group.isRestorableSelectorSelection(groupName, selectedProxy)) {
-                    return@forEach
-                }
-                if (rememberedSelections[groupName] == selectedProxy) {
-                    return@forEach
-                }
-                Timber.d(
-                    "Sync observed selector selection: profile=%s group=%s proxy=%s",
-                    profileUuid,
-                    groupName,
-                    selectedProxy,
-                )
-                SelectionDao.upsertManualSelection(profileUuid, groupName, selectedProxy)
-            }
-        }
-    }
-
-    private fun ProxyGroupInfo.isRestorableSelectorSelection(
-        groupName: String,
-        selectedProxy: String,
-    ): Boolean {
-        if (groupName.isEmpty() || selectedProxy.isEmpty()) return false
-        if (type != Proxy.Type.Selector) return false
-        if (groupName.equals(ZAKO_GROUP_NAME, ignoreCase = true)) return false
-        if (groupName.equals("DIRECT", ignoreCase = true) && proxies.size == 1) return false
-        return proxies.any { proxy -> proxy.name == selectedProxy }
-    }
-
-    private fun publishProxyGroups(
-        groups: List<ProxyGroupInfo>,
-        cacheForPreview: Boolean,
-        mode: TunnelState.Mode = proxyDisplaySettingsStorage.proxyMode.value,
-    ) {
-        val summary = summarizeProxyGroups(groups)
-        if (summary != lastProxyGroupsSummary) {
-            _proxyGroups.value = groups
-            lastProxyGroupsSummary = summary
-        }
-        updateGroupsReady(groups.isNotEmpty())
-        updateResolvedPrimaryNode(groups, mode)
-        if (cacheForPreview) {
-            backfillPreviewCache(groups, mode)
-        }
-    }
-
-    private fun toProxyGroupInfo(group: ProxyGroup): ProxyGroupInfo {
-        return ProxyGroupInfo(
-            name = group.name,
-            type = group.type,
-            proxies = group.proxies,
-            now = group.now.trim(),
-            icon = group.icon,
-            hidden = group.hidden,
-        )
-    }
-
-    private fun updateCachedProxyGroup(updated: ProxyGroupInfo): List<ProxyGroupInfo> {
-        val currentGroups = _proxyGroups.value
-        if (currentGroups.isEmpty()) return listOf(updated)
-        if (currentGroups.none { it.name == updated.name }) {
-            return currentGroups + updated
-        }
-        return currentGroups.map { group ->
-            if (group.name == updated.name) updated else group
-        }
-    }
-
-    private fun summarizeProxyGroups(groups: List<ProxyGroupInfo>): String {
-        return groups.joinToString(separator = "\n") { group ->
-            buildString {
-                append(group.name)
-                append('|')
-                append(group.type.name)
-                append('|')
-                append(group.now)
-                append('|')
-                append(group.hidden)
-                append('|')
-                append(group.proxies.size)
-                group.proxies.forEach { proxy ->
-                    append('|')
-                    append(proxy.name)
-                    append(':')
-                    append(proxy.type.name)
-                    append(':')
-                    append(proxy.delay)
-                }
-            }
-        }
-    }
-
-    private fun updateResolvedPrimaryNode(groups: List<ProxyGroupInfo>, mode: TunnelState.Mode = proxyDisplaySettingsStorage.proxyMode.value) {
-        if (_runtimeSnapshot.value.phase != RuntimePhase.Running || groups.isEmpty()) {
-            _resolvedPrimaryNode.value = null
-            return
-        }
-        val mainGroup = when (mode) {
-            TunnelState.Mode.Global -> groups.firstOrNull()
-            else -> groups.find { it.name.equals("Proxy", ignoreCase = true) } ?: groups.firstOrNull()
-        }
-        val targetNode = mainGroup?.now?.trim().orEmpty()
-        _resolvedPrimaryNode.value = targetNode.takeIf(String::isNotEmpty)?.let { resolveProxyNode(it, groups) }
-    }
-
-    private fun resolveProxyNode(
-        nodeName: String,
-        groups: List<ProxyGroupInfo>,
-        visited: MutableSet<String> = linkedSetOf(),
-    ): Proxy? {
-        if (!visited.add(nodeName)) {
-            return null
-        }
-
-        val group = groups.firstOrNull { it.name == nodeName }
-        if (group != null) {
-            val groupNow = group.now.trim()
-            val selectedProxy = group.proxies.firstOrNull { it.name == groupNow }
-            if (selectedProxy != null && !selectedProxy.type.group) {
-                return selectedProxy
-            }
-            return groupNow.takeIf { it.isNotEmpty() && it != nodeName }?.let { resolveProxyNode(it, groups, visited) }
-                ?: selectedProxy
-        }
-
-        groups.forEach { proxyGroup ->
-            val proxy = proxyGroup.proxies.firstOrNull { it.name == nodeName } ?: return@forEach
-            if (proxy.type.group) {
-                val nextGroup = groups.firstOrNull { it.name == proxy.name } ?: return null
-                val nextNode = nextGroup.now.trim()
-                return nextNode.takeIf { it.isNotEmpty() }?.let { resolveProxyNode(it, groups, visited) }
-            }
-            return proxy
-        }
-        return null
-    }
-
-    private fun clearRuntimeState(resetGroups: Boolean = true) {
-        _currentProfile.value = null
-        if (resetGroups) {
-            _proxyGroups.value = emptyList()
-            lastProxyGroupsSummary = null
-        }
-        _resolvedPrimaryNode.value = null
-        _trafficNow.value = 0L
-        _trafficTotal.value = 0L
-    }
-
-    private fun updateProfileReady(profile: Profile?) {
-        val snapshot = _runtimeSnapshot.value
-        publishRuntimeSnapshot(
-            snapshot.copy(
-                profileReady = profile != null,
-                profileUuid = profile?.uuid?.toString() ?: snapshot.profileUuid,
-                profileName = profile?.name ?: snapshot.profileName,
-            ),
-        )
-    }
-
-    private fun updateGroupsReady(ready: Boolean) {
-        publishRuntimeSnapshot(_runtimeSnapshot.value.copy(groupsReady = ready))
-    }
-
-    private fun updateTrafficReady() {
-        if (!_runtimeSnapshot.value.trafficReady) {
-            publishRuntimeSnapshot(_runtimeSnapshot.value.copy(trafficReady = true))
-        }
-    }
-
-    private fun previewOverrideSignature(profile: Profile): String {
-        return _runtimeSnapshot.value.effectiveFingerprint
-            ?.takeIf { it.isNotBlank() }
-            ?: _rootTunStatus.value.overrideFingerprint?.takeIf { it.isNotBlank() }
-            ?: "profile-${profile.updatedAt}"
+        if (!isForeground || !snapshot.servesNodes) return ProxyGroupSyncPriority.OFF
+        return requests.values.maxByOrNull { it.ordinal } ?: ProxyGroupSyncPriority.OFF
     }
 }

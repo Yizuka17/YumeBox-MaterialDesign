@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="tile_proxy_label">YumeBox</string>
+    <string name="wifi_automation_channel_name">Wi-Fi 自动化</string>
+    <string name="wifi_automation_notification_title">Wi-Fi 自动化正在运行</string>
+    <string name="wifi_automation_notification_text">正在识别当前连接的 Wi-Fi 名称</string>
+</resources>

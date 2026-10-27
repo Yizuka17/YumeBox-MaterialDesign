@@ -1,0 +1,69 @@
+name: Prebuild Modules
+
+on:
+  workflow_call:
+    inputs:
+      channel:
+        required: true
+        type: string
+      build_type:
+        description: "Toolchain build variant (release or debug); defaults to release."
+        required: false
+        type: string
+        default: "release"
+
+permissions:
+  contents: read
+
+jobs:
+  prebuild:
+    name: Prebuild Resources & Java (${{ inputs.build_type }})
+    runs-on: macos-26
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v7.0.1
+        with:
+          submodules: recursive
+          fetch-depth: 0
+
+      - name: Setup Java
+        uses: actions/setup-java@v6.1.0
+        with:
+          distribution: zulu
+          java-version: "25"
+
+      - name: Cache Kotlin Toolchain
+        uses: actions/cache@v6.1.0
+        with:
+          path: |
+            ~/Library/Caches/JetBrains/Kotlin
+            .kotlin/yumebox/maven
+            .kotlin/yumebox/gradle-*
+          key: ${{ runner.os }}-toolchain-${{ hashFiles('kotlin', '*module-template.yaml', '**/module.yaml', 'gradle/libs.versions.toml') }}
+          restore-keys: |
+            ${{ runner.os }}-toolchain-
+
+      - name: Setup Android SDK
+        uses: android-actions/setup-android@v4.0.4 # v4.0.4
+        with:
+          packages: "platform-tools platforms;android-37.0 build-tools;37.0.0"
+
+      - name: Configure local.properties
+        run: |
+          echo "sdk.dir=${ANDROID_SDK_ROOT}" > local.properties
+
+      - name: Compile sources & generate resources
+        shell: bash
+        run: |
+          set -eu
+          build_type="${{ inputs.build_type }}"
+          sh kotlin run --module=packaging -- --build-type="${build_type}" --compile-only \
+            -Pupdate.channel="${{ inputs.channel }}"
+
+      - name: Upload Toolchain artifacts
+        uses: actions/upload-artifact@v7.0.2
+        with:
+          name: toolchain-build-cache-${{ inputs.channel }}
+          path: build/toolchain-*
+          if-no-files-found: error
+          compression-level: 0

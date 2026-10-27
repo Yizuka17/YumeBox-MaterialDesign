@@ -1,0 +1,13 @@
+product:
+  type: kmp/lib
+  platforms: [android]
+apply:
+  - //compose.module-template.yaml
+settings:
+  android:
+    namespace: com.github.yumelira.yumebox.common
+dependencies:
+  - //core
+  - $libs.androidx.core.ktx
+  - $libs.timber
+  - com.android.tools.build:apksig:9.2.0

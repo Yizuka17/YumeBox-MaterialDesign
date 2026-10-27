@@ -14,51 +14,29 @@
  * You should have received a copy of the GNU Affero General Public License
  * along with this program. If not, see <https://www.gnu.org/licenses/>.
  *
- * Copyright (c)  YumeLira 2025 - Present
+ * Copyright (c)  YumeYucca 2025 - Present
  *
  */
 
-
-
 package com.github.yumelira.yumebox.di
 
-import com.github.yumelira.yumebox.data.controller.AccessControlController
-import com.github.yumelira.yumebox.data.controller.AcgWallpaperStorage
-import com.github.yumelira.yumebox.data.controller.AppSettingsController
-import com.github.yumelira.yumebox.data.controller.NetworkSettingsController
-import com.github.yumelira.yumebox.data.controller.RuntimeOverrideController
-import com.github.yumelira.yumebox.data.controller.UserSettingsBackupController
-import com.github.yumelira.yumebox.data.controller.ActiveProfileOverrideReloader
-import com.github.yumelira.yumebox.data.controller.AppIdentityResolver
-import com.github.yumelira.yumebox.data.controller.AppTrafficStatisticsCollector
-import com.github.yumelira.yumebox.data.controller.GeoXDataController
-import com.github.yumelira.yumebox.data.store.LogStore
-import com.github.yumelira.yumebox.data.gateway.LogRecordGateway
-import com.github.yumelira.yumebox.data.gateway.NetworkInfoService
-import com.github.yumelira.yumebox.data.store.OverrideConfigProvider
-import com.github.yumelira.yumebox.data.store.OverrideConfigStore
-import com.github.yumelira.yumebox.data.controller.OverrideResolver
-import com.github.yumelira.yumebox.data.controller.OverrideService
-import com.github.yumelira.yumebox.data.store.ProfileBindingProvider
-import com.github.yumelira.yumebox.data.store.ProfileBindingStore
-import com.github.yumelira.yumebox.data.controller.ProvidersController
-import com.github.yumelira.yumebox.data.store.AppSettingsStore
-import com.github.yumelira.yumebox.data.store.FeatureStore
-import com.github.yumelira.yumebox.data.store.MMKVProvider
-import com.github.yumelira.yumebox.data.store.NetworkSettingsStore
-import com.github.yumelira.yumebox.data.store.ProfileLinksStore
-import com.github.yumelira.yumebox.data.store.ProxyDisplaySettingsStore
-import com.github.yumelira.yumebox.data.store.TrafficStatisticsStore
+import com.github.yumelira.yumebox.common.util.AppLanguageManager
+import com.github.yumelira.yumebox.core.model.ConnectionSnapshot
+import com.github.yumelira.yumebox.data.controller.*
+import com.github.yumelira.yumebox.data.network.NetworkInfoService
+import com.github.yumelira.yumebox.data.store.*
+import com.github.yumelira.yumebox.data.store.room.createTrafficStatisticsDao
+import com.github.yumelira.yumebox.domain.model.TrafficData
+import com.github.yumelira.yumebox.runtime.api.RuntimeOwner
 import com.github.yumelira.yumebox.runtime.client.ProfilesRepository
 import com.github.yumelira.yumebox.runtime.client.ProxyFacade
 import com.github.yumelira.yumebox.runtime.client.RuntimeStateMapper
-import com.github.yumelira.yumebox.runtime.client.root.RootTunReloadScheduler
-import com.github.yumelira.yumebox.domain.model.TrafficData
-import com.github.yumelira.yumebox.common.util.AppLanguageManager
+import com.github.yumelira.yumebox.runtime.client.access.RuntimeAccess
 import com.tencent.mmkv.MMKV
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.SupervisorJob
+import kotlinx.coroutines.flow.Flow
 import org.koin.android.ext.koin.androidApplication
 import org.koin.android.ext.koin.androidContext
 import org.koin.core.module.Module
@@ -82,27 +60,36 @@ val appFoundationModule = module {
     single<MMKV>(named("profile_links")) { get<MMKVProvider>().getMMKV("profile_links") }
     single<MMKV>(named("service_cache")) { get<MMKVProvider>().getMMKV("service_cache") }
     single<MMKV>(named("override_bindings")) { get<MMKVProvider>().getMMKV("override_bindings") }
+    single<MMKV>(named("remote_controller")) { get<MMKVProvider>().getMMKV("remote_controller") }
 
     single { AppSettingsStore(get<MMKV>(named("settings"))) }
     single { NetworkSettingsStore(get(named("network_settings"))) }
+    single { RemoteControllerStore(get(named("remote_controller"))) }
     single { ProfileLinksStore(get(named("profile_links"))) }
     single { FeatureStore(get(named("substore"))) }
     single { ProxyDisplaySettingsStore(get(named("proxy_display"))) }
-    single { TrafficStatisticsStore(get(named("traffic_statistics"))) }
-    single { AcgWallpaperStorage(androidContext()) }
-    single { OverrideConfigStore(androidContext()) }
-    single { UserSettingsBackupController(get(), get(), get(), get(), get(), get(), get()) }
-    single { GeoXDataController(androidContext()) }
+
+    single { createTrafficStatisticsDao(androidApplication()) }
+    single { TrafficStatisticsStore(get(named("traffic_statistics")), get()) }
 }
 
 val appDataRuntimeModule = module {
+    single { AcgWallpaperStorage(androidContext()) }
+    single { UserSettingsBackupController(get(), get(), get(), get(), get(), get(), get()) }
+    single { LogStore(androidApplication(), get()) }
+    single {
+        val context = androidContext()
+        GeoXDataController(context) { file, type ->
+            com.github.yumelira.yumebox.runtime.service.core.GeoFileValidator.validate(context, file, type)
+        }
+    }
     single { AppSettingsController(get(), applyLanguage = AppLanguageManager::apply) }
     single {
         val proxyFacade = get<ProxyFacade>()
         NetworkSettingsController(
             store = get(),
             isRunning = { RuntimeStateMapper.isActuallyRunning(proxyFacade.runtimeSnapshot.value) },
-            restartProxy = { mode -> proxyFacade.startProxy(mode) },
+            restartProxy = { mode -> proxyFacade.reloadProxy(mode) },
         )
     }
     single {
@@ -110,11 +97,17 @@ val appDataRuntimeModule = module {
         AccessControlController(
             store = get(),
             isRunning = { proxyFacade.isRunning.value },
-            resolveActiveMode = { RuntimeStateMapper.modeForOwner(proxyFacade.runtimeSnapshot.value.owner) },
-            restartProxy = { mode -> proxyFacade.startProxy(mode) },
+            resolveActiveMode = {
+                proxyFacade.runtimeSnapshot.value.let { snapshot ->
+                    snapshot.runMode.takeIf {
+                        snapshot.owner != RuntimeOwner.None &&
+                            snapshot.owner != RuntimeOwner.RemoteController
+                    }
+                }
+            },
+            restartProxy = { mode -> proxyFacade.reloadProxy(mode) },
         )
     }
-    single { LogStore(androidApplication(), get()) }
     single { NetworkInfoService() }
     single {
         val profilesRepository = get<ProfilesRepository>()
@@ -125,27 +118,27 @@ val appDataRuntimeModule = module {
     }
     single {
         val appContext = androidContext()
-        ProvidersController(appContext) {
-            com.github.yumelira.yumebox.remote.ServiceClient.connect(appContext)
-            com.github.yumelira.yumebox.remote.ServiceClient.clash().queryProviders()
-        }
+        ProvidersController(
+            context = appContext,
+            queryProvidersAction = {
+                RuntimeAccess.connect(appContext)
+                RuntimeAccess.core().queryProviders()
+            },
+            updateProviderAction = { type, name ->
+                RuntimeAccess.connect(appContext)
+                RuntimeAccess.core().updateProvider(type, name)
+            },
+        )
     }
-
-    single<OverrideConfigProvider> { get<OverrideConfigStore>() }
 
     single { ProfileBindingStore(androidContext()) }
     single<ProfileBindingProvider> { get<ProfileBindingStore>() }
 
+    single { OverrideConfigStore(androidContext(), get()) }
+    single<OverrideConfigProvider> { get<OverrideConfigStore>() }
+
     single { OverrideResolver(get(), get()) }
-    single {
-        val appContext = androidContext()
-        OverrideService(appContext, get()) {
-            RootTunReloadScheduler.schedule(
-                appContext,
-                RootTunReloadScheduler.Reason.PROFILE_OVERRIDE_CHANGED,
-            )
-        }
-    }
+    single { OverrideService(androidContext(), get()) }
     single {
         val profilesRepository = get<ProfilesRepository>()
         ActiveProfileOverrideReloader(
@@ -155,31 +148,34 @@ val appDataRuntimeModule = module {
         )
     }
 
-    single { ProxyFacade(androidContext()) }
+    single { ProxyFacade(androidContext(), get(), get()) }
     single { AppIdentityResolver(androidContext()) }
     single { ProfilesRepository(androidContext()) }
     single {
         val proxyFacade = get<ProxyFacade>()
         AppTrafficStatisticsCollector(
-            isRunningFlow = proxyFacade.isRunning,
-            currentProfileId = { proxyFacade.currentProfile.value?.uuid?.toString() },
+            querySource =
+                object : TrafficQuerySource {
+                    override val isRunning: Flow<Boolean> = proxyFacade.isRunning
+
+                    override fun currentProfileId(): String? =
+                        proxyFacade.currentProfile.value?.uuid?.toString()
+
+                    override suspend fun queryTrafficTotal(): TrafficData =
+                        TrafficData.from(proxyFacade.queryTrafficTotal())
+
+                    override suspend fun queryConnections(): ConnectionSnapshot =
+                        proxyFacade.queryConnections()
+
+                    override suspend fun queryActiveProfileId(): String? {
+                        proxyFacade.refreshCurrentProfile()
+                        return proxyFacade.currentProfile.value?.uuid?.toString()
+                    }
+                },
             trafficStatisticsStore = get(),
             appIdentityResolver = get(),
-            queryTrafficTotal = {
-                TrafficData.from(proxyFacade.queryTrafficTotal())
-            },
-            queryConnections = {
-                proxyFacade.queryConnections()
-            },
-            queryActiveProfileId = {
-                proxyFacade.refreshCurrentProfile()
-                proxyFacade.currentProfile.value?.uuid?.toString()
-            },
         )
     }
 }
 
-val coreDiModules: List<Module> = listOf(
-    appFoundationModule,
-    appDataRuntimeModule,
-)
+val coreDiModules: List<Module> = listOf(appFoundationModule, appDataRuntimeModule)

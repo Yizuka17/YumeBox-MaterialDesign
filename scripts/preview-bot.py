@@ -82,7 +82,8 @@ def send_files_via_bot_api():
 
 if __name__ == "__main__":
     try:
-        send_files_via_bot_api()
+        if not send_files_via_bot_api():
+            raise SystemExit(1)
     except Exception as e:
         print(f"[-] Error: {e}")
-        exit(1)
+        raise SystemExit(1)

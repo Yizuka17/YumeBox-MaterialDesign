@@ -47,14 +47,17 @@ object AppLanguageManager {
             when (language) {
                 AppLanguage.System -> LocaleListCompat.getEmptyLocaleList()
                 AppLanguage.Zh -> LocaleListCompat.forLanguageTags("zh-Hans")
-                AppLanguage.ZhTw -> LocaleListCompat.forLanguageTags("zh-Hant-TW")
+                AppLanguage.ZhHant, AppLanguage.ZhTw -> LocaleListCompat.forLanguageTags("zh-Hant-TW")
                 AppLanguage.En -> LocaleListCompat.forLanguageTags("en")
+                AppLanguage.Ja -> LocaleListCompat.forLanguageTags("ja")
+                AppLanguage.Ru -> LocaleListCompat.forLanguageTags("ru")
             },
         )
 
         Locale.setDefault(locale)
         LocaleUtil.setCurrentLocale(locale)
         MLang.updateLocale(locale)
+        com.github.yumelira.yumebox.core.locale.YumeLocaleManager.updateLocale(locale.toLanguageTag())
     }
 
     fun wrap(base: Context): Context {
@@ -73,8 +76,10 @@ object AppLanguageManager {
         return when (language) {
             AppLanguage.System -> systemLocale()
             AppLanguage.Zh -> Locale.SIMPLIFIED_CHINESE
-            AppLanguage.ZhTw -> Locale.TRADITIONAL_CHINESE
+            AppLanguage.ZhHant, AppLanguage.ZhTw -> Locale.TRADITIONAL_CHINESE
             AppLanguage.En -> Locale.ENGLISH
+            AppLanguage.Ja -> Locale.JAPANESE
+            AppLanguage.Ru -> Locale.forLanguageTag("ru")
         }
     }
 

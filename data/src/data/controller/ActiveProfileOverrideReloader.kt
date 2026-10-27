@@ -14,16 +14,14 @@
  * You should have received a copy of the GNU Affero General Public License
  * along with this program. If not, see <https://www.gnu.org/licenses/>.
  *
- * Copyright (c)  YumeLira 2025 - Present
+ * Copyright (c)  YumeYucca 2025 - Present
  *
  */
-
-
 
 package com.github.yumelira.yumebox.data.controller
 
 import com.github.yumelira.yumebox.data.store.ProfileBindingProvider
-import com.github.yumelira.yumebox.service.runtime.entity.Profile
+import com.github.yumelira.yumebox.runtime.api.Profile
 import timber.log.Timber
 
 class ActiveProfileOverrideReloader(
@@ -35,10 +33,7 @@ class ActiveProfileOverrideReloader(
         val activeProfile = queryActiveProfile() ?: return true
         val applied = overrideService.applyOverride(activeProfile.uuid.toString())
         if (!applied) {
-            Timber.e(
-                "Failed to reapply active profile override: profile=%s",
-                activeProfile.uuid,
-            )
+            Timber.e("Failed to reapply active profile override: profile=%s", activeProfile.uuid)
         }
         return applied
     }

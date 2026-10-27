@@ -47,8 +47,8 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.sp
 import com.github.yumelira.yumebox.common.util.LocaleUtil
-import com.github.yumelira.yumebox.data.gateway.IpInfo
-import com.github.yumelira.yumebox.data.gateway.IpMonitoringState
+import com.github.yumelira.yumebox.data.network.IpInfo
+import com.github.yumelira.yumebox.data.network.IpMonitoringState
 import com.github.yumelira.yumebox.presentation.component.CountryFlagCircle
 import com.github.yumelira.yumebox.presentation.theme.UiDp
 import dev.oom_wg.purejoy.mlang.MLang

@@ -30,9 +30,9 @@ import com.github.yumelira.yumebox.core.presentation.LoadableState
 import com.github.yumelira.yumebox.core.util.AutoStartSessionGate
 import com.github.yumelira.yumebox.core.util.PollingTimerSpecs
 import com.github.yumelira.yumebox.core.util.PollingTimers
-import com.github.yumelira.yumebox.data.model.ProxyMode
-import com.github.yumelira.yumebox.data.gateway.IpMonitoringState
-import com.github.yumelira.yumebox.data.gateway.NetworkInfoService
+import com.github.yumelira.yumebox.data.model.RunMode
+import com.github.yumelira.yumebox.data.network.IpMonitoringState
+import com.github.yumelira.yumebox.data.network.NetworkInfoService
 import com.github.yumelira.yumebox.data.store.NetworkSettingsStore
 import com.github.yumelira.yumebox.data.store.ProxyDisplaySettingsStore
 import com.github.yumelira.yumebox.domain.model.ProxyGroupInfo
@@ -41,9 +41,9 @@ import com.github.yumelira.yumebox.runtime.client.ProfilesRepository
 import com.github.yumelira.yumebox.runtime.client.ProxyFacade
 import com.github.yumelira.yumebox.runtime.client.ProxyGroupSyncPriority
 import com.github.yumelira.yumebox.runtime.client.RuntimeStateMapper
-import com.github.yumelira.yumebox.service.root.RootAccessSupport
-import com.github.yumelira.yumebox.service.runtime.entity.Profile
-import com.github.yumelira.yumebox.service.runtime.state.RuntimePhase
+import com.github.yumelira.yumebox.runtime.service.root.RootAccessSupport
+import com.github.yumelira.yumebox.runtime.api.Profile
+import com.github.yumelira.yumebox.runtime.api.RuntimePhase
 import dev.oom_wg.purejoy.mlang.MLang
 import kotlinx.coroutines.*
 import kotlinx.coroutines.channels.BufferOverflow
@@ -98,10 +98,10 @@ class HomeViewModel(
     val currentProfile = proxyFacade.currentProfile
     val trafficNow = proxyFacade.trafficNow
     val proxyGroups = proxyFacade.proxyGroups
-    val tunnelMode: StateFlow<com.github.yumelira.yumebox.core.model.TunnelState.Mode> = proxyFacade.preferredTunnelMode
+    val tunnelMode: StateFlow<com.github.yumelira.yumebox.core.model.TunnelState.Mode> = proxyDisplaySettingsStore.proxyMode.state
 
-    private val _proxyMode = MutableStateFlow(ProxyMode.Tun)
-    val proxyMode: StateFlow<ProxyMode> = _proxyMode.asStateFlow()
+    private val _proxyMode = MutableStateFlow(RunMode.VpnService)
+    val proxyMode: StateFlow<RunMode> = _proxyMode.asStateFlow()
 
     private val _pendingTransition = MutableStateFlow(PendingTransition.None)
     private var pendingStartRequest: PendingStartRequest? = null
@@ -258,7 +258,7 @@ class HomeViewModel(
     private fun syncProxyModeState() {
         viewModelScope.launch {
             runtimeSnapshot
-                .map { RuntimeStateMapper.resolveDisplayMode(it, networkSettingsStore.proxyMode.value) }
+                .map { RuntimeStateMapper.resolveDisplayMode(it, networkSettingsStore.runMode.value) }
                 .distinctUntilChanged()
                 .collect {
                 refreshProxyMode()
@@ -281,7 +281,7 @@ class HomeViewModel(
     }
 
     fun refreshProxyMode() {
-        val configuredMode = networkSettingsStore.proxyMode.value
+        val configuredMode = networkSettingsStore.runMode.value
         _proxyMode.value = RuntimeStateMapper.resolveDisplayMode(runtimeSnapshot.value, configuredMode)
     }
 
@@ -333,12 +333,12 @@ class HomeViewModel(
         return currentProfile.value?.uuid == profileId
     }
 
-    fun startProxy(profileId: String, mode: ProxyMode? = null) {
+    fun startProxy(profileId: String, mode: RunMode? = null) {
         if (!controlState.value.canInteract || controlState.value != HomeProxyControlState.Idle) return
 
         val request = PendingStartRequest(
             profileId = profileId,
-            mode = mode ?: networkSettingsStore.proxyMode.value,
+            mode = mode ?: networkSettingsStore.runMode.value,
         )
         pendingStartRequest = request
         _pendingTransition.value = PendingTransition.Starting
@@ -411,7 +411,7 @@ class HomeViewModel(
                     showError(MLang.Proxy.Testing.Failed.format(MLang.Proxy.Empty.NoNodes))
                     return@launch
                 }
-                proxyFacade.healthCheckProxy(target.groupName, target.proxyName)
+                proxyFacade.healthCheckProxy(target.proxyName)
                 PollingTimers.awaitTick(PollingTimerSpecs.ProxySwitchFeedback)
                 proxyFacade.refreshProxyGroup(target.groupName)
             } catch (e: Exception) {
@@ -513,12 +513,12 @@ class HomeViewModel(
             _proxyMode.value = request.mode
             Timber.d("Home startProxy kickoff: mode=${request.mode} profileId=${request.profileId}")
 
-            if (request.mode == ProxyMode.RootTun) {
-                val rootStatus = RootAccessSupport.evaluateAsync(getApplication())
-                if (!rootStatus.canStartRootTun) {
+            if (request.mode == RunMode.Tun || request.mode == RunMode.Ebpf) {
+                val rootStatus = RootAccessSupport.isGranted()
+                if (!rootStatus) {
                     clearPendingStart()
                     _pendingTransition.value = PendingTransition.None
-                    showError(rootStatus.rootTunBlockedMessage())
+                    showError(MLang.NetworkSettings.Error.RootRequired)
                     return
                 }
             }
@@ -533,7 +533,7 @@ class HomeViewModel(
             }
 
             Timber.i("Home startProxy completed in ${System.currentTimeMillis() - startedAt}ms, mode=${request.mode}")
-        } catch (e: com.github.yumelira.yumebox.remote.VpnPermissionRequired) {
+        } catch (e: com.github.yumelira.yumebox.runtime.api.VpnPermissionRequired) {
             _pendingTransition.value = PendingTransition.AwaitingPermission
             _vpnPrepareIntent.emit(e.intent)
             Timber.i("VPN permission required")
@@ -577,7 +577,7 @@ class HomeViewModel(
 
     private data class PendingStartRequest(
         val profileId: String,
-        val mode: ProxyMode,
+        val mode: RunMode,
     )
 
     private data class CurrentNodeTestTarget(

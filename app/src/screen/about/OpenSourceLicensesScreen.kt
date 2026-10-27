@@ -48,7 +48,7 @@ import com.github.yumelira.yumebox.presentation.component.combinePaddingValues
 import com.github.yumelira.yumebox.presentation.component.rememberStandalonePageMainPadding
 import com.github.yumelira.yumebox.presentation.theme.AppTheme
 import com.mikepenz.aboutlibraries.entity.Library
-import com.mikepenz.aboutlibraries.ui.compose.android.produceLibraries
+import com.mikepenz.aboutlibraries.ui.compose.produceLibraries
 import com.mikepenz.aboutlibraries.ui.compose.util.strippedLicenseContent
 import com.ramcosta.composedestinations.annotation.Destination
 import com.ramcosta.composedestinations.annotation.RootGraph
@@ -68,7 +68,12 @@ fun OpenSourceLicensesScreen(navigator: DestinationsNavigator) {
         navigator.popBackStack()
     }
 
-    val libraries by produceLibraries(R.raw.aboutlibraries)
+    val libraries by produceLibraries {
+        kotlinx.coroutines.withContext(kotlinx.coroutines.Dispatchers.IO) {
+            requireNotNull(com.github.yumelira.yumebox.App::class.java.classLoader?.getResourceAsStream("aboutlibraries.json"))
+                .bufferedReader(Charsets.UTF_8).use { it.readText() }
+        }
+    }
     val libraryItems = remember(libraries) { libraries?.libraries.orEmpty() }
 
     Scaffold(

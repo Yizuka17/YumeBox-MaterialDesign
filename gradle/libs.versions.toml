@@ -1,0 +1,116 @@
+[versions]
+lyricist = "1.9.0"
+soraEditor = "0.24.5"
+composeBom = "2026.09.00"
+desugarJdkLibs = "2.1.5"
+coroutines = "1.11.0"
+serializationJson = "1.12.0"
+annotationJvm = "1.11.0"
+coreKtx = "1.19.1"
+coreSplashscreen = "1.2.0"
+activityCompose = "1.13.0"
+lifecycle = "2.11.0"
+camera = "1.6.2"
+koin = "4.2.2"
+timber = "5.0.1"
+ktor = "3.6.0"
+miuix = "0.9.0"
+haze = "2.0.1"
+sketch4 = "4.7.0"
+mlkitBarcodeScanning = "17.3.0"
+reorderable = "3.1.0"
+aboutLibraries = "15.3.0"
+commonsCompress = "1.28.0"
+javetNodeAndroid = "6.0.2"
+mmkv64 = "2.4.3"
+decompose = "3.5.0"
+hiddenApiBypass = "6.2"
+biometric = "1.4.0-alpha07"
+xz = "1.12"
+shapes = "1.2.1"
+snakeYaml = "v1.18-android"
+libsu = "6.0.0"
+shizuku = "13.1.5"
+animation = "1.12.1"
+room = "2.8.5"
+smaliDexlib2 = "3.0.10"
+
+[libraries]
+mmkv = { module = "com.tencent:mmkv", version.ref = "mmkv64" }
+lyricist = { module = "cafe.adriel.lyricist:lyricist", version.ref = "lyricist" }
+lyricist-processor = { module = "cafe.adriel.lyricist:lyricist-processor", version.ref = "lyricist" }
+desugar-jdk-libs = { module = "com.android.tools:desugar_jdk_libs", version.ref = "desugarJdkLibs" }
+androidx-compose-bom = { module = "androidx.compose:compose-bom", version.ref = "composeBom" }
+androidx-compose-runtime = { module = "androidx.compose.runtime:runtime" }
+androidx-compose-animation = { module = "androidx.compose.animation:animation" }
+androidx-compose-foundation = { module = "androidx.compose.foundation:foundation" }
+androidx-compose-ui = { module = "androidx.compose.ui:ui" }
+androidx-compose-material3 = { module = "androidx.compose.material3:material3" }
+androidx-compose-material-icons-core = { module = "androidx.compose.material:material-icons-core" }
+androidx-compose-ui-tooling-preview = { module = "androidx.compose.ui:ui-tooling-preview" }
+androidx-compose-ui-tooling = { module = "androidx.compose.ui:ui-tooling" }
+androidx-activity-compose = { module = "androidx.activity:activity-compose", version.ref = "activityCompose" }
+androidx-core-ktx = { module = "androidx.core:core-ktx", version.ref = "coreKtx" }
+androidx-core-splashscreen = { module = "androidx.core:core-splashscreen", version.ref = "coreSplashscreen" }
+androidx-annotation-jvm = { module = "androidx.annotation:annotation-jvm", version.ref = "annotationJvm" }
+androidx-biometric = { module = "androidx.biometric:biometric", version.ref = "biometric" }
+decompose = { module = "com.arkivanov.decompose:decompose", version.ref = "decompose" }
+decompose-extensions-compose = { module = "com.arkivanov.decompose:extensions-compose", version.ref = "decompose" }
+androidx-lifecycle-viewmodel = { module = "androidx.lifecycle:lifecycle-viewmodel", version.ref = "lifecycle" }
+androidx-lifecycle-viewmodel-ktx = { module = "androidx.lifecycle:lifecycle-viewmodel-ktx", version.ref = "lifecycle" }
+androidx-lifecycle-viewmodel-compose = { module = "androidx.lifecycle:lifecycle-viewmodel-compose", version.ref = "lifecycle" }
+androidx-lifecycle-runtime-compose = { module = "androidx.lifecycle:lifecycle-runtime-compose", version.ref = "lifecycle" }
+androidx-camera-camera2 = { module = "androidx.camera:camera-camera2", version.ref = "camera" }
+androidx-camera-lifecycle = { module = "androidx.camera:camera-lifecycle", version.ref = "camera" }
+androidx-camera-view = { module = "androidx.camera:camera-view", version.ref = "camera" }
+androidx-camera-core = { module = "androidx.camera:camera-core", version.ref = "camera" }
+androidx-camera-video = { module = "androidx.camera:camera-video", version.ref = "camera" }
+miuix-ui = { module = "top.yukonga.miuix.kmp:miuix-ui", version.ref = "miuix" }
+miuix-preference = { module = "top.yukonga.miuix.kmp:miuix-preference", version.ref = "miuix" }
+miuix-icons = { module = "top.yukonga.miuix.kmp:miuix-icons", version.ref = "miuix" }
+haze = { module = "dev.chrisbanes.haze:haze", version.ref = "haze" }
+haze-blur = { module = "dev.chrisbanes.haze:haze-blur", version.ref = "haze" }
+haze-blur-materials = { module = "dev.chrisbanes.haze:haze-blur-materials", version.ref = "haze" }
+koin-core = { module = "io.insert-koin:koin-core", version.ref = "koin" }
+koin-android = { module = "io.insert-koin:koin-android", version.ref = "koin" }
+koin-androidx-compose = { module = "io.insert-koin:koin-androidx-compose", version.ref = "koin" }
+kotlinx-coroutines-core = { module = "org.jetbrains.kotlinx:kotlinx-coroutines-core", version.ref = "coroutines" }
+kotlinx-coroutines-android = { module = "org.jetbrains.kotlinx:kotlinx-coroutines-android", version.ref = "coroutines" }
+kotlinx-serialization-json = { module = "org.jetbrains.kotlinx:kotlinx-serialization-json", version.ref = "serializationJson" }
+timber = { module = "com.jakewharton.timber:timber", version.ref = "timber" }
+xz = { module = "org.tukaani:xz", version.ref = "xz" }
+smali-dexlib2 = { module = "com.android.tools.smali:smali-dexlib2", version.ref = "smaliDexlib2" }
+mlkit-barcode-scanning = { module = "com.google.mlkit:barcode-scanning", version.ref = "mlkitBarcodeScanning" }
+sketch-compose = { module = "io.github.panpf.sketch4:sketch-compose", version.ref = "sketch4" }
+sketch-http = { module = "io.github.panpf.sketch4:sketch-http", version.ref = "sketch4" }
+sketch-svg = { module = "io.github.panpf.sketch4:sketch-svg", version.ref = "sketch4" }
+sketch-compose-resources = { module = "io.github.panpf.sketch4:sketch-compose-resources", version.ref = "sketch4" }
+sketch-animated-gif = { module = "io.github.panpf.sketch4:sketch-animated-gif", version.ref = "sketch4" }
+sketch-animated-webp = { module = "io.github.panpf.sketch4:sketch-animated-webp", version.ref = "sketch4" }
+sketch-animated-heif = { module = "io.github.panpf.sketch4:sketch-animated-heif", version.ref = "sketch4" }
+sketch-animated-gif-koral = { module = "io.github.panpf.sketch4:sketch-animated-gif-koral", version.ref = "sketch4" }
+reorderable = { module = "sh.calvin.reorderable:reorderable", version.ref = "reorderable" }
+aboutlibraries-core = { module = "com.mikepenz:aboutlibraries-core", version.ref = "aboutLibraries" }
+aboutlibraries-compose = { module = "com.mikepenz:aboutlibraries-compose", version.ref = "aboutLibraries" }
+hiddenapibypass = { module = "org.lsposed.hiddenapibypass:hiddenapibypass", version.ref = "hiddenApiBypass" }
+shapes = { module = "io.github.kyant0:shapes", version.ref = "shapes" }
+snake-yaml = { module = "com.github.bmoliveira:snake-yaml", version.ref = "snakeYaml" }
+commons-compress = { module = "org.apache.commons:commons-compress", version.ref = "commonsCompress" }
+javet-node-android = { module = "com.caoccao.javet:javet-node-android", version.ref = "javetNodeAndroid" }
+ktor-client-core = { module = "io.ktor:ktor-client-core", version.ref = "ktor" }
+ktor-client-android = { module = "io.ktor:ktor-client-android", version.ref = "ktor" }
+ktor-client-okhttp = { module = "io.ktor:ktor-client-okhttp", version.ref = "ktor" }
+ktor-client-content-negotiation = { module = "io.ktor:ktor-client-content-negotiation", version.ref = "ktor" }
+ktor-serialization-kotlinx-json = { module = "io.ktor:ktor-serialization-kotlinx-json", version.ref = "ktor" }
+editor-bom = { module = "io.github.rosemoe:editor-bom", version.ref = "soraEditor" }
+rosemoe-editor = { module = "io.github.rosemoe:editor" }
+rosemoe-language-textmate = { module = "io.github.rosemoe:language-textmate" }
+rosemoe-oniguruma = { module = "io.github.rosemoe:oniguruma-native" }
+libsu-core = { module = "com.github.topjohnwu.libsu:core", version.ref = "libsu" }
+libsu-service = { module = "com.github.topjohnwu.libsu:service", version.ref = "libsu" }
+shizuku-api = { module = "dev.rikka.shizuku:api", version.ref = "shizuku" }
+shizuku-provider = { module = "dev.rikka.shizuku:provider", version.ref = "shizuku" }
+androidx-animation = { group = "androidx.compose.animation", name = "animation", version.ref = "animation" }
+androidx-room-runtime = { module = "androidx.room:room-runtime", version.ref = "room" }
+androidx-room-ktx = { module = "androidx.room:room-ktx", version.ref = "room" }
+androidx-room-compiler = { module = "androidx.room:room-compiler", version.ref = "room" }

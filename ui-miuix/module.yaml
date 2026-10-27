@@ -1,0 +1,15 @@
+product:
+  type: kmp/lib
+  platforms: [android]
+apply:
+  - //compose.module-template.yaml
+settings:
+  android:
+    namespace: com.github.yumelira.yumebox.miuix
+dependencies:
+  - $libs.miuix.ui
+  - $libs.miuix.preference
+  - $libs.miuix.icons
+  - $libs.haze
+  - $libs.haze.blur
+  - top.yukonga.miuix.kmp:miuix-blur-android:0.9.0

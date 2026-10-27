@@ -113,6 +113,7 @@ fun AppSettingsScreen(
 
 @Composable
 private fun AppBehaviorSettingsSection(viewModel: AppSettingsViewModel) {
+    val context = LocalContext.current
     val automaticRestart by viewModel.automaticRestart.state.collectAsState()
     val autoUpdateCurrentProfileOnStart by viewModel.autoUpdateCurrentProfileOnStart.state.collectAsState()
 
@@ -124,6 +125,17 @@ private fun AppBehaviorSettingsSection(viewModel: AppSettingsViewModel) {
             checked = automaticRestart,
             onCheckedChange = viewModel::onAutomaticRestartChange,
         )
+        if (com.github.yumelira.yumebox.common.util.XiaomiAutoStart.isSupported()) {
+            PreferenceArrowItem(
+                title = "系统自启动权限",
+                summary = "打开 HyperOS 自启动设置，允许 YumeBox MD3 在后台启动",
+                onClick = {
+                    if (!com.github.yumelira.yumebox.common.util.XiaomiAutoStart.openSettings(context)) {
+                        context.toast("无法打开系统自启动设置")
+                    }
+                },
+            )
+        }
         PreferenceSwitchItem(
             title = MLang.AppSettings.Behavior.AutoUpdateOnStartTitle,
             summary = MLang.AppSettings.Behavior.AutoUpdateOnStartSummary,
@@ -211,7 +223,7 @@ private fun AppInterfaceSettingsSection(viewModel: AppSettingsViewModel) {
                 MLang.AppSettings.Interface.LanguageTraditionalChinese,
                 MLang.AppSettings.Interface.LanguageEnglish,
             ),
-            values = AppLanguage.entries,
+            values = listOf(AppLanguage.System, AppLanguage.Zh, AppLanguage.ZhTw, AppLanguage.En),
             onValueChange = viewModel::onAppLanguageChange,
         )
         PreferenceSwitchItem(
@@ -279,6 +291,32 @@ private fun AppServiceSettingsSection(viewModel: AppSettingsViewModel) {
 
     Title(MLang.AppSettings.Section.Service)
     Card {
+        if (com.github.yumelira.yumebox.common.util.XiaomiAutoStart.isSupported()) {
+            val settings = org.koin.compose.koinInject<com.github.yumelira.yumebox.data.store.AppSettingsStore>()
+            val islandEnabled by settings.superIslandEnabled.state.collectAsState()
+            var shizukuAvailable by remember {
+                mutableStateOf(com.github.yumelira.yumebox.runtime.service.shizuku.ShizukuManager.isAvailable())
+            }
+            PreferenceSwitchItem(
+                title = "超级岛",
+                summary = "在支持的 HyperOS 系统上显示代理状态和流量",
+                checked = islandEnabled,
+                onCheckedChange = settings.superIslandEnabled::set,
+            )
+            PreferenceArrowItem(
+                title = "Shizuku 授权",
+                summary = if (shizukuAvailable) "已授权" else "用于 HyperOS 超级岛兼容",
+                onClick = {
+                    val manager = com.github.yumelira.yumebox.runtime.service.shizuku.ShizukuManager
+                    if (manager.isRunning()) {
+                        manager.requestPermission { granted ->
+                            shizukuAvailable = granted
+                            context.toast(if (granted) "Shizuku 已授权" else "未获得 Shizuku 授权")
+                        }
+                    } else if (!manager.openShizuku(context)) context.toast("请先安装并启动 Shizuku")
+                },
+            )
+        }
         PreferenceSwitchItem(
             title = MLang.AppSettings.ServiceSection.TrafficNotificationTitle,
             summary = MLang.AppSettings.ServiceSection.TrafficNotificationSummary,

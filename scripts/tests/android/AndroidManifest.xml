@@ -1,0 +1,6 @@
+<manifest xmlns:android="http://schemas.android.com/apk/res/android" package="com.github.yizuka17.yumebox.md3.validation">
+    <uses-sdk android:minSdkVersion="26" android:targetSdkVersion="37" />
+    <application android:label="YumeBox update validation" android:debuggable="true" />
+    <instrumentation android:name="com.github.yizuka17.yumebox.md3.validation.UpdateInstrumentation"
+        android:targetPackage="com.github.yizuka17.yumebox.md3" android:functionalTest="true" />
+</manifest>

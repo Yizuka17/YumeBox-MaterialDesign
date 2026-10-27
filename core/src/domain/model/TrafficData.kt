@@ -14,11 +14,9 @@
  * You should have received a copy of the GNU Affero General Public License
  * along with this program. If not, see <https://www.gnu.org/licenses/>.
  *
- * Copyright (c)  YumeLira 2025 - Present
+ * Copyright (c)  YumeYucca 2025 - Present
  *
  */
-
-
 
 package com.github.yumelira.yumebox.domain.model
 
@@ -27,10 +25,10 @@ import com.github.yumelira.yumebox.core.util.decodeTrafficValue
 
 data class TrafficData(
     val upload: Long,
-    val download: Long
+    val download: Long,
 ) {
     companion object {
-        val ZERO = TrafficData(0, 0)
+        val zero = TrafficData(0, 0)
 
         fun from(traffic: Traffic): TrafficData {
             val upload = decodeTrafficValue(traffic ushr 32)

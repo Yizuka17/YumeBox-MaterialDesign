@@ -65,7 +65,7 @@ import com.github.yumelira.yumebox.presentation.icon.AppMd3Icons
 import com.github.yumelira.yumebox.presentation.theme.AppTheme
 import com.github.yumelira.yumebox.presentation.theme.yumeDestructiveActionColors
 import com.github.yumelira.yumebox.presentation.util.*
-import com.github.yumelira.yumebox.service.runtime.entity.Profile
+import com.github.yumelira.yumebox.runtime.api.Profile
 import dev.oom_wg.purejoy.mlang.MLang
 import java.io.File
 

@@ -36,6 +36,8 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.combine
+import kotlinx.coroutines.flow.flatMapLatest
+import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
@@ -46,11 +48,8 @@ class TrafficStatisticsViewModel(
     private val selectedTimeRange = MutableStateFlow(StatisticsTimeRange.TODAY)
     private val appColors = AppColors()
 
-    val uiState: StateFlow<TrafficStatisticsUiState> = combine(
-        selectedTimeRange,
-        trafficStatisticsStore.dailyAppSummaries,
-    ) { range, _ ->
-        val topApps = trafficStatisticsStore.getAppUsagesSorted(range)
+    val uiState: StateFlow<TrafficStatisticsUiState> = selectedTimeRange.flatMapLatest { range ->
+        trafficStatisticsStore.getAppUsagesFlow(range).map { topApps ->
         val totalUpload = topApps.sumOf(AppTrafficUsage::totalUpload)
         val totalDownload = topApps.sumOf(AppTrafficUsage::totalDownload)
 
@@ -64,6 +63,7 @@ class TrafficStatisticsViewModel(
             topApps = topApps,
             donutSlices = buildDonutSlices(topApps),
         )
+        }
     }.distinctUntilChanged()
         .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), TrafficStatisticsUiState())
 
@@ -153,7 +153,7 @@ class TrafficStatisticsViewModel(
 
 data class TrafficStatisticsUiState(
     val selectedTimeRange: StatisticsTimeRange = StatisticsTimeRange.TODAY,
-    val summary: DailyTrafficSummary = DailyTrafficSummary.EMPTY,
+    val summary: DailyTrafficSummary = DailyTrafficSummary.empty,
     val topApps: List<AppTrafficUsage> = emptyList(),
     val donutSlices: List<TrafficDonutSlice> = emptyList(),
 )

@@ -29,11 +29,15 @@ enum class ThemeMode {
 enum class AppLanguage {
     System,
     Zh,
+    ZhHant,
     ZhTw,
     En,
+    Ja,
+    Ru,
 }
 
 enum class AppColorTheme {
+    ClassicMonochrome,
     MonetDynamic,
     Custom,
     AcgWallpaper,

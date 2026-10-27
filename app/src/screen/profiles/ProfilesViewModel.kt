@@ -33,8 +33,8 @@ import com.github.yumelira.yumebox.data.store.Preference
 import com.github.yumelira.yumebox.data.store.ProfileLink
 import com.github.yumelira.yumebox.data.store.ProfileLinksStore
 import com.github.yumelira.yumebox.runtime.client.ProfilesRepository
-import com.github.yumelira.yumebox.service.remote.IFetchObserver
-import com.github.yumelira.yumebox.service.runtime.entity.Profile
+import com.github.yumelira.yumebox.runtime.api.FetchObserver
+import com.github.yumelira.yumebox.runtime.api.Profile
 import dev.oom_wg.purejoy.mlang.MLang
 import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.Dispatchers
@@ -122,7 +122,7 @@ class ProfilesViewModel(
                     message = MLang.ProfilesVM.Progress.Preparing,
                 )
 
-                val observer = IFetchObserver { status ->
+                val observer = FetchObserver { status ->
                     _downloadProgress.value = status.toDownloadProgress()
                 }
 
@@ -244,7 +244,7 @@ class ProfilesViewModel(
                     message = MLang.ProfilesVM.Progress.Preparing,
                 )
 
-                val observer = IFetchObserver { status ->
+                val observer = FetchObserver { status ->
                     _downloadProgress.value = status.toDownloadProgress()
                 }
 
@@ -302,7 +302,7 @@ class ProfilesViewModel(
         viewModelScope.launch {
             try {
                 applyLoading(true)
-                profilesRepository.patchProfile(uuid, name, source, interval)
+                profilesRepository.patchProfile(uuid, com.github.yumelira.yumebox.runtime.client.ProfilePatch(name, source, interval))
                 showMessage(MLang.ProfilesVM.Message.ProfileUpdated.format(name))
                 refreshProfiles()
                 Timber.i("Profile patched: $uuid")
@@ -464,6 +464,7 @@ private fun FetchStatus.toDownloadProgress(): DownloadProgress {
             if (detail.isNotBlank()) detail else ""
         }
 
+        FetchStatus.Action.SubscriptionInfo -> detail
         FetchStatus.Action.Verifying -> {
             detail.ifBlank { MLang.ProfilesVM.Progress.Verifying }
         }

@@ -14,11 +14,11 @@
  * You should have received a copy of the GNU Affero General Public License
  * along with this program. If not, see <https://www.gnu.org/licenses/>.
  *
- * Copyright (c)  YumeLira 2025 - Present
+ * Copyright (c)  YumeYucca 2025 - Present
  *
  */
 
-
+@file:Suppress("ConstPropertyName")
 
 package com.github.yumelira.yumebox.core.model
 
@@ -32,62 +32,68 @@ data class Proxy(
     val name: String,
     val title: String,
     val subtitle: String,
-    val type: Type,
+    val type: String,
     val delay: Int,
+    val isGroup: Boolean = type in Type.groupTypes,
 ) : Parcelable {
     @Suppress("unused")
-    enum class Type(val group: Boolean) {
-        Direct(false),
-        Reject(false),
-        RejectDrop(false),
-        Compatible(false),
-        Pass(false),
+    object Type {
+        const val Direct = "Direct"
+        const val Reject = "Reject"
+        const val RejectDrop = "RejectDrop"
+        const val Compatible = "Compatible"
+        const val Pass = "Pass"
+        const val Shadowsocks = "Shadowsocks"
+        const val ShadowsocksR = "ShadowsocksR"
+        const val Snell = "Snell"
+        const val Socks5 = "Socks5"
+        const val Http = "Http"
+        const val Vmess = "Vmess"
+        const val Vless = "Vless"
+        const val Trojan = "Trojan"
+        const val Hysteria = "Hysteria"
+        const val Hysteria2 = "Hysteria2"
+        const val Tuic = "Tuic"
+        const val WireGuard = "WireGuard"
+        const val Dns = "Dns"
+        const val Ssh = "Ssh"
+        const val Mieru = "Mieru"
+        const val AnyTLS = "AnyTLS"
+        const val Sudoku = "Sudoku"
+        const val Masque = "Masque"
+        const val TrustTunnel = "TrustTunnel"
+        const val OpenVPN = "OpenVPN"
+        const val Tailscale = "Tailscale"
+        const val GostRelay = "GostRelay"
+        const val Relay = "Relay"
+        const val Selector = "Selector"
+        const val Fallback = "Fallback"
+        const val URLTest = "URLTest"
+        const val LoadBalance = "LoadBalance"
+        const val Smart = "Smart"
+        const val PassRule = "PassRule"
+        const val Unknown = "Unknown"
 
-        Shadowsocks(false),
-        ShadowsocksR(false),
-        Snell(false),
-        Socks5(false),
-        Http(false),
-        Vmess(false),
-        Vless(false),
-        Trojan(false),
-        Hysteria(false),
-        Hysteria2(false),
-        Tuic(false),
-        WireGuard(false),
-        Dns(false),
-        Ssh(false),
-        Mieru(false),
-        AnyTLS(false),
-        Sudoku(false),
-        Masque(false),
-        TrustTunnel(false),
-
-        Relay(true),
-        Selector(true),
-        Fallback(true),
-        URLTest(true),
-        LoadBalance(true),
-        Smart(true),
-
-        Unknown(false);
+        val groupTypes = setOf(Relay, Selector, Fallback, URLTest, LoadBalance, Smart)
+        val manuallySelectable = setOf(Selector, URLTest, Fallback)
     }
 
     override fun writeToParcel(parcel: Parcel, flags: Int) {
         Parcelizer.encodeToParcel(serializer(), parcel, this)
     }
 
-    override fun describeContents(): Int {
-        return 0
-    }
+    override fun describeContents(): Int = 0
 
     companion object CREATOR : Parcelable.Creator<Proxy> {
-        override fun createFromParcel(parcel: Parcel): Proxy {
-            return Parcelizer.decodeFromParcel(serializer(), parcel)
-        }
+        override fun createFromParcel(parcel: Parcel): Proxy =
+            Parcelizer.decodeFromParcel(serializer(), parcel)
 
-        override fun newArray(size: Int): Array<Proxy?> {
-            return arrayOfNulls(size)
-        }
+        override fun newArray(size: Int): Array<Proxy?> = arrayOfNulls(size)
     }
 }
+
+val Proxy.isProxyGroup: Boolean
+    get() = isGroup || type in Proxy.Type.groupTypes
+
+internal val String.isManuallySelectable: Boolean
+    get() = this in Proxy.Type.manuallySelectable

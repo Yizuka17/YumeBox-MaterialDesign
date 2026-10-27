@@ -14,11 +14,9 @@
  * You should have received a copy of the GNU Affero General Public License
  * along with this program. If not, see <https://www.gnu.org/licenses/>.
  *
- * Copyright (c)  YumeLira 2025 - Present
+ * Copyright (c)  YumeYucca 2025 - Present
  *
  */
-
-
 
 package com.github.yumelira.yumebox.core.model
 
@@ -36,32 +34,30 @@ data class Provider(
     val path: String = "",
 ) : Parcelable, Comparable<Provider> {
     enum class Type {
-        Proxy, Rule
+        Proxy,
+        Rule,
     }
 
     enum class VehicleType {
-        HTTP, File, Inline, Compatible
+        HTTP,
+        File,
+        Inline,
+        Compatible,
     }
 
     override fun writeToParcel(parcel: Parcel, flags: Int) {
         Parcelizer.encodeToParcel(serializer(), parcel, this)
     }
 
-    override fun describeContents(): Int {
-        return 0
-    }
+    override fun describeContents(): Int = 0
 
-    override fun compareTo(other: Provider): Int {
-        return compareValuesBy(this, other, Provider::type, Provider::name)
-    }
+    override fun compareTo(other: Provider): Int =
+        compareValuesBy(this, other, Provider::type, Provider::name)
 
     companion object CREATOR : Parcelable.Creator<Provider> {
-        override fun createFromParcel(parcel: Parcel): Provider {
-            return Parcelizer.decodeFromParcel(serializer(), parcel)
-        }
+        override fun createFromParcel(parcel: Parcel): Provider =
+            Parcelizer.decodeFromParcel(serializer(), parcel)
 
-        override fun newArray(size: Int): Array<Provider?> {
-            return arrayOfNulls(size)
-        }
+        override fun newArray(size: Int): Array<Provider?> = arrayOfNulls(size)
     }
 }

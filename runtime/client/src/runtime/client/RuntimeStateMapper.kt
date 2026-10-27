@@ -14,56 +14,41 @@
  * You should have received a copy of the GNU Affero General Public License
  * along with this program. If not, see <https://www.gnu.org/licenses/>.
  *
- * Copyright (c)  YumeLira 2025 - Present
+ * Copyright (c)  YumeYucca 2025 - Present
  *
  */
 
-
-
 package com.github.yumelira.yumebox.runtime.client
 
-import com.github.yumelira.yumebox.data.model.ProxyMode
-import com.github.yumelira.yumebox.service.runtime.state.RuntimeOwner
-import com.github.yumelira.yumebox.service.runtime.state.RuntimePhase
-import com.github.yumelira.yumebox.service.runtime.state.RuntimeSnapshot
+import com.github.yumelira.yumebox.core.model.RunMode
+import com.github.yumelira.yumebox.runtime.api.RuntimeOwner
+import com.github.yumelira.yumebox.runtime.api.RuntimePhase
+import com.github.yumelira.yumebox.runtime.api.RuntimeSnapshot
 
 object RuntimeStateMapper {
-    fun isRunningOrStarting(snapshot: RuntimeSnapshot): Boolean {
-        return snapshot.phase == RuntimePhase.Starting || snapshot.phase == RuntimePhase.Running
-    }
+    fun isRunningOrStarting(snapshot: RuntimeSnapshot): Boolean =
+        snapshot.phase == RuntimePhase.Starting || snapshot.phase == RuntimePhase.Running
 
-    fun isActuallyRunning(snapshot: RuntimeSnapshot): Boolean {
-        return snapshot.phase == RuntimePhase.Running
-    }
+    fun isActuallyRunning(snapshot: RuntimeSnapshot): Boolean =
+        snapshot.phase == RuntimePhase.Running
 
-    fun modeForOwner(owner: RuntimeOwner): ProxyMode? {
-        return when (owner) {
-            RuntimeOwner.LocalTun -> ProxyMode.Tun
-            RuntimeOwner.LocalHttp -> ProxyMode.Http
-            RuntimeOwner.RootTun -> ProxyMode.RootTun
-            RuntimeOwner.None -> null
-        }
-    }
-
-    fun resolveDisplayMode(snapshot: RuntimeSnapshot, configuredMode: ProxyMode): ProxyMode {
-        return if (isRunningOrStarting(snapshot)) {
-            modeForOwner(snapshot.owner) ?: configuredMode
-        } else {
-            configuredMode
-        }
-    }
+    fun resolveDisplayMode(snapshot: RuntimeSnapshot, configuredMode: RunMode): RunMode =
+        if (isRunningOrStarting(snapshot)) snapshot.runMode else configuredMode
 
     fun idleSnapshot(
-        configuredMode: ProxyMode,
+        configuredMode: RunMode,
         generation: Long = 0L,
         lastError: String? = null,
-    ): RuntimeSnapshot {
-        return RuntimeSnapshot(
+    ): RuntimeSnapshot =
+        RuntimeSnapshot(
             owner = RuntimeOwner.None,
             phase = if (lastError.isNullOrBlank()) RuntimePhase.Idle else RuntimePhase.Failed,
-            targetMode = configuredMode,
+            runMode = configuredMode,
             lastError = lastError,
             generation = generation,
         )
-    }
 }
+
+/** A running local core or the remote controller answers node queries. */
+internal val RuntimeSnapshot.servesNodes: Boolean
+    get() = phase == RuntimePhase.Running || owner == RuntimeOwner.RemoteController

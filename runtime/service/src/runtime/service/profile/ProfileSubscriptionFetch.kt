@@ -1,0 +1,207 @@
+/*
+ * This file is part of YumeBox.
+ *
+ * YumeBox is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU Affero General Public License as
+ * published by the Free Software Foundation, either version 3 of the
+ * License.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+ * GNU Affero General Public License for more details.
+ *
+ * You should have received a copy of the GNU Affero General Public License
+ * along with this program. If not, see <https://www.gnu.org/licenses/>.
+ *
+ * Copyright (c)  YumeYucca 2025 - Present
+ *
+ */
+
+package com.github.yumelira.yumebox.runtime.service.profile
+
+import com.github.yumelira.yumebox.core.model.FetchStatus
+import io.ktor.client.*
+import io.ktor.client.engine.okhttp.*
+import io.ktor.client.plugins.*
+import io.ktor.client.request.*
+import io.ktor.client.statement.*
+import io.ktor.http.*
+import java.io.File
+import java.net.URLDecoder
+import java.util.*
+
+internal data class SubscriptionInfo(
+    val upload: Long? = null,
+    val download: Long? = null,
+    val total: Long? = null,
+    val expire: Long? = null,
+    val title: String? = null,
+    val filename: String? = null,
+    val updateInterval: Long? = null,
+)
+
+/**
+ * Downloads a subscription URL to `stagingDir/config.yaml` with progress, parsing the
+ * `subscription-userinfo` header into a SubscriptionInfo (deep config validation happens at
+ * compile time).
+ */
+internal suspend fun fetchSubscription(
+    stagingDir: File,
+    url: String,
+    onStatus: (FetchStatus) -> Unit,
+) {
+    onStatus(FetchStatus(FetchStatus.Action.FetchConfiguration, listOf(url), 0, 1))
+    HttpClient(OkHttp) {
+            install(HttpTimeout) { requestTimeoutMillis = 60_000 }
+            followRedirects = true
+        }
+        .use { client ->
+            // Airports gate the real config on a recognized Clash-client User-Agent; "YumeBox"
+            // gets a crippled response, so send the user's custom UA or the airport default.
+            val response =
+                client.get(url) {
+                    header(HttpHeaders.UserAgent, SubscriptionUserAgent.resolve())
+                }
+            check(response.status.isSuccess()) { "HTTP ${response.status.value}" }
+            val body = response.bodyAsText()
+            stagingDir.mkdirs()
+            File(stagingDir, "config.yaml").writeText(body)
+            onStatus(FetchStatus(FetchStatus.Action.Verifying, emptyList(), 1, 1))
+
+            val headers = response.headers
+            val fields =
+                headers["subscription-userinfo"]
+                    ?.split(';')
+                    ?.mapNotNull { part ->
+                        val kv = part.split('=', limit = 2)
+                        if (kv.size == 2) kv[0].trim().lowercase() to kv[1].trim() else null
+                    }
+                    ?.toMap()
+                    .orEmpty()
+            val title =
+                decodeSubscriptionTitle(
+                    headers["profile-title"] ?: headers["subscription-title"]
+                )
+            val filename = parseContentDispositionFilename(headers["content-disposition"])
+            val interval =
+                (headers["profile-update-interval"] ?: headers["subscription-update-interval"])
+                    ?.trim()
+                    ?.toLongOrNull()
+
+            // Emit the subscription-info status unconditionally: a server may send profile-title
+            // (airport name) without subscription-userinfo, and vice versa.
+            onStatus(
+                FetchStatus(
+                    action = FetchStatus.Action.SubscriptionInfo,
+                    args = emptyList(),
+                    progress = 1,
+                    max = 1,
+                    subUpload = fields["upload"]?.toLongOrNull(),
+                    subDownload = fields["download"]?.toLongOrNull(),
+                    subTotal = fields["total"]?.toLongOrNull(),
+                    // `expire` here is a Unix timestamp in SECONDS, but the UI renders
+                    // Profile.expire as epoch MILLIS — convert, or a real future date reads as 1970.
+                    subExpire =
+                        fields["expire"]?.toLongOrNull()?.takeIf { it > 0 }?.let { it * 1000L },
+                    subUpdateInterval = interval,
+                    subTitle = title,
+                    subFilename = filename,
+                )
+            )
+        }
+}
+
+internal fun FetchStatus.toSubscriptionInfo(): SubscriptionInfo? {
+    if (action != FetchStatus.Action.SubscriptionInfo) return null
+    return SubscriptionInfo(
+        upload = subUpload,
+        download = subDownload,
+        total = subTotal,
+        expire = subExpire,
+        title = subTitle,
+        filename = subFilename,
+        updateInterval = subUpdateInterval,
+    )
+}
+
+internal fun resolveSubscriptionName(
+    snapshotName: String,
+    snapshotSource: String,
+    subInfo: SubscriptionInfo?,
+): String {
+    if (!ProfileNameUtils.isAutoGeneratedProfileName(snapshotName)) return snapshotName
+
+    val headerTitle = subInfo?.title?.takeIf { it.isNotBlank() }
+    val filename = subInfo?.filename?.substringBeforeLast(".")?.takeIf { it.isNotBlank() }
+    val sourceName = ProfileNameUtils.extractSourceBaseName(snapshotSource)
+
+    if (headerTitle != null) return headerTitle
+    if (filename != null) return filename
+    if (sourceName != null) return sourceName
+    return snapshotName
+}
+
+/** Decodes a `profile-title` header: plain, `base64:…`, RFC 5987 (`UTF-8''…`), or url-encoded. */
+private fun decodeSubscriptionTitle(raw: String?): String? {
+    val value = raw?.trim()?.trim('"', '\'')?.takeIf { it.isNotBlank() } ?: return null
+    if (value.startsWith("base64:", ignoreCase = true)) {
+        return decodeBase64OrNull(value.substringAfter(':')) ?: value
+    }
+    Regex("""^([^']*)'[^']*'(.*)$""").find(value)?.let { match ->
+        val charset = match.groupValues[1].ifBlank { "UTF-8" }
+        runCatching { URLDecoder.decode(match.groupValues[2], charset).trim() }
+            .getOrNull()
+            ?.takeIf { it.isNotBlank() }
+            ?.let {
+                return it
+            }
+    }
+    runCatching { URLDecoder.decode(value, "UTF-8").trim() }
+        .getOrNull()
+        ?.takeIf { it.isNotBlank() && it != value }
+        ?.let {
+            return it
+        }
+    return decodeBase64OrNull(value) ?: value
+}
+
+private fun decodeBase64OrNull(encoded: String): String? {
+    val candidate = encoded.trim().trim('"', '\'')
+    if (candidate.isBlank() || !candidate.matches(Regex("^[A-Za-z0-9+/=]+$"))) return null
+    return runCatching { String(Base64.getDecoder().decode(candidate), Charsets.UTF_8).trim() }
+        .getOrNull()
+        ?.takeIf { it.isNotBlank() }
+}
+
+/**
+ * Extracts the filename from a Content-Disposition header — RFC 5987 `filename*=charset''…`
+ * (url-decoded) and plain `filename=…`, stopping at the next `;` so trailing params aren't
+ * swallowed.
+ */
+private fun parseContentDispositionFilename(contentDisposition: String?): String? {
+    val cd = contentDisposition?.takeIf { it.isNotBlank() } ?: return null
+    return runCatching {
+        if (cd.contains("filename*=", ignoreCase = true)) {
+                Regex("""filename\*=([^']*)'([^']*)'([^;]+)""", RegexOption.IGNORE_CASE)
+                    .find(cd)
+                    ?.let { match ->
+                        val charset = match.groupValues[1].ifBlank { "UTF-8" }
+                        val encoded = match.groupValues[3].trim().trim('"', '\'')
+                        val safeCharset =
+                            runCatching { java.nio.charset.Charset.forName(charset).name() }
+                                .getOrDefault("UTF-8")
+                        URLDecoder.decode(encoded, safeCharset).trim()
+                    }
+            } else {
+                Regex("""filename=([^;]+)""", RegexOption.IGNORE_CASE)
+                    .find(cd)
+                    ?.groupValues
+                    ?.getOrNull(1)
+                    ?.trim()
+                    ?.trim('"', '\'')
+            }
+            ?.takeIf { it.isNotBlank() }
+    }
+        .getOrNull()
+}

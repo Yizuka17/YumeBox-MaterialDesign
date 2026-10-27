@@ -1,0 +1,4 @@
+﻿# 项目排除路径
+/target/
+# engine test artifact
+test.log

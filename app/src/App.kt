@@ -14,48 +14,41 @@
  * You should have received a copy of the GNU Affero General Public License
  * along with this program. If not, see <https://www.gnu.org/licenses/>.
  *
- * Copyright (c)  YumeLira 2025 - Present
+ * Copyright (c)  YumeYucca 2025 - Present
  *
  */
-
-
 
 package com.github.yumelira.yumebox
 
 import android.app.Application
+import android.content.ComponentName
 import android.content.res.Configuration
-import com.github.yumelira.yumebox.common.runtime.StartupGate
 import com.github.yumelira.yumebox.common.util.AppLanguageManager
 import com.github.yumelira.yumebox.common.util.PlatformIdentifier
 import com.github.yumelira.yumebox.core.Global
-import com.github.yumelira.yumebox.core.util.StartupTaskCoordinator
+import com.github.yumelira.yumebox.core.util.AppVisibilityTracker
+import com.github.yumelira.yumebox.core.util.runtimeHomeDir
 import com.github.yumelira.yumebox.data.controller.AppTrafficStatisticsCollector
-import com.github.yumelira.yumebox.data.controller.GeoXDataController
 import com.github.yumelira.yumebox.data.store.AppSettingsStore
 import com.github.yumelira.yumebox.data.store.FeatureStore
 import com.github.yumelira.yumebox.di.appModule
+import com.github.yumelira.yumebox.runtime.api.Components
 import com.github.yumelira.yumebox.runtime.client.ProxyFacade
+import com.github.yumelira.yumebox.data.controller.AcgWallpaperStorage
 import com.github.yumelira.yumebox.substore.util.AppUtil
 import com.tencent.mmkv.MMKV
-import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.SupervisorJob
-import kotlinx.coroutines.delay
-import kotlinx.coroutines.isActive
-import kotlinx.coroutines.launch
-import kotlinx.coroutines.withContext
+import kotlinx.coroutines.*
 import org.koin.android.ext.koin.androidContext
-import org.koin.core.context.startKoin
 import org.koin.core.Koin
+import org.koin.core.context.startKoin
+import org.tukaani.xz.XZInputStream
 import timber.log.Timber
+import java.io.File
 
 class App : Application() {
     private val startupScope = CoroutineScope(SupervisorJob() + Dispatchers.Default)
-    private lateinit var geoXDataController: GeoXDataController
 
     companion object {
-        private const val GEO_FILE_GUARD_INTERVAL_MS = 10_000L
-
         lateinit var instance: App
             private set
     }
@@ -64,27 +57,35 @@ class App : Application() {
         super.onCreate()
 
         instance = this
-        if (BuildConfig.DEBUG && Timber.forest().isEmpty()) {
+        AppVisibilityTracker.register(this)
+        if (BuildInfo.DEBUG && Timber.forest().isEmpty()) {
             Timber.plant(Timber.DebugTree())
         }
 
-        StartupGate.verify(this)
         Global.init(this)
         MMKV.initialize(this)
+
+        // Runtime notifications/tiles jump to these activities; the runtime layer must not
+        // name app classes, so the entry points are injected here.
+        Components.MAIN_ACTIVITY = ComponentName(this, MainActivity::class.java)
+        Components.PROXY_SHEET_ACTIVITY = ComponentName(this, ProxySheetActivity::class.java)
 
         val koinApp = startKoin {
             androidContext(this@App)
             modules(appModule)
         }
+
         val appSettingsStorage: AppSettingsStore = koinApp.koin.get()
+        // Complete the fork's override migration before any preview or auto-start can compile it.
+        koinApp.koin.get<com.github.yumelira.yumebox.data.store.ProfileBindingStore>()
+        koinApp.koin.get<com.github.yumelira.yumebox.update.GitHubUpdateManager>().startAutoCheck(startupScope)
         AppLanguageManager.apply(appSettingsStorage.appLanguage.value)
 
-        geoXDataController = koinApp.koin.get()
-        geoXDataController.ensureGeoFiles()
-        startGeoFileGuard()
+        // Keep first-run geo extraction ahead of the UI so starting the proxy never inherits it.
+        extractGeoFiles()
         val featureStore: FeatureStore = koinApp.koin.get()
-        featureStore.syncAppVersion(BuildConfig.VERSION_CODE)
-        scheduleDeferredStartupTasks(koinApp.koin, featureStore)
+        featureStore.syncAppVersion(BuildInfo.VERSION_CODE)
+        scheduleDeferredStartupTasks(koinApp.koin, featureStore, appSettingsStorage)
 
         PlatformIdentifier.getPlatformIdentifier()
     }
@@ -94,32 +95,79 @@ class App : Application() {
         AppLanguageManager.refreshSystemLanguage()
     }
 
-    private fun startGeoFileGuard() {
-        startupScope.launch(Dispatchers.IO) {
-            while (isActive) {
-                delay(GEO_FILE_GUARD_INTERVAL_MS)
-                runCatching { geoXDataController.ensureGeoFiles() }
-                    .onFailure { Timber.w(it, "Geo file guard failed") }
+    private fun extractGeoFiles() {
+        val dir = runtimeHomeDir.apply { mkdirs() }
+        for (name in listOf("geoip.metadb", "geosite.dat", "ASN.mmdb")) {
+            val target = File(dir, name)
+            if (!target.exists()) {
+                extractXzAsset("$name.xz", target) ?: copyAssetIfExists(name, target)
             }
         }
     }
 
-    private fun scheduleDeferredStartupTasks(koin: Koin, featureStore: FeatureStore) {
-        StartupTaskCoordinator.startRuntimeWarmup(startupScope) {
-            runCatching { koin.get<AppTrafficStatisticsCollector>() }
-                .onFailure { Timber.w(it, "App traffic collector init skipped") }
+    /**
+     * External-geo builds omit these runtime assets. Remove partial writes so the startup guard
+     * can require a Builtin APK to install a complete Geo data set.
+     */
+    private fun copyAssetIfExists(name: String, target: File) {
+        runCatching {
+            assets.open(name).use { input ->
+                target.outputStream().use { input.copyTo(it) }
+            }
+        }
+            .onFailure {
+                target.delete()
+                Timber.i("Runtime asset %s not bundled; a Builtin APK must install it", name)
+            }
+    }
 
+    /**
+     * Best-effort self-heal for the Moe wallpaper: if the persisted
+     * [AppSettingsStore.moeWallpaperUri] points at a local file:// copy that no longer exists, but
+     * the original source is still recorded and readable, re-import it so the home screen keeps
+     * rendering the user's choice after a cache or data wipe. Silent no-op otherwise; the render
+     * path falls back to the bundled asset.
+     */
+    private suspend fun ensureMoeWallpaperLocalCopy(appSettings: AppSettingsStore) {
+        val stored = appSettings.moeWallpaperUri.value
+        if (!stored.startsWith("file://")) return
+        val localPath = stored.removePrefix("file://")
+        if (localPath.startsWith("/android_asset/")) return
+        if (File(localPath).exists()) return
+        val source = appSettings.moeWallpaperSourceUri.value
+        if (source.isBlank()) return
+        val reimported = runCatching { AcgWallpaperStorage(this).copyFromUri(source) }.getOrNull()
+        if (reimported != null) {
+            appSettings.moeWallpaperUri.set(reimported)
+        }
+    }
+
+    private fun extractXzAsset(assetName: String, target: File): Unit? = runCatching {
+        assets.open(assetName).use { input ->
+            XZInputStream(input.buffered()).use { xz ->
+                target.outputStream().buffered().use { xz.copyTo(it) }
+            }
+        }
+        Unit
+    }
+        .onFailure { target.delete() }
+        .getOrNull()
+
+    private fun scheduleDeferredStartupTasks(
+        koin: Koin,
+        featureStore: FeatureStore,
+        appSettings: AppSettingsStore,
+    ) {
+        startupScope.launch {
+            runCatching { ensureMoeWallpaperLocalCopy(appSettings) }
+                .onFailure { Timber.e(it, "Failed to ensure Moe wallpaper local copy") }
+            runCatching { koin.get<AppTrafficStatisticsCollector>() }
             runCatching { koin.get<ProxyFacade>().awaitProxyGroupWarmUp() }
-                .onFailure { Timber.w(it, "Proxy preview warm-up skipped") }
 
             if (featureStore.isFirstTimeOpen()) {
                 withContext(Dispatchers.IO) {
-                    runCatching {
-                        AppUtil.initFirstOpen()
-                        featureStore.markFirstOpenHandled()
-                    }.onFailure { error ->
-                        Timber.w(error, "First-open asset initialization failed")
-                    }
+                    AppUtil.initFirstOpen()
+                    featureStore.markFirstOpenHandled()
                 }
             }
         }

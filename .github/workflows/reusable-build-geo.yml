@@ -1,4 +1,4 @@
-name: Reusable Build Geo
+name: Build Geo
 
 on:
   workflow_call:
@@ -12,27 +12,16 @@ permissions:
 
 jobs:
   build:
-    runs-on: ubuntu-latest
-    env:
-      FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
+    runs-on: macos-26
     steps:
       - name: Checkout
-        uses: actions/checkout@v6
+        uses: actions/checkout@v7.0.1
         with:
           submodules: recursive
           fetch-depth: 0
 
-      - name: Setup Java
-        uses: actions/setup-java@v5
-        with:
-          distribution: temurin
-          java-version: "25"
-
-      - name: Setup Kotlin
-        uses: fwilhe2/setup-kotlin@main
-
       - name: Build geo assets
-        run: kotlin scripts/native-build.main.kts --geo
+        run: python3 scripts/native-build.py --geo
 
       - name: Verify geo outputs
         shell: bash
@@ -41,9 +30,10 @@ jobs:
           test -f "build/generated/assets/geo/geoip.metadb.xz"
           test -f "build/generated/assets/geo/geosite.dat.xz"
           test -f "build/generated/assets/geo/ASN.mmdb.xz"
+          test ! -e "build/generated/assets/geo/BundleMRS.7z"
 
       - name: Upload geo artifact
-        uses: actions/upload-artifact@v7
+        uses: actions/upload-artifact@v7.0.2
         with:
           name: native-${{ inputs.channel }}-geo
           path: |
@@ -51,3 +41,5 @@ jobs:
             build/generated/assets/geo/geosite.dat.xz
             build/generated/assets/geo/ASN.mmdb.xz
           if-no-files-found: error
+          # Payloads are already XZ/7z-compressed; deflating the artifact zip again wastes CPU.
+          compression-level: 0

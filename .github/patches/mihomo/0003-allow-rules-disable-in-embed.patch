@@ -1,0 +1,17 @@
+diff --git a/hub/route/rules.go b/hub/route/rules.go
+index 04ba15c2..cd036a40 100644
+--- a/hub/route/rules.go
++++ b/hub/route/rules.go
+@@ -14,9 +14,9 @@ import (
+ func ruleRouter() http.Handler {
+ 	r := chi.NewRouter()
+ 	r.Get("/", getRules)
+-	if !embedMode { // disallow update/patch rules in embed mode
+-		r.Patch("/disable", disableRules)
+-	}
++	// Runtime-only temporary disable (cleared on core restart). Safe under embedMode -
++	// unlike config PUT/PATCH, restart, or upgrade, which stay gated by embedMode.
++	r.Patch("/disable", disableRules)
+ 	return r
+ }
+ 

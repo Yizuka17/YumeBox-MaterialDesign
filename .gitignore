@@ -34,6 +34,8 @@ cmake-build-*/
 *.a
 *.o
 *.obj
+# Stamped by scripts/native-build.main.kts next to the native libs (not source).
+jniLibs/**/core-version.properties
 
 # Signing & secrets
 *.jks
@@ -81,6 +83,13 @@ Thumbs.db
 /lib/mihomo/mihomo/
 /.codex/environments/environment.toml
 /docs/code-review/
-/docs/code-review/
-/YumeBox Debug/
-/.continue/
+.cursor
+.agents
+.codex
+.trellis
+# Python bytecode
+__pycache__/
+*.pyc
+
+.qodana_work/
+/output_*/

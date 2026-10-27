@@ -62,7 +62,7 @@ import com.github.panpf.sketch.resize.Scale
 import com.github.yumelira.yumebox.common.util.toast
 import com.github.yumelira.yumebox.core.util.PollingTimerSpecs
 import com.github.yumelira.yumebox.core.util.PollingTimers
-import com.github.yumelira.yumebox.data.model.ProxyMode
+import com.github.yumelira.yumebox.data.model.RunMode
 import com.github.yumelira.yumebox.data.model.ThemeMode
 import com.github.yumelira.yumebox.domain.model.TrafficData
 import com.github.yumelira.yumebox.presentation.component.LocalHandlePageChange
@@ -188,7 +188,7 @@ fun AcgHomePage(
             value = System.currentTimeMillis()
             return@produceState
         }
-        PollingTimers.ticks(PollingTimerSpecs.AcgElapsedClock).collect {
+        PollingTimers.ticks(PollingTimerSpecs.MoeElapsedClock).collect {
             value = System.currentTimeMillis()
         }
     }
@@ -207,7 +207,7 @@ fun AcgHomePage(
         }
     }
     val trafficData = remember(trafficNow, isRunning) {
-        if (isRunning) TrafficData.from(trafficNow) else TrafficData.ZERO
+        if (isRunning) TrafficData.from(trafficNow) else TrafficData.zero
     }
     val hasDisplayableExternalIp = ipMonitoringState.displayableExternalIp() != null
     val systemDark = isSystemInDarkTheme()

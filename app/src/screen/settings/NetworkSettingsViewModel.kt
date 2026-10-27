@@ -25,16 +25,16 @@ package com.github.yumelira.yumebox.screen.settings
 import android.app.Application
 import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.viewModelScope
-import com.github.yumelira.yumebox.core.model.RootTunDnsMode
+import com.github.yumelira.yumebox.core.model.TunDnsMode
 import com.github.yumelira.yumebox.data.controller.NetworkSettingsController
 import com.github.yumelira.yumebox.data.model.AccessControlMode
-import com.github.yumelira.yumebox.data.model.ProxyMode
+import com.github.yumelira.yumebox.data.model.RunMode
 import com.github.yumelira.yumebox.data.model.TunStack
 import com.github.yumelira.yumebox.data.store.NetworkSettingsStore
 import com.github.yumelira.yumebox.data.store.Preference
 import com.github.yumelira.yumebox.runtime.client.ProxyFacade
 import com.github.yumelira.yumebox.runtime.client.RuntimeStateMapper
-import com.github.yumelira.yumebox.service.runtime.state.RuntimePhase
+import com.github.yumelira.yumebox.runtime.api.RuntimePhase
 import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharedFlow
@@ -55,23 +55,23 @@ class NetworkSettingsViewModel(
     private val proxyFacade: ProxyFacade,
 ) : AndroidViewModel(application) {
 
-    val proxyMode: Preference<ProxyMode> = settings.proxyMode
+    val proxyMode: Preference<RunMode> = settings.runMode
     val bypassPrivateNetwork: Preference<Boolean> = settings.bypassPrivateNetwork
     val dnsHijack: Preference<Boolean> = settings.dnsHijack
     val allowBypass: Preference<Boolean> = settings.allowBypass
     val enableIPv6: Preference<Boolean> = settings.enableIPv6
     val systemProxy: Preference<Boolean> = settings.systemProxy
     val tunStack: Preference<TunStack> = settings.tunStack
-    val rootTunAutoRoute: Preference<Boolean> = settings.rootTunAutoRoute
-    val rootTunStrictRoute: Preference<Boolean> = settings.rootTunStrictRoute
-    val rootTunAutoRedirect: Preference<Boolean> = settings.rootTunAutoRedirect
-    val rootTunDnsMode: Preference<RootTunDnsMode> = settings.rootTunDnsMode
+    val rootTunAutoRoute: Preference<Boolean> = settings.tunAutoRoute
+    val rootTunStrictRoute: Preference<Boolean> = settings.tunStrictRoute
+    val rootTunAutoRedirect: Preference<Boolean> = settings.tunAutoRedirect
+    val rootTunDnsMode: Preference<TunDnsMode> = settings.tunDnsMode
     val accessControlMode: Preference<AccessControlMode> = settings.accessControlMode
 
-    private val rootTunIfName = settings.rootTunIfName
-    private val rootTunMtu = settings.rootTunMtu
-    private val rootTunFakeIpRange = settings.rootTunFakeIpRange
-    private val rootTunFakeIpRange6 = settings.rootTunFakeIpRange6
+    private val rootTunIfName = settings.tunIfName
+    private val rootTunMtu = settings.tunMtu
+    private val rootTunFakeIpRange = settings.tunFakeIpRange
+    private val rootTunFakeIpRange6 = settings.tunFakeIpRange6
 
     private val _rootTunIfNameDraft = MutableStateFlow(rootTunIfName.value)
     val rootTunIfNameDraft: StateFlow<String> = _rootTunIfNameDraft.asStateFlow()
@@ -95,7 +95,7 @@ class NetworkSettingsViewModel(
         .distinctUntilChanged()
         .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), ServiceState.Idle)
 
-    val currentProxyMode: StateFlow<ProxyMode> = proxyMode.state
+    val currentProxyMode: StateFlow<RunMode> = proxyMode.state
 
     val uiState: StateFlow<NetworkSettingsUiState> = combine(
         currentProxyMode,
@@ -103,17 +103,17 @@ class NetworkSettingsViewModel(
         rootTunDnsMode.state,
     ) { configuredMode, snapshot, dnsMode ->
         val effectiveMode = RuntimeStateMapper.resolveDisplayMode(snapshot, configuredMode)
-        val activeMode = RuntimeStateMapper.modeForOwner(snapshot.owner)
+        val activeMode = snapshot.runMode
         NetworkSettingsUiState(
             serviceState = ServiceState.fromPhase(snapshot.phase),
             configuredMode = configuredMode,
             effectiveMode = effectiveMode,
             needsRestart = snapshot.phase == RuntimePhase.Running && activeMode != configuredMode,
-            showServiceOptions = configuredMode != ProxyMode.Http,
-            showTunOnlyOptions = configuredMode == ProxyMode.Tun,
-            showAccessControlMode = configuredMode != ProxyMode.Http,
-            showRootTunAdvanced = configuredMode == ProxyMode.RootTun,
-            showFakeIpRange = configuredMode == ProxyMode.RootTun && dnsMode == RootTunDnsMode.FakeIp,
+            showServiceOptions = configuredMode != RunMode.Ebpf,
+            showTunOnlyOptions = configuredMode == RunMode.VpnService,
+            showAccessControlMode = configuredMode != RunMode.Ebpf,
+            showRootTunAdvanced = configuredMode == RunMode.Tun,
+            showFakeIpRange = configuredMode == RunMode.Tun && dnsMode == TunDnsMode.FakeIp,
         )
     }.distinctUntilChanged().stateIn(
         scope = viewModelScope,
@@ -229,8 +229,8 @@ class NetworkSettingsViewModel(
         ),
     )
 
-    fun onProxyModeChange(mode: ProxyMode) {
-        controller.setProxyMode(mode)
+    fun onProxyModeChange(mode: RunMode) {
+        controller.setRunMode(mode)
     }
 
     fun onBypassPrivateNetworkChange(enabled: Boolean) {
@@ -269,7 +269,7 @@ class NetworkSettingsViewModel(
         controller.setAndRestartIfNeeded(rootTunAutoRedirect, enabled)
     }
 
-    fun onRootTunDnsModeChange(mode: RootTunDnsMode) {
+    fun onTunDnsModeChange(mode: TunDnsMode) {
         controller.setAndRestartIfNeeded(rootTunDnsMode, mode)
     }
 
@@ -284,7 +284,7 @@ class NetworkSettingsViewModel(
     fun commitRootTunIfName() {
         val normalized = _rootTunIfNameDraft.value.trim().ifBlank { DEFAULT_ROOT_TUN_IF_NAME }
         _rootTunIfNameDraft.value = normalized
-        controller.commitDraftAndRestart(rootTunIfName, normalized)
+        controller.setAndRestartIfNeeded(rootTunIfName, normalized)
     }
 
     fun onRootTunMtuDraftChange(value: String) {
@@ -294,7 +294,7 @@ class NetworkSettingsViewModel(
     fun commitRootTunMtu() {
         val parsed = _rootTunMtuDraft.value.trim().toIntOrNull()?.takeIf { it > 0 } ?: return
         _rootTunMtuDraft.value = parsed.toString()
-        controller.commitDraftAndRestart(rootTunMtu, parsed)
+        controller.setAndRestartIfNeeded(rootTunMtu, parsed)
     }
 
     fun onRootTunFakeIpRangeDraftChange(value: String) {
@@ -304,7 +304,7 @@ class NetworkSettingsViewModel(
     fun commitRootTunFakeIpRange() {
         val normalized = _rootTunFakeIpRangeDraft.value.trim().ifBlank { DEFAULT_FAKE_IP_RANGE }
         _rootTunFakeIpRangeDraft.value = normalized
-        controller.commitDraftAndRestart(rootTunFakeIpRange, normalized)
+        controller.setAndRestartIfNeeded(rootTunFakeIpRange, normalized)
     }
 
     fun onRootTunFakeIpRange6DraftChange(value: String) {
@@ -314,10 +314,10 @@ class NetworkSettingsViewModel(
     fun commitRootTunFakeIpRange6() {
         val normalized = _rootTunFakeIpRange6Draft.value.trim().ifBlank { DEFAULT_FAKE_IP_RANGE6 }
         _rootTunFakeIpRange6Draft.value = normalized
-        controller.commitDraftAndRestart(rootTunFakeIpRange6, normalized)
+        controller.setAndRestartIfNeeded(rootTunFakeIpRange6, normalized)
     }
 
-    fun startService(mode: ProxyMode) {
+    fun startService(mode: RunMode) {
         viewModelScope.launch {
             switchService(mode).onFailure { error ->
                 _errors.tryEmit(error.message ?: "Failed to start proxy service")
@@ -334,7 +334,7 @@ class NetworkSettingsViewModel(
         }
     }
 
-    private suspend fun switchService(mode: ProxyMode): Result<Unit> = runCatching {
+    private suspend fun switchService(mode: RunMode): Result<Unit> = runCatching {
         controller.startService(mode).getOrThrow()
     }
 
@@ -347,8 +347,8 @@ class NetworkSettingsViewModel(
 
 data class NetworkSettingsUiState(
     val serviceState: ServiceState = ServiceState.Idle,
-    val configuredMode: ProxyMode = ProxyMode.Tun,
-    val effectiveMode: ProxyMode = ProxyMode.Tun,
+    val configuredMode: RunMode = RunMode.VpnService,
+    val effectiveMode: RunMode = RunMode.VpnService,
     val needsRestart: Boolean = false,
     val showServiceOptions: Boolean = true,
     val showTunOnlyOptions: Boolean = true,
@@ -375,7 +375,7 @@ data class RootTunServiceOptionsUiState(
     val rootTunAutoRoute: Boolean = false,
     val rootTunStrictRoute: Boolean = false,
     val rootTunAutoRedirect: Boolean = false,
-    val rootTunDnsMode: RootTunDnsMode = RootTunDnsMode.RedirHost,
+    val rootTunDnsMode: TunDnsMode = TunDnsMode.RedirHost,
     val rootTunIfNameDraft: String = "",
     val rootTunMtuDraft: String = "",
     val rootTunFakeIpRangeDraft: String = "",
@@ -386,7 +386,7 @@ private data class RootTunRoutingUiState(
     val rootTunAutoRoute: Boolean,
     val rootTunStrictRoute: Boolean,
     val rootTunAutoRedirect: Boolean,
-    val rootTunDnsMode: RootTunDnsMode,
+    val rootTunDnsMode: TunDnsMode,
 )
 
 private data class RootTunDraftsUiState(

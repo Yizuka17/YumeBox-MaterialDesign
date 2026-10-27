@@ -14,9 +14,11 @@
  * You should have received a copy of the GNU Affero General Public License
  * along with this program. If not, see <https://www.gnu.org/licenses/>.
  *
- * Copyright (c)  YumeLira 2025 - Present
+ * Copyright (c)  YumeYucca 2025 - Present
  *
  */
+
+@file:Suppress("RedundantIf")
 
 package com.github.yumelira.yumebox.core.util
 
@@ -25,37 +27,30 @@ import java.util.concurrent.atomic.AtomicBoolean
 /**
  * Session-scoped gate for auto start behavior.
  *
- * Manual pause blocks auto start only within current app process lifetime.
- * Foreground auto actions also run at most once per process lifetime.
- * After process restart, state resets naturally.
+ * Manual pause blocks auto start only within current app process lifetime. Foreground auto actions
+ * also run at most once per process lifetime. After process restart, state resets naturally.
  */
 object AutoStartSessionGate {
-    private val manualPaused = AtomicBoolean(false)
-    private val foregroundAutoActionsInFlight = AtomicBoolean(false)
-    private val foregroundAutoActionsHandled = AtomicBoolean(false)
+    private val paused = AtomicBoolean(false)
+    private val autoInFlight = AtomicBoolean(false)
+    private val autoHandled = AtomicBoolean(false)
 
     fun markManualPaused() {
-        manualPaused.set(true)
+        paused.set(true)
     }
 
     fun clearManualPaused() {
-        manualPaused.set(false)
+        paused.set(false)
     }
 
-    fun shouldSkipAutoStart(): Boolean = manualPaused.get()
+    fun shouldSkipAutoStart(): Boolean = paused.get()
 
-    fun tryBeginForegroundAutoActions(): Boolean {
-        if (foregroundAutoActionsHandled.get()) {
-            return false
-        }
-        return foregroundAutoActionsInFlight.compareAndSet(false, true)
+    fun tryBeginAutoActions(): Boolean {
+        return !autoHandled.get() && autoInFlight.compareAndSet(false, true)
     }
 
-    fun finishForegroundAutoActions(markHandled: Boolean) {
-        foregroundAutoActionsInFlight.set(false)
-        if (markHandled) {
-            foregroundAutoActionsHandled.set(true)
-        }
+    fun finishAutoActions(markHandled: Boolean) {
+        autoInFlight.set(false)
+        if (markHandled) autoHandled.set(true)
     }
 }
-

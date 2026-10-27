@@ -14,32 +14,62 @@
  * You should have received a copy of the GNU Affero General Public License
  * along with this program. If not, see <https://www.gnu.org/licenses/>.
  *
- * Copyright (c)  YumeLira 2025 - Present
+ * Copyright (c)  YumeYucca 2025 - Present
  *
  */
 
-
+@file:Suppress("UnusedSymbol")
 
 package com.github.yumelira.yumebox.data.store
 
+
 import android.content.Context
-import com.github.yumelira.yumebox.core.model.*
-import com.github.yumelira.yumebox.data.util.OFFICIAL_MRS_PRESET_SUMMARY
-import com.github.yumelira.yumebox.data.util.OFFICIAL_MRS_PRESET_TITLE
-import com.github.yumelira.yumebox.data.model.OverrideConfig
-import com.github.yumelira.yumebox.data.model.MetadataIndex
-import com.github.yumelira.yumebox.data.model.OverrideMetadata
+import com.github.yumelira.yumebox.core.model.OverrideInternalConstants
+import com.github.yumelira.yumebox.data.model.*
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.*
+import kotlinx.coroutines.sync.Mutex
+import kotlinx.coroutines.sync.withLock
 import kotlinx.coroutines.withContext
-import kotlinx.serialization.Serializable
-import kotlinx.serialization.json.Json
 import timber.log.Timber
 import java.io.File
 
 class OverrideConfigStore(
     private val context: Context,
+    private val bindingProvider: ProfileBindingProvider,
 ) : OverrideConfigProvider {
+    fun isSystemPreset(id: String): Boolean = BuiltInOverrideCatalog.isBuiltIn(id)
+    suspend fun getSystemPresets(): List<OverrideConfig> = listOfNotNull(getById("builtin-official-mrs"))
+    suspend fun loadCustomRouting(): com.github.yumelira.yumebox.core.model.ConfigurationOverride? =
+        loadCustomRoutingContent()?.let { com.github.yumelira.yumebox.core.util.YamlCodec.decode(
+            com.github.yumelira.yumebox.core.model.ConfigurationOverride.serializer(), it) }
+    suspend fun saveCustomRouting(config: com.github.yumelira.yumebox.core.model.ConfigurationOverride) =
+        saveCustomRoutingContent(com.github.yumelira.yumebox.core.model.encodeConfigurationOverride(config))
+    fun getConfigJsonContent(id: String): String? = getConfigContent(id)?.let {
+        val decoded = com.github.yumelira.yumebox.core.util.YamlCodec.decode(
+            com.github.yumelira.yumebox.core.model.ConfigurationOverride.serializer(), it)
+        com.github.yumelira.yumebox.core.model.encodeConfigurationOverride(decoded)
+    }
+    fun saveConfigJsonContent(id: String, content: String): Boolean = saveConfigContent(id, content)
+
+    suspend fun exportUserConfigBackup(): List<OverrideConfigBackupEntry> = getUserConfigs().mapIndexed { index, config ->
+        OverrideConfigBackupEntry(config.id, config.name, config.description, config.createdAt,
+            config.updatedAt, index.toLong() + 1, config.content, config.contentType)
+    }
+
+    suspend fun importUserConfigBackup(entries: List<OverrideConfigBackupEntry>) {
+        entries.forEach { entry ->
+            require(entry.id.matches(Regex("[A-Za-z0-9_-]+"))) { "Invalid override ID" }
+            if (!isSystemPreset(entry.id) && !isInternalRuntimeConfig(entry.id)) {
+                if (entry.contentType == OverrideContentType.Yaml) {
+                    com.github.yumelira.yumebox.core.util.YamlCodec.validate(entry.content)
+                }
+                save(OverrideConfig(entry.id, entry.name, entry.description, entry.contentType,
+                    entry.content, entry.createdAt, entry.updatedAt))
+            }
+        }
+        reorderUserConfigs(entries.sortedBy { it.sortOrder }.map { it.id })
+    }
     companion object {
         const val INTERNAL_RUNTIME_PREFIX = "__runtime__"
 
@@ -48,443 +78,449 @@ class OverrideConfigStore(
 
     private val overridesDir = File(context.filesDir, "overrides")
     private val configsDir = File(overridesDir, "configs")
-    private val internalDir = File(overridesDir, OverrideInternalConstants.INTERNAL_DIR_NAME)
-    private val metadataFile = File(overridesDir, "metadata.json")
+    private val metadataFile = File(overridesDir, "metadata.yaml")
+    private val builtInFiles = BuiltInOverrideFileStore(context, overridesDir)
 
-    private val json = Json {
-        ignoreUnknownKeys = true
-        prettyPrint = true
-        encodeDefaults = true
-        explicitNulls = false
-    }
+    private val configExtensions = setOf("yaml", "yml", "js")
+    private val cleanupExtensions = configExtensions
 
-    private val _configsFlow = MutableStateFlow<List<OverrideConfig>>(emptyList())
-
-    @Volatile
-    private var systemPresetsCache: List<OverrideConfig>? = null
+    private val configsFlow = MutableStateFlow<List<OverrideConfig>>(emptyList())
+    private val configsHydrated = java.util.concurrent.atomic.AtomicBoolean(false)
+    private val hydrationMutex = Mutex()
 
     private suspend fun refreshConfigsFlow() {
-        _configsFlow.value = getAll()
+        configsFlow.value = getAll()
+        configsHydrated.set(true)
     }
 
-    private suspend fun updateConfigsFlowSnapshot(
+    private suspend fun ensureConfigsHydrated() {
+        if (configsHydrated.get()) return
+        hydrationMutex.withLock {
+            if (!configsHydrated.get()) refreshConfigsFlow()
+        }
+    }
+
+    private fun updateConfigsFlowSnapshot(
         metadataIndex: MetadataIndex,
         userConfigsById: Map<String, OverrideConfig>,
     ) {
-        val currentSnapshot = _configsFlow.value
-        if (currentSnapshot.isEmpty()) {
-            refreshConfigsFlow()
-            return
+        configsFlow.value =
+            metadataIndex.sortedUserMetadata().mapNotNull { metadata ->
+                userConfigsById[metadata.id]
+            }
+    }
+
+    override suspend fun getAll(): List<OverrideConfig> =
+        withContext(Dispatchers.IO) { loadUserConfigs() }
+
+    override fun getAllFlow(): Flow<List<OverrideConfig>> =
+        flow {
+            ensureConfigsHydrated()
+            emitAll(configsFlow)
         }
-        val systemPresets = currentSnapshot
-            .filter(OverrideConfig::isSystem)
-            .ifEmpty { getSystemPresets() }
-        _configsFlow.value = systemPresets + metadataIndex.sortedUserMetadata().mapNotNull { metadata ->
-            userConfigsById[metadata.id]
+
+    override suspend fun getById(id: String): OverrideConfig? =
+        withContext(Dispatchers.IO) {
+            if (BuiltInOverrideCatalog.isBuiltIn(id)) {
+                return@withContext loadBuiltInConfig(id)
+            }
+            val metadata = loadMetadataIndex().getById(id) ?: return@withContext null
+            loadConfigContent(metadata)
+        }
+
+    override suspend fun getUserConfigs(): List<OverrideConfig> =
+        withContext(Dispatchers.IO) {
+            loadUserConfigs().filter(::isUserOwnedConfig)
+        }
+
+    /** Bundled templates, always listed above user imports. Materializes assets on first read. */
+    suspend fun getBuiltInConfigs(): List<OverrideConfig> =
+        withContext(Dispatchers.IO) {
+            BuiltInOverrideCatalog.all.mapNotNull { def -> loadBuiltInConfig(def.id) }
+        }
+
+    override fun getUserConfigsFlow(): Flow<List<OverrideConfig>> = flow {
+        emit(loadUserConfigs().filter(::isUserOwnedConfig))
+    }
+        .flowOn(Dispatchers.IO)
+
+    override suspend fun save(config: OverrideConfig) =
+        withContext(Dispatchers.IO) {
+            if (BuiltInOverrideCatalog.isBuiltIn(config.id)) {
+                // Built-ins are immutable APK templates. Customization must use duplicate().
+                return@withContext
+            }
+
+            synchronized(OverrideMetadataFileLock.monitor) {
+                val metadataIndex = loadMetadataIndexForMutation()
+                val existingMetadata = metadataIndex.getById(config.id)
+                configsDir.mkdirs()
+                OverrideMetadataIO.writeTextAtomic(
+                    resolveConfigFile(config.id, config.contentType),
+                    config.content,
+                )
+                cleanupStaleConfigFiles(config.id, keepExtension = config.contentType.extension)
+
+                val metadata =
+                    OverrideMetadata(
+                        id = config.id,
+                        name = config.name,
+                        description = config.description,
+                        contentType = config.contentType,
+                        createdAt = config.createdAt,
+                        updatedAt = config.updatedAt,
+                        sortOrder =
+                            existingMetadata?.sortOrder ?: metadataIndex.nextUserSortOrder(),
+                    )
+                val updatedIndex = metadataIndex.upsert(metadata)
+                saveMetadataIndex(updatedIndex)
+
+                val userConfigsById =
+                    configsFlow.value.associateBy(OverrideConfig::id).toMutableMap().apply {
+                        put(config.id, config)
+                    }
+                updateConfigsFlowSnapshot(updatedIndex, userConfigsById)
+            }
+        }
+
+    override suspend fun delete(id: String): Boolean =
+        withContext(Dispatchers.IO) {
+            // Built-ins cannot be deleted from the store (UI also hides the action).
+            if (BuiltInOverrideCatalog.isBuiltIn(id)) {
+                return@withContext false
+            }
+            val updatedIndex =
+                synchronized(OverrideMetadataFileLock.monitor) {
+                    val currentIndex = loadMetadataIndexForMutation()
+                    if (currentIndex.getById(id) == null) {
+                        return@synchronized null
+                    }
+
+                    val updated = currentIndex.remove(id).removeOverrideFromProfileChains(id)
+                    saveMetadataIndex(updated)
+                    cleanupStaleConfigFiles(id)
+                    updated
+                }
+            if (updatedIndex == null) {
+                refreshConfigsFlow()
+                return@withContext false
+            }
+            // The persistent snapshot is already clean; this synchronizes the binding StateFlow.
+            bindingProvider.removeOverrideFromAllBindings(id)
+            val userConfigsById =
+                configsFlow.value.associateBy(OverrideConfig::id).toMutableMap().apply {
+                    remove(id)
+                }
+            updateConfigsFlowSnapshot(updatedIndex, userConfigsById)
+            true
+        }
+
+    override suspend fun duplicate(id: String): OverrideConfig? =
+        withContext(Dispatchers.IO) {
+            val original = getById(id) ?: return@withContext null
+            val newMetadata = original.toMetadata().duplicateAsUser()
+            val duplicated =
+                original.copy(
+                    id = newMetadata.id,
+                    name = newMetadata.name,
+                    createdAt = newMetadata.createdAt,
+                    updatedAt = newMetadata.updatedAt,
+                )
+            save(duplicated)
+            duplicated
+        }
+
+    override suspend fun exists(id: String): Boolean =
+        withContext(Dispatchers.IO) {
+            if (BuiltInOverrideCatalog.isBuiltIn(id)) {
+                return@withContext loadBuiltInConfig(id) != null
+            }
+            loadMetadataIndex().getById(id)?.let(::findConfigFile) != null
+        }
+
+    suspend fun loadCustomRoutingContent(): String? =
+        withContext(Dispatchers.IO) {
+            val file =
+                getConfigFilePath(OverrideInternalConstants.CUSTOM_ROUTING_OVERRIDE_ID)
+                    ?: resolveConfigFile(
+                        OverrideInternalConstants.CUSTOM_ROUTING_OVERRIDE_ID,
+                        OverrideContentType.Yaml,
+                    )
+            if (!file.exists()) return@withContext null
+            file.readText().takeIf(String::isNotBlank)
+        }
+
+    suspend fun saveCustomRoutingContent(content: String) =
+        withContext(Dispatchers.IO) {
+            if (content.isBlank()) {
+                delete(OverrideInternalConstants.CUSTOM_ROUTING_OVERRIDE_ID)
+                return@withContext
+            }
+
+            val existing = getById(OverrideInternalConstants.CUSTOM_ROUTING_OVERRIDE_ID)
+            save(
+                OverrideConfig(
+                    id = OverrideInternalConstants.CUSTOM_ROUTING_OVERRIDE_ID,
+                    name = OverrideInternalConstants.CUSTOM_ROUTING_FILE_NAME,
+                    description = null,
+                    contentType = OverrideContentType.Yaml,
+                    content = content,
+                    createdAt = existing?.createdAt ?: System.currentTimeMillis(),
+                    updatedAt = System.currentTimeMillis(),
+                )
+            )
+        }
+
+    fun getConfigContent(id: String): String? {
+        if (BuiltInOverrideCatalog.isBuiltIn(id)) {
+            return materializeBuiltInFile(id)?.let { file ->
+                runCatching { file.readText() }.getOrNull()
+            }
+        }
+        val metadata = loadMetadataIndex().getById(id) ?: return null
+        val file = findConfigFile(metadata) ?: return null
+        return runCatching { file.readText() }.getOrNull()
+    }
+
+    fun saveConfigContent(id: String, content: String): Boolean {
+        return !BuiltInOverrideCatalog.isBuiltIn(id) && synchronized(OverrideMetadataFileLock.monitor) {
+            val index = loadMetadataIndexForMutation()
+            val metadata = index.getById(id) ?: return@synchronized false
+            runCatching {
+                val file = findConfigFile(metadata) ?: resolveConfigFile(id, metadata.contentType)
+                file.parentFile?.mkdirs()
+                OverrideMetadataIO.writeTextAtomic(file, content)
+
+                val updatedMetadata = metadata.copy(updatedAt = System.currentTimeMillis())
+                val updatedIndex = index.upsert(updatedMetadata)
+                saveMetadataIndex(updatedIndex)
+                val userConfigsById =
+                    configsFlow.value.associateBy(OverrideConfig::id).toMutableMap().apply {
+                        loadConfigContent(updatedMetadata)?.let { put(id, it) }
+                    }
+                updateConfigsFlowSnapshot(updatedIndex, userConfigsById)
+                true
+            }
+                .isSuccess
         }
     }
 
-    override suspend fun getAll(): List<OverrideConfig> = withContext(Dispatchers.IO) {
-        val systemPresets = getSystemPresets()
-        val userConfigs = loadUserConfigs()
-        systemPresets + userConfigs
+    fun getConfigFilePath(id: String): File? {
+        if (BuiltInOverrideCatalog.isBuiltIn(id)) {
+            return materializeBuiltInFile(id)
+        }
+        val metadata = loadMetadataIndex().getById(id) ?: return null
+        return findConfigFile(metadata)
     }
 
-    override fun getAllFlow(): Flow<List<OverrideConfig>> = _configsFlow.asStateFlow()
+    fun getConfigsDirectory(): File = configsDir
 
-    override suspend fun getById(id: String): OverrideConfig? = withContext(Dispatchers.IO) {
-        if (isSystemPreset(id)) {
-            return@withContext getSystemPresets().find { it.id == id }
+    suspend fun reorderUserConfigs(orderedIds: List<String>) =
+        withContext(Dispatchers.IO) {
+            synchronized(OverrideMetadataFileLock.monitor) {
+                if (orderedIds.isEmpty()) return@synchronized
+
+                val metadataIndex = loadMetadataIndexForMutation()
+                val sortedUserMetadata = metadataIndex.sortedUserMetadata()
+                if (sortedUserMetadata.isEmpty()) return@synchronized
+
+                val userMetadataById = sortedUserMetadata.associateBy(OverrideMetadata::id)
+                val reorderedIds = orderedIds.filter(userMetadataById::containsKey)
+                if (reorderedIds.isEmpty()) return@synchronized
+
+                val remainingIds =
+                    sortedUserMetadata.map(OverrideMetadata::id).filterNot(reorderedIds::contains)
+                val finalOrder = reorderedIds + remainingIds
+                val updatedConfigs = metadataIndex.configs.toMutableMap()
+                var hasChanges = false
+
+                finalOrder.forEachIndexed { index, id ->
+                    val metadata = userMetadataById[id] ?: return@forEachIndexed
+                    val newSortOrder = index.toLong() + 1L
+                    if (metadata.sortOrder != newSortOrder) {
+                        updatedConfigs[id] = metadata.copy(sortOrder = newSortOrder)
+                        hasChanges = true
+                    }
+                }
+
+                if (hasChanges) {
+                    val updatedIndex = metadataIndex.copy(configs = updatedConfigs)
+                    saveMetadataIndex(updatedIndex)
+                    val userConfigsById = configsFlow.value.associateBy(OverrideConfig::id)
+                    updateConfigsFlowSnapshot(updatedIndex, userConfigsById)
+                }
+            }
         }
-        val metadata = loadMetadataIndex().getById(id) ?: return@withContext null
-        val config = loadConfigContent(id) ?: return@withContext null
-        OverrideConfig(
+
+    private fun loadUserConfigs(): List<OverrideConfig> {
+        // Never short-circuit on a missing configsDir — imported overrides live in metadata and
+        // may still resolve after the directory is recreated (e.g. first built-in materialize).
+        if (!configsDir.exists()) {
+            configsDir.mkdirs()
+        }
+        return loadMetadataIndex().sortedUserMetadata().mapNotNull { metadata ->
+            if (
+                isInternalRuntimeConfig(metadata.id) ||
+                BuiltInOverrideCatalog.isBuiltIn(metadata.id)
+            ) {
+                return@mapNotNull null
+            }
+            loadConfigContent(metadata)
+        }
+    }
+
+    private fun isUserOwnedConfig(config: OverrideConfig): Boolean =
+        config.id != OverrideInternalConstants.CUSTOM_ROUTING_OVERRIDE_ID &&
+                !BuiltInOverrideCatalog.isBuiltIn(config.id) &&
+                !isInternalRuntimeConfig(config.id)
+
+    private fun loadBuiltInConfig(id: String): OverrideConfig? {
+        val def = BuiltInOverrideCatalog.find(id) ?: return null
+        // The materialized file is synchronized with the packaged asset on every resolution.
+        val file = materializeBuiltInFile(def)
+        val content =
+            file?.let { runCatching { it.readText() }.getOrNull() }
+                ?: readBuiltInAsset(def)
+                ?: return null
+        val now = System.currentTimeMillis()
+        return OverrideConfig(
+            id = def.id,
+            name = def.name,
+            description = def.description,
+            contentType = def.contentType,
+            content = content,
+            createdAt = now,
+            updatedAt = file?.lastModified()?.takeIf { it > 0L } ?: now,
+        )
+    }
+
+    private fun readBuiltInAsset(def: BuiltInOverrideDefinition): String? = runCatching {
+        context.assets.open(def.assetPath).bufferedReader().use { it.readText() }
+    }
+        .onFailure { error ->
+            Timber.w(error, "Failed to read built-in override asset: %s", def.assetPath)
+        }
+        .getOrNull()
+
+    private fun materializeBuiltInFile(id: String): File? {
+        return builtInFiles.sync(id)
+    }
+
+    private fun materializeBuiltInFile(def: BuiltInOverrideDefinition): File? {
+        return builtInFiles.sync(def.id)
+    }
+
+    private fun loadConfigContent(metadata: OverrideMetadata): OverrideConfig? {
+        val file = findConfigFile(metadata) ?: return null
+        val content = runCatching { file.readText() }.getOrNull() ?: return null
+        return OverrideConfig(
             id = metadata.id,
             name = metadata.name,
             description = metadata.description,
-            config = config,
-            isSystem = false,
+            contentType = metadata.contentType,
+            content = content,
             createdAt = metadata.createdAt,
             updatedAt = metadata.updatedAt,
         )
     }
 
-    override suspend fun getSystemPresets(): List<OverrideConfig> = withContext(Dispatchers.IO) {
-        systemPresetsCache?.let { return@withContext it }
-
-        try {
-            val configOverride = buildOfficialMrsConfigurationOverride(
-                defaultSystemOfficialMrsPresetSelection(),
-            )
-            val metadata = OverrideMetadata.createSystemPreset(
-                name = OFFICIAL_MRS_PRESET_TITLE,
-                description = OFFICIAL_MRS_PRESET_SUMMARY,
-            )
-            val presets = listOf(OverrideConfig(
-                id = metadata.id,
-                name = metadata.name,
-                description = metadata.description,
-                config = configOverride,
-                isSystem = true,
-                createdAt = metadata.createdAt,
-                updatedAt = metadata.updatedAt,
-            ))
-            systemPresetsCache = presets
-            presets
-        } catch (e: Exception) {
-            Timber.e(e, "Failed to build system presets")
-            emptyList()
-        }
-    }
-
-    override suspend fun getUserConfigs(): List<OverrideConfig> =
-        loadUserConfigs().filter { it.id != OverrideInternalConstants.CUSTOM_ROUTING_OVERRIDE_ID }
-
-    override fun getUserConfigsFlow(): Flow<List<OverrideConfig>> =
-        flow {
-            emit(loadUserConfigs().filter { it.id != OverrideInternalConstants.CUSTOM_ROUTING_OVERRIDE_ID })
-        }.flowOn(Dispatchers.IO)
-
-    override suspend fun save(config: OverrideConfig) = withContext(Dispatchers.IO) {
-        if (isSystemPreset(config.id)) return@withContext
-
-        configsDir.mkdirs()
-
-        val configFile = configsDir.resolve("${config.id}.json")
-        configFile.writeText(encodeConfigContent(config.config))
-
-        val metadataIndex = loadMetadataIndex()
-        val existingMetadata = metadataIndex.getById(config.id)
-        val metadata = OverrideMetadata(
-            id = config.id,
-            name = config.name,
-            description = config.description,
-            isSystem = false,
-            createdAt = config.createdAt,
-            updatedAt = config.updatedAt,
-            sortOrder = existingMetadata?.sortOrder ?: metadataIndex.nextUserSortOrder(),
-        )
-        val index = metadataIndex.upsert(metadata)
-        saveMetadataIndex(index)
-        val userConfigsById = _configsFlow.value
-            .filterNot(OverrideConfig::isSystem)
-            .associateBy(OverrideConfig::id)
-            .toMutableMap()
-            .apply { put(config.id, config) }
-        updateConfigsFlowSnapshot(
-            metadataIndex = index,
-            userConfigsById = userConfigsById,
-        )
-    }
-
-    override suspend fun delete(id: String): Boolean = withContext(Dispatchers.IO) {
-        if (isSystemPreset(id)) return@withContext false
-
-        val configFile = configsDir.resolve("$id.json")
-        val fileDeleted = !configFile.exists() || configFile.delete()
-        val metadataExists = loadMetadataIndex().getById(id) != null
-        if (fileDeleted && metadataExists) {
-            val index = loadMetadataIndex().remove(id)
-            saveMetadataIndex(index)
-            val userConfigsById = _configsFlow.value
-                .filterNot(OverrideConfig::isSystem)
-                .associateBy(OverrideConfig::id)
-                .toMutableMap()
-                .apply { remove(id) }
-            updateConfigsFlowSnapshot(
-                metadataIndex = index,
-                userConfigsById = userConfigsById,
-            )
-            return@withContext true
-        }
-        if (fileDeleted) {
-            refreshConfigsFlow()
-        }
-        false
-    }
-
-    override suspend fun duplicate(id: String): OverrideConfig? = withContext(Dispatchers.IO) {
-        val original = getById(id) ?: return@withContext null
-        val newMetadata = OverrideMetadata(
-            id = OverrideMetadata.generateId(),
-            name = "${original.name} (副本)",
-            description = original.description,
-            isSystem = false,
-            createdAt = System.currentTimeMillis(),
-            updatedAt = System.currentTimeMillis(),
-        )
-        val newConfig = OverrideConfig(
-            id = newMetadata.id,
-            name = newMetadata.name,
-            description = newMetadata.description,
-            config = original.config,
-            isSystem = false,
-            createdAt = newMetadata.createdAt,
-            updatedAt = newMetadata.updatedAt,
-        )
-        save(newConfig)
-        newConfig
-    }
-
-    override suspend fun exists(id: String): Boolean = withContext(Dispatchers.IO) {
-        if (isSystemPreset(id)) return@withContext true
-        configsDir.resolve("$id.json").exists()
-    }
-
-    override fun isSystemPreset(id: String): Boolean {
-        return id.startsWith(OverrideMetadata.SYSTEM_PREFIX)
-    }
-
-    suspend fun loadCustomRouting(): ConfigurationOverride? = withContext(Dispatchers.IO) {
-        val file = File(internalDir, OverrideInternalConstants.CUSTOM_ROUTING_FILE_NAME)
-        if (!file.exists()) return@withContext null
-        runCatching {
-            json.decodeFromString<ConfigurationOverride>(file.readText())
-        }.getOrNull()
-    }
-
-    suspend fun saveCustomRouting(config: ConfigurationOverride) = withContext(Dispatchers.IO) {
-        val file = File(internalDir, OverrideInternalConstants.CUSTOM_ROUTING_FILE_NAME)
-        file.parentFile?.mkdirs()
-        file.writeText(encodeConfigContent(config))
-    }
-
-    suspend fun export(config: OverrideConfig): String = withContext(Dispatchers.IO) {
-        encodeConfigContent(config.config)
-    }
-
-    suspend fun import(jsonString: String, name: String): OverrideConfig? = withContext(Dispatchers.IO) {
-        try {
-            val configOverride = json.decodeFromString(ConfigurationOverride.serializer(), jsonString)
-            val now = System.currentTimeMillis()
-            val metadata = OverrideMetadata(
-                id = OverrideMetadata.generateId(),
-                name = name,
-                description = null,
-                isSystem = false,
-                createdAt = now,
-                updatedAt = now,
-            )
-            val config = OverrideConfig(
-                id = metadata.id,
-                name = metadata.name,
-                description = metadata.description,
-                config = configOverride,
-                isSystem = false,
-                createdAt = metadata.createdAt,
-                updatedAt = metadata.updatedAt,
-            )
-            save(config)
-            config
-        } catch (e: Exception) {
-            null
-        }
-    }
-
-    suspend fun exportUserConfigBackup(): List<OverrideConfigBackupEntry> = withContext(Dispatchers.IO) {
-        if (!configsDir.exists()) return@withContext emptyList()
-        val index = loadMetadataIndex()
-        index.sortedUserMetadata()
-            .filterNot { metadata -> isInternalRuntimeConfig(metadata.id) }
-            .filterNot { metadata -> metadata.id == OverrideInternalConstants.CUSTOM_ROUTING_OVERRIDE_ID }
-            .mapNotNull { metadata ->
-                val content = getConfigJsonContent(metadata.id) ?: return@mapNotNull null
-                OverrideConfigBackupEntry(
-                    id = metadata.id,
-                    name = metadata.name,
-                    description = metadata.description,
-                    createdAt = metadata.createdAt,
-                    updatedAt = metadata.updatedAt,
-                    sortOrder = metadata.sortOrder,
-                    content = content,
-                )
-            }
-    }
-
-    suspend fun importUserConfigBackup(entries: List<OverrideConfigBackupEntry>) = withContext(Dispatchers.IO) {
-        if (entries.isEmpty()) return@withContext
-        configsDir.mkdirs()
-        val metadataIndex = loadMetadataIndex()
-        val updatedConfigs = metadataIndex.configs.toMutableMap()
-        val userConfigsById = _configsFlow.value
-            .filterNot(OverrideConfig::isSystem)
-            .associateBy(OverrideConfig::id)
-            .toMutableMap()
-
-        entries.forEach { entry ->
-            if (entry.id.isBlank() || isSystemPreset(entry.id) || isInternalRuntimeConfig(entry.id)) return@forEach
-            if (entry.id == OverrideInternalConstants.CUSTOM_ROUTING_OVERRIDE_ID) return@forEach
-            val decodedConfig = runCatching {
-                json.decodeFromString(ConfigurationOverride.serializer(), entry.content)
-            }.getOrNull() ?: return@forEach
-            val configContent = encodeConfigContent(decodedConfig)
-            configsDir.resolve("${entry.id}.json").writeText(configContent)
-            val metadata = OverrideMetadata(
-                id = entry.id,
-                name = entry.name.ifBlank { entry.id },
-                description = entry.description,
-                isSystem = false,
-                createdAt = entry.createdAt,
-                updatedAt = entry.updatedAt,
-                sortOrder = entry.sortOrder,
-            )
-            updatedConfigs[entry.id] = metadata
-            userConfigsById[entry.id] = OverrideConfig(
-                id = entry.id,
-                name = metadata.name,
-                description = metadata.description,
-                config = decodedConfig,
-                isSystem = false,
-                createdAt = metadata.createdAt,
-                updatedAt = metadata.updatedAt,
-            )
-        }
-
-        val updatedIndex = metadataIndex.copy(configs = updatedConfigs).normalizeUserSortOrders()
-        saveMetadataIndex(updatedIndex)
-        updateConfigsFlowSnapshot(
-            metadataIndex = updatedIndex,
-            userConfigsById = userConfigsById,
-        )
-    }
-
-    fun getConfigFilePath(id: String): File = configsDir.resolve("$id.json")
-    fun getConfigsDirectory(): File = configsDir
-
-    suspend fun reorderUserConfigs(orderedIds: List<String>) = withContext(Dispatchers.IO) {
-        if (orderedIds.isEmpty()) return@withContext
-
-        val metadataIndex = loadMetadataIndex()
-        val sortedUserMetadata = metadataIndex.sortedUserMetadata()
-        if (sortedUserMetadata.isEmpty()) return@withContext
-
-        val userMetadataById = sortedUserMetadata.associateBy(OverrideMetadata::id)
-        val reorderedIds = orderedIds.filter(userMetadataById::containsKey)
-        if (reorderedIds.isEmpty()) return@withContext
-
-        val remainingIds = sortedUserMetadata
-            .map(OverrideMetadata::id)
-            .filterNot(reorderedIds::contains)
-        val finalOrder = reorderedIds + remainingIds
-        val updatedConfigs = metadataIndex.configs.toMutableMap()
-        var hasChanges = false
-
-        finalOrder.forEachIndexed { index, id ->
-            val metadata = userMetadataById[id] ?: return@forEachIndexed
-            val newSortOrder = index.toLong() + 1L
-            if (metadata.sortOrder != newSortOrder) {
-                updatedConfigs[id] = metadata.copy(sortOrder = newSortOrder)
-                hasChanges = true
-            }
-        }
-
-        if (hasChanges) {
-            val updatedIndex = metadataIndex.copy(configs = updatedConfigs)
-            saveMetadataIndex(updatedIndex)
-            val userConfigsById = _configsFlow.value
-                .filterNot(OverrideConfig::isSystem)
-                .associateBy(OverrideConfig::id)
-            updateConfigsFlowSnapshot(
-                metadataIndex = updatedIndex,
-                userConfigsById = userConfigsById,
-            )
-        }
-    }
-
-    private fun loadUserConfigs(): List<OverrideConfig> {
-        if (!configsDir.exists()) return emptyList()
-        val index = loadMetadataIndex()
-        return index.sortedUserMetadata()
-            .mapNotNull { metadata ->
-                if (isInternalRuntimeConfig(metadata.id)) {
-                    return@mapNotNull null
+    private fun loadMetadataIndex(): MetadataIndex =
+        synchronized(OverrideMetadataFileLock.monitor) {
+            when (val loaded = OverrideMetadataIO.load(metadataFile)) {
+                is MetadataIndexLoad.Corrupt -> {
+                    // Never normalize-write an empty shell over a non-empty corrupt file.
+                    MetadataIndex()
                 }
-                loadConfigContent(metadata.id)?.let { config ->
-                    OverrideConfig(
-                        id = metadata.id,
-                        name = metadata.name,
-                        description = metadata.description,
-                        config = config,
-                        isSystem = false,
-                        createdAt = metadata.createdAt,
-                        updatedAt = metadata.updatedAt,
-                    )
+
+                MetadataIndexLoad.Missing -> MetadataIndex()
+                is MetadataIndexLoad.Ok -> {
+                    val sanitizedIndex = sanitizeMetadataIndex(loaded.index)
+                    val normalizedIndex = sanitizedIndex.normalizeUserSortOrders()
+                    if (normalizedIndex != loaded.index) {
+                        OverrideMetadataIO.save(metadataFile, normalizedIndex)
+                    }
+                    normalizedIndex
                 }
             }
-    }
-
-    fun getConfigJsonContent(id: String): String? {
-        val file = configsDir.resolve("$id.json")
-        if (!file.exists()) return null
-        return try {
-            file.readText()
-        } catch (e: Exception) {
-            null
         }
-    }
 
-    fun saveConfigJsonContent(id: String, content: String): Boolean {
-        if (isSystemPreset(id)) return false
-        configsDir.mkdirs()
-        val configFile = configsDir.resolve("$id.json")
-        return try {
-            configFile.writeText(content)
-            true
-        } catch (e: Exception) {
-            false
-        }
-    }
-
-    private fun loadConfigContent(id: String): ConfigurationOverride? {
-        val file = configsDir.resolve("$id.json")
-        if (!file.exists()) return null
-        return try {
-            val raw = file.readText()
-            val decoded = json.decodeFromString(ConfigurationOverride.serializer(), raw)
-            val cleaned = encodeConfigContent(decoded)
-            if (cleaned != raw) {
-                file.writeText(cleaned)
+    /** Mutation entry: refuses to proceed when on-disk metadata is corrupt. */
+    private fun loadMetadataIndexForMutation(): MetadataIndex =
+        synchronized(OverrideMetadataFileLock.monitor) {
+            val metadataIndex = OverrideMetadataIO.loadForMutation(metadataFile)
+            val sanitizedIndex = sanitizeMetadataIndex(metadataIndex)
+            val normalizedIndex = sanitizedIndex.normalizeUserSortOrders()
+            if (normalizedIndex != metadataIndex) {
+                OverrideMetadataIO.save(metadataFile, normalizedIndex)
             }
-            decoded
-        } catch (e: Exception) {
-            null
+            normalizedIndex
         }
-    }
-
-    private fun encodeConfigContent(config: ConfigurationOverride): String {
-        return encodeConfigurationOverride(config)
-    }
-
-    private fun loadMetadataIndex(): MetadataIndex {
-        val metadataIndex = if (!metadataFile.exists()) {
-            MetadataIndex()
-        } else {
-            try {
-                json.decodeFromString(MetadataIndex.serializer(), metadataFile.readText())
-            } catch (e: Exception) {
-                MetadataIndex()
-            }
-        }
-        val normalizedIndex = metadataIndex.normalizeUserSortOrders()
-        if (normalizedIndex != metadataIndex) {
-            saveMetadataIndex(normalizedIndex)
-        }
-        return normalizedIndex
-    }
 
     private fun saveMetadataIndex(index: MetadataIndex) {
-        overridesDir.mkdirs()
-        metadataFile.writeText(json.encodeToString(MetadataIndex.serializer(), index))
+        synchronized(OverrideMetadataFileLock.monitor) {
+            overridesDir.mkdirs()
+            OverrideMetadataIO.save(metadataFile, index)
+        }
     }
-}
 
-@Serializable
-data class OverrideConfigBackupEntry(
-    val id: String,
-    val name: String,
-    val description: String? = null,
-    val createdAt: Long,
-    val updatedAt: Long,
-    val sortOrder: Long = 0L,
-    val content: String,
-)
+    private fun resolveConfigFile(id: String, contentType: OverrideContentType): File =
+        configsDir.resolve("$id.${contentType.extension}")
+
+    private fun findConfigFile(metadata: OverrideMetadata): File? {
+        val expectedFile = resolveConfigFile(metadata.id, metadata.contentType)
+        if (expectedFile.exists()) return expectedFile
+
+        return configExtensions
+            .asSequence()
+            .map { extension -> configsDir.resolve("${metadata.id}.$extension") }
+            .firstOrNull(File::exists)
+    }
+
+    private fun cleanupStaleConfigFiles(id: String, keepExtension: String? = null) {
+        cleanupExtensions.forEach { extension ->
+            if (keepExtension != null && extension == keepExtension) {
+                return@forEach
+            }
+            runCatching { configsDir.resolve("$id.$extension").delete() }
+        }
+    }
+
+    private fun sanitizeMetadataIndex(index: MetadataIndex): MetadataIndex {
+        val sanitizedConfigs =
+            index.configs.filterValues { metadata ->
+                !isLegacySystemPresetId(metadata.id) &&
+                        !BuiltInOverrideCatalog.isBuiltIn(metadata.id)
+            }
+        val sanitizedProfileChains =
+            index.profileChains.mapValues { (_, binding) ->
+                binding.copy(
+                    overrideIds =
+                        binding.overrideIds.filterNot { id ->
+                            isLegacySystemPresetId(id) ||
+                                    (id.startsWith(OverrideMetadata.ID_PREFIX) &&
+                                            id !in sanitizedConfigs)
+                        }
+                )
+            }
+        return if (
+            sanitizedConfigs == index.configs && sanitizedProfileChains == index.profileChains
+        ) {
+            index
+        } else {
+            index.copy(configs = sanitizedConfigs, profileChains = sanitizedProfileChains)
+        }
+    }
+
+    private fun isLegacySystemPresetId(id: String): Boolean =
+        id.startsWith(OverrideMetadata.LEGACY_SYSTEM_PREFIX)
+
+    private fun OverrideConfig.toMetadata(): OverrideMetadata =
+        OverrideMetadata(
+            id = id,
+            name = name,
+            description = description,
+            contentType = contentType,
+            createdAt = createdAt,
+            updatedAt = updatedAt,
+        )
+}

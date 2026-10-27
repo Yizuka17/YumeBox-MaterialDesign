@@ -1,0 +1,103 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+  ~ This file is part of YumeBox.
+  ~
+  ~ YumeBox is free software: you can redistribute it and/or modify
+  ~ it under the terms of the GNU Affero General Public License as
+  ~ published by the Free Software Foundation, either version 3 of the
+  ~ License.
+  ~
+  ~ This program is distributed in the hope that it will be useful,
+  ~ but WITHOUT ANY WARRANTY; without even the implied warranty of
+  ~ MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+  ~ GNU Affero General Public License for more details.
+  ~
+  ~ You should have received a copy of the GNU Affero General Public License
+  ~ along with this program. If not, see <https://www.gnu.org/licenses/>.
+  ~
+  ~ Copyright (c)  YumeYucca 2025 - Present
+  ~
+  -->
+
+<manifest xmlns:android="http://schemas.android.com/apk/res/android"
+          xmlns:tools="http://schemas.android.com/tools">
+    <!-- The module declares what its own components need; hosts merge these automatically. -->
+    <uses-permission android:name="android.permission.FOREGROUND_SERVICE" tools:ignore="ForegroundServicesPolicy"/>
+    <uses-permission android:name="android.permission.FOREGROUND_SERVICE_LOCATION"/>
+    <uses-permission android:name="android.permission.FOREGROUND_SERVICE_SPECIAL_USE"/>
+    <uses-permission android:name="android.permission.RECEIVE_BOOT_COMPLETED"/>
+    <uses-permission android:name="android.permission.POST_NOTIFICATIONS"/>
+    <application>
+        <provider
+            android:name="com.github.yumelira.yumebox.runtime.service.StatusProvider"
+            android:authorities="${applicationId}.status"
+            android:enabled="true"
+            android:exported="false"/>
+
+        <service
+            android:name="com.github.yumelira.yumebox.runtime.service.TunService"
+            android:exported="false"
+            android:foregroundServiceType="specialUse"
+            android:permission="android.permission.BIND_VPN_SERVICE">
+            <property
+                android:name="android.app.PROPERTY_SPECIAL_USE_FGS_SUBTYPE"
+                android:value="yumebox_vpn"/>
+            <intent-filter>
+                <action android:name="android.net.VpnService"/>
+            </intent-filter>
+        </service>
+
+        <service
+            android:name="com.github.yumelira.yumebox.runtime.service.RootForegroundService"
+            android:exported="false"
+            android:stopWithTask="false"
+            android:foregroundServiceType="specialUse">
+            <property
+                android:name="android.app.PROPERTY_SPECIAL_USE_FGS_SUBTYPE"
+                android:value="root_tun_notification"/>
+        </service>
+
+        <service
+            android:name="com.github.yumelira.yumebox.runtime.service.AutoRestartService"
+            android:exported="false"
+            android:foregroundServiceType="specialUse">
+            <property
+                android:name="android.app.PROPERTY_SPECIAL_USE_FGS_SUBTYPE"
+                android:value="auto_restart_service"/>
+        </service>
+
+        <service
+            android:name="com.github.yumelira.yumebox.runtime.service.WifiAutomationService"
+            android:exported="false"
+            android:foregroundServiceType="location"/>
+
+        <service
+            android:name="com.github.yumelira.yumebox.runtime.service.ProxyTileService"
+            android:exported="true"
+            android:icon="@drawable/ic_logo_service"
+            android:label="@string/tile_proxy_label"
+            android:permission="android.permission.BIND_QUICK_SETTINGS_TILE">
+            <intent-filter>
+                <action android:name="android.service.quicksettings.action.QS_TILE"/>
+            </intent-filter>
+        </service>
+
+        <receiver
+            android:name="com.github.yumelira.yumebox.runtime.service.DialerReceiver"
+            android:exported="true">
+            <intent-filter>
+                <action android:name="android.provider.Telephony.SECRET_CODE"/>
+                <data android:host="0721" android:scheme="android_secret_code"/>
+            </intent-filter>
+        </receiver>
+
+        <receiver
+            android:name="com.github.yumelira.yumebox.runtime.service.RestartReceiver"
+            android:exported="false">
+            <intent-filter>
+                <action android:name="android.intent.action.BOOT_COMPLETED"/>
+                <action android:name="android.intent.action.MY_PACKAGE_REPLACED"/>
+            </intent-filter>
+        </receiver>
+    </application>
+</manifest>

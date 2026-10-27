@@ -14,11 +14,9 @@
  * You should have received a copy of the GNU Affero General Public License
  * along with this program. If not, see <https://www.gnu.org/licenses/>.
  *
- * Copyright (c)  YumeLira 2025 - Present
+ * Copyright (c)  YumeYucca 2025 - Present
  *
  */
-
-
 
 package com.github.yumelira.yumebox.core.util
 
@@ -26,28 +24,37 @@ import android.os.Binder
 import android.os.Parcel
 import android.os.Parcelable
 
-private class SliceParcelableListBpBinder(val list: List<Parcelable>, val flags: Int) : Binder() {
-    override fun onTransact(code: Int, data: Parcel, reply: Parcel?, tFlags: Int): Boolean {
+private class SliceParcelableListBpBinder(
+    val items: List<Parcelable>,
+    val flags: Int,
+) : Binder() {
+    override fun onTransact(
+        code: Int,
+        request: Parcel,
+        reply: Parcel?,
+        transactionFlags: Int,
+    ): Boolean {
         when (code) {
             TRANSACTION_GET_ITEMS -> {
                 reply ?: return false
 
-                val offset = data.readInt()
-                val chunk = data.readInt()
+                val offset = request.readInt()
+                val chunk = request.readInt()
+                if (offset !in 0..items.size || chunk <= 0) return false
 
-                val end = (offset + chunk).coerceAtMost(list.size)
+                val end = (offset.toLong() + chunk).coerceAtMost(items.size.toLong()).toInt()
 
                 reply.writeInt(end - offset)
 
                 for (i in offset until end) {
-                    list[i].writeToParcel(reply, flags)
+                    items[i].writeToParcel(reply, flags)
                 }
 
                 return true
             }
         }
 
-        return super.onTransact(code, data, reply, flags)
+        return super.onTransact(code, request, reply, transactionFlags)
     }
 
     companion object {
@@ -64,48 +71,52 @@ fun <T : Parcelable> List<T>.writeToParcelSlice(parcel: Parcel, flags: Int) {
 
 fun <T : Parcelable> Parcelable.Creator<T>.createListFromParcelSlice(
     parcel: Parcel,
-    flags: Int,
+    @Suppress("UNUSED_PARAMETER") flags: Int,
     chunk: Int,
 ): List<T> {
     val total = parcel.readInt()
+    require(total >= 0) { "Negative parcel slice size: $total" }
+    require(chunk > 0) { "Parcel slice chunk must be positive" }
     val remote = parcel.readStrongBinder()
     val result = ArrayList<T>(total)
 
     var offset = 0
 
     while (offset < total) {
-        val data = Parcel.obtain()
+        val request = Parcel.obtain()
         val reply = Parcel.obtain()
 
         try {
-            data.writeInt(offset)
-            data.writeInt(chunk)
+            val requested = minOf(chunk, total - offset)
+            request.writeInt(offset)
+            request.writeInt(requested)
 
-            if (!remote.transact(
+            check(
+                remote.transact(
                     SliceParcelableListBpBinder.TRANSACTION_GET_ITEMS,
-                    data,
+                    request,
                     reply,
-                    flags,
+                    0,
                 )
             ) {
-                break
+                "Parcel slice transaction failed at offset $offset"
             }
 
             val size = reply.readInt()
-
-            repeat(size) {
-                result.add(createFromParcel(reply))
+            check(size in 1..requested) {
+                "Invalid parcel slice size $size at offset $offset (requested $requested)"
             }
 
+            repeat(size) { result.add(createFromParcel(reply)) }
             offset += size
-
-            if (size == 0)
-                break
         } finally {
-            data.recycle()
+            request.recycle()
             reply.recycle()
         }
     }
 
+    check(result.size == total) {
+        "Parcel slice truncated: expected $total items, received ${result.size}"
+    }
     return result
 }

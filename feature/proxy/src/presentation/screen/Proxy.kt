@@ -38,11 +38,11 @@ import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.items
-import androidx.compose.foundation.lazy.grid.GridCells
-import androidx.compose.foundation.lazy.grid.GridItemSpan
-import androidx.compose.foundation.lazy.grid.LazyGridState
-import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
-import androidx.compose.foundation.lazy.grid.items
+import androidx.compose.foundation.lazy.staggeredgrid.StaggeredGridCells
+import androidx.compose.foundation.lazy.staggeredgrid.StaggeredGridItemSpan
+import androidx.compose.foundation.lazy.staggeredgrid.LazyStaggeredGridState
+import androidx.compose.foundation.lazy.staggeredgrid.LazyVerticalStaggeredGrid
+import androidx.compose.foundation.lazy.staggeredgrid.items
 import androidx.compose.foundation.pager.HorizontalPager
 import androidx.compose.foundation.pager.rememberPagerState
 import androidx.compose.foundation.shape.RoundedCornerShape
@@ -75,7 +75,7 @@ import com.github.yumelira.yumebox.presentation.component.CenteredText
 import com.github.yumelira.yumebox.presentation.component.Md3ELoading
 import com.github.yumelira.yumebox.presentation.component.LocalBottomBarScrollBehavior
 import com.github.yumelira.yumebox.presentation.component.SmallTopBar
-import com.github.yumelira.yumebox.presentation.component.rememberRetainedLazyGridState
+import com.github.yumelira.yumebox.presentation.component.rememberRetainedStaggeredGridState
 import com.github.yumelira.yumebox.presentation.icon.AppMd3Icons
 import com.github.yumelira.yumebox.presentation.screen.node.NodeCard
 import com.github.yumelira.yumebox.presentation.screen.node.NodeGroupCard
@@ -156,7 +156,7 @@ fun ProxyPager(
     val effectiveTestingProxyNames = remember(testingProxyNames, pendingTestProxyName) {
         pendingTestProxyName?.let { testingProxyNames + it } ?: testingProxyNames
     }
-    val gridState = rememberRetainedLazyGridState(
+    val gridState = rememberRetainedStaggeredGridState(
         "main_proxy_${displayTunnelMode.name}_${effectiveSelectedGroupName.orEmpty()}"
     )
     val modes = remember { listOf(TunnelState.Mode.Rule, TunnelState.Mode.Global, TunnelState.Mode.Direct) }
@@ -338,7 +338,7 @@ private fun ProxySurfboardContent(
     selectedGroupName: String?,
     testingGroupNames: Set<String>,
     testingProxyNames: Set<String>,
-    gridState: LazyGridState,
+    gridState: LazyStaggeredGridState,
     modes: List<TunnelState.Mode>,
     tunnelMode: TunnelState.Mode,
     onTunnelModeSelected: (TunnelState.Mode) -> Unit,
@@ -367,7 +367,7 @@ private fun ProxySurfboardContent(
             selectedGroup?.isGlobalGroup() == true
         ) {
             selectedGroup.proxies.filterNot { proxy ->
-                proxy.type.group || proxyGroups.any { group ->
+                proxy.isGroup || proxyGroups.any { group ->
                     !group.isGlobalGroup() && !group.isZakoGroup() && group.name == proxy.name
                 }
             }
@@ -410,8 +410,8 @@ private fun ProxySurfboardContent(
             modifier = Modifier.fillMaxSize(),
             userScrollEnabled = false,
         ) {
-            LazyVerticalGrid(
-                columns = GridCells.Fixed(2),
+            LazyVerticalStaggeredGrid(
+                columns = StaggeredGridCells.Fixed(2),
                 state = gridState,
                 modifier = Modifier
                     .fillMaxSize()
@@ -429,9 +429,9 @@ private fun ProxySurfboardContent(
                     bottom = mainInnerPadding.calculateBottomPadding() + spacing.space12,
                 ),
                 horizontalArrangement = Arrangement.spacedBy(UiDp.dp12),
-                verticalArrangement = Arrangement.spacedBy(UiDp.dp12),
+                verticalItemSpacing = UiDp.dp12,
             ) {
-                item(span = { GridItemSpan(maxLineSpan) }) {
+                item(span = StaggeredGridItemSpan.FullLine) {
                     ProxyGroupTabSection(
                         groups = tabGroups,
                         selectedGroupName = tabSelectedName,
@@ -439,7 +439,7 @@ private fun ProxySurfboardContent(
                     )
                 }
 
-                    item(span = { GridItemSpan(maxLineSpan) }) {
+                    item(span = StaggeredGridItemSpan.FullLine) {
                     AnimatedVisibility(
                         visible = isTesting,
                         enter = expandVertically(
@@ -463,7 +463,7 @@ private fun ProxySurfboardContent(
                 }
 
                 if (isZakoPage) {
-                    item(span = { GridItemSpan(maxLineSpan) }) {
+                    item(span = StaggeredGridItemSpan.FullLine) {
                         ZakoDescriptionCard()
                     }
                     items(items = zakoStatusGroups, key = { it.name }) { group ->
@@ -477,7 +477,7 @@ private fun ProxySurfboardContent(
                         )
                     }
                 } else if (selectedGroup == null) {
-                    item(span = { GridItemSpan(maxLineSpan) }) {
+                    item(span = StaggeredGridItemSpan.FullLine) {
                         CenteredText(
                             firstLine = MLang.Proxy.Empty.NoNodes,
                             secondLine = MLang.Proxy.Empty.Hint,
@@ -748,14 +748,15 @@ private fun ProxyGroupTabs(
         show = showAllGroups,
         title = MLang.Proxy.Title,
         onDismissRequest = { showAllGroups = false },
+        contentScrollEnabled = false,
     ) {
-        LazyVerticalGrid(
-            columns = GridCells.Fixed(2),
+        LazyVerticalStaggeredGrid(
+            columns = StaggeredGridCells.Fixed(2),
             modifier = Modifier
                 .fillMaxWidth()
                 .heightIn(max = 420.dp),
             horizontalArrangement = Arrangement.spacedBy(UiDp.dp12),
-            verticalArrangement = Arrangement.spacedBy(UiDp.dp12),
+            verticalItemSpacing = UiDp.dp12,
             contentPadding = PaddingValues(bottom = UiDp.dp16),
         ) {
             items(items = groups, key = { it.name }) { group ->

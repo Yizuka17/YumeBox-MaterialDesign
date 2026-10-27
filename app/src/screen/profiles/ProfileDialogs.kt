@@ -49,7 +49,7 @@ import com.github.yumelira.yumebox.presentation.component.PreferenceListItem
 import com.github.yumelira.yumebox.presentation.component.PreferenceSwitchItem
 import com.github.yumelira.yumebox.presentation.component.md3.YumeMd3OutlinedTextField
 import com.github.yumelira.yumebox.presentation.theme.AppTheme
-import com.github.yumelira.yumebox.service.runtime.entity.Profile
+import com.github.yumelira.yumebox.runtime.api.Profile
 import dev.oom_wg.purejoy.mlang.MLang
 
 private const val PROFILE_SETTINGS_MIN_HEIGHT_FRACTION = 0.5f

@@ -14,39 +14,32 @@
  * You should have received a copy of the GNU Affero General Public License
  * along with this program. If not, see <https://www.gnu.org/licenses/>.
  *
- * Copyright (c)  YumeLira 2025 - Present
+ * Copyright (c)  YumeYucca 2025 - Present
  *
  */
 
 package com.github.yumelira.yumebox.core.util
 
-import kotlinx.coroutines.CompletableDeferred
-import kotlinx.coroutines.CancellationException
-import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.Deferred
-import kotlinx.coroutines.async
+import kotlinx.coroutines.*
 import timber.log.Timber
 
 object StartupTaskCoordinator {
-    private val runtimeWarmupFallback = CompletableDeferred(Unit)
+    private val fallback = CompletableDeferred(Unit)
 
     @Volatile
-    private var runtimeWarmup: Deferred<Unit>? = null
+    private var warmup: Deferred<Unit>? = null
 
-    @Volatile
-    private var backgroundWarmup: Deferred<Unit>? = null
-
-    fun startRuntimeWarmup(
-        scope: CoroutineScope,
-        block: suspend () -> Unit,
-    ) {
-        if (runtimeWarmup != null) return
+    @Suppress("TooGenericExceptionCaught")
+    fun startWarmup(scope: CoroutineScope, block: suspend () -> Unit) {
+        if (warmup != null) return
         synchronized(this) {
-            if (runtimeWarmup != null) return
-            runtimeWarmup = scope.async {
+            if (warmup != null) return
+            warmup = scope.async {
                 try {
                     block()
-                } catch (error: Throwable) {
+                } catch (
+                    error: Throwable
+                ) { // fault barrier: log any warmup failure before rethrowing
                     if (error is CancellationException) throw error
                     Timber.e(error, "Runtime warmup failed")
                     throw error
@@ -55,25 +48,7 @@ object StartupTaskCoordinator {
         }
     }
 
-    fun startBackgroundWarmup(
-        scope: CoroutineScope,
-        block: suspend () -> Unit,
-    ) {
-        if (backgroundWarmup != null) return
-        synchronized(this) {
-            if (backgroundWarmup != null) return
-            backgroundWarmup = scope.async {
-                try {
-                    block()
-                } catch (error: Throwable) {
-                    if (error is CancellationException) throw error
-                    Timber.e(error, "Background warmup failed")
-                }
-            }
-        }
-    }
-
-    suspend fun awaitRuntimeWarmup() {
-        (runtimeWarmup ?: runtimeWarmupFallback).await()
+    suspend fun awaitWarmup() {
+        (warmup ?: fallback).await()
     }
 }

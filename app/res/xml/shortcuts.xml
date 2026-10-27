@@ -1,0 +1,26 @@
+<?xml version="1.0" encoding="utf-8"?>
+<shortcuts xmlns:android="http://schemas.android.com/apk/res/android">
+    <shortcut
+        android:enabled="true"
+        android:icon="@drawable/play"
+        android:shortcutId="start_clash"
+        android:shortcutLongLabel="@string/shortcut_start_clash_long"
+        android:shortcutShortLabel="@string/shortcut_start_clash_short">
+        <intent
+            android:action="com.github.yumelira.yumebox.action.START_CLASH"
+            android:targetPackage="com.github.yizuka17.yumebox.md3"
+            android:targetClass="com.github.yumelira.yumebox.MainActivity"/>
+    </shortcut>
+
+    <shortcut
+        android:enabled="true"
+        android:icon="@drawable/circle_pause"
+        android:shortcutId="stop_clash"
+        android:shortcutLongLabel="@string/shortcut_stop_clash_long"
+        android:shortcutShortLabel="@string/shortcut_stop_clash_short">
+        <intent
+            android:action="com.github.yumelira.yumebox.action.STOP_CLASH"
+            android:targetPackage="com.github.yizuka17.yumebox.md3"
+            android:targetClass="com.github.yumelira.yumebox.MainActivity"/>
+    </shortcut>
+</shortcuts>

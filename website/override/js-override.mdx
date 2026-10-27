@@ -1,0 +1,116 @@
+---
+title: JavaScript 语法概览
+sidebarTitle: JS 概览
+icon: file-braces-corner
+---
+
+
+<Info>脚本只修改当前配置副本，不会直接修改订阅原文.</Info>
+
+<Prompt description="生成一个符合 YumeBox 运行时约束的 JavaScript 覆写">
+请为 YumeBox 生成一个 JavaScript 覆写.
+
+- 必须定义 `main(profile)`.
+- 必须返回配置对象；需要异步请求时使用 `async main(profile)`.
+- 修改对象字段时直接赋值，修改数组时使用 `deepMerge(profile, patch, true)`.
+- 只使用 YumeBox 提供的 `yaml`、`deepMerge`、`fetch`、`console`、`b64e`、`b64d` 和 `Buffer`.
+- 不要返回数组、字符串、数字或 `undefined`.
+
+目标：
+</Prompt>
+
+## 执行流程
+
+<Steps>
+  <Step title="初始化运行时">
+    当前覆写链第一次出现 `.js` 文件时，初始化 JavaScript 运行时和内置方法.
+  </Step>
+
+  <Step title="传入配置对象">
+    当前配置转换为 JavaScript 对象，并作为 `profile` 参数传入.
+  </Step>
+
+  <Step title="执行 main">
+    脚本可以直接修改 `profile`，也可以返回新的配置对象.同步返回值和已完成的 Promise 都支持.
+  </Step>
+
+  <Step title="检查返回值">
+    返回值必须能转换为 JSON 对象.脚本错误、缺少 `main` 或返回非对象值会停止当前覆写链.
+  </Step>
+</Steps>
+
+同一条覆写链会复用 JavaScript 运行时，但每个脚本在隔离作用域中执行；上一个脚本的 `main`、变量和声明不会泄漏到下一个脚本.
+
+## `main(profile)`
+
+### 最小脚本
+
+```js 最小覆写.js icon="braces" lines
+function main(profile) {
+  return profile;
+}
+```
+
+### 修改字段
+
+```js 修改字段.js icon="braces" lines
+function main(profile) {
+  profile["log-level"] = "info";
+  profile["mixed-port"] = 7890;
+  return profile;
+}
+```
+
+### 预期 diff
+
+```js 修改字段 diff.js icon="braces" lines
+function main(profile) {
+-  profile["log-level"] = "info"; // [!code --]
++  profile["log-level"] = "debug"; // [!code ++]
+  return profile;
+}
+```
+
+`// [!code --]` 和 `// [!code ++]` 只用于文档中的差异显示，本身是合法的 JavaScript 注释.
+
+### 条件修改
+
+```js 按模式修改.js icon="braces" lines
+function main(profile) {
+  if (profile.mode === "global") {
+    profile["log-level"] = "warning";
+  }
+  return profile;
+}
+```
+
+### 异步脚本
+
+```js 异步 main.js icon="braces" lines
+async function main(profile) {
+  await Promise.resolve();
+  profile.extra = "ready";
+  return profile;
+}
+```
+
+Promise 必须最终完成；一直 pending 时会返回 `async main(profile) did not settle`.
+
+## 返回值要求
+
+| 返回值 | 结果 |
+| --- | --- |
+| 配置对象 | 成功，交给下一个覆写. |
+| 已完成 Promise，结果为对象 | 成功. |
+| 数组、字符串、数字、布尔值、`null` 或 `undefined` | 失败：`JS override result must be an object`. |
+| 无法转换为 JSON 的对象 | 失败并停止编译. |
+
+错误示例：
+
+```js 错误的返回值.js icon="braces" lines
+function main(profile) {
+  return profile.rules;
+}
+```
+
+如果 `profile.rules` 是数组，脚本会失败，而不是把数组当作完整配置继续执行.

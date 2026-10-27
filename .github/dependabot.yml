@@ -1,8 +1,28 @@
 version: 2
 
+# Kotlin dependencies are declared in gradle/libs.versions.toml. Dependabot's
+# Gradle updater requires a Gradle build, so this repository intentionally does
+# not register a Gradle ecosystem; keep the Toolchain catalog updated here or
+# through a catalog-aware updater.
+
 updates:
-  - package-ecosystem: cargo
+  - package-ecosystem: github-actions
     directory: /
+    schedule:
+      interval: weekly
+    open-pull-requests-limit: 10
+    commit-message:
+      prefix: "deps"
+    labels:
+      - dependencies
+      - github-actions
+    groups:
+      github-actions:
+        patterns:
+          - "*"
+
+  - package-ecosystem: cargo
+    directory: /lib/native/rust
     schedule:
       interval: weekly
     open-pull-requests-limit: 10
@@ -17,7 +37,7 @@ updates:
           - "*"
 
   - package-ecosystem: gomod
-    directory: /
+    directory: /lib/native/go
     schedule:
       interval: weekly
     open-pull-requests-limit: 10
@@ -27,12 +47,12 @@ updates:
       - dependencies
       - go
     groups:
-      go-dependencies:
+      native-go-dependencies:
         patterns:
           - "*"
 
-  - package-ecosystem: gradle
-    directory: /manager
+  - package-ecosystem: gomod
+    directory: /lib/mihomo
     schedule:
       interval: weekly
     open-pull-requests-limit: 10
@@ -40,9 +60,8 @@ updates:
       prefix: "deps"
     labels:
       - dependencies
-      - kotlin
-      - gradle
+      - go
     groups:
-      gradle-dependencies:
+      mihomo-go-dependencies:
         patterns:
           - "*"

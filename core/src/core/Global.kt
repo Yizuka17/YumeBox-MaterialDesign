@@ -14,13 +14,14 @@
  * You should have received a copy of the GNU Affero General Public License
  * along with this program. If not, see <https://www.gnu.org/licenses/>.
  *
- * Copyright (c)  YumeLira 2025 - Present
+ * Copyright (c)  YumeYucca 2025 - Present
  *
  */
 
-
+@file:Suppress("UnusedSymbol")
 
 package com.github.yumelira.yumebox.core
+
 
 import android.content.Context
 import kotlinx.coroutines.CoroutineScope

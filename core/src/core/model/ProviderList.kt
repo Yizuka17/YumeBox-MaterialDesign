@@ -14,11 +14,12 @@
  * You should have received a copy of the GNU Affero General Public License
  * along with this program. If not, see <https://www.gnu.org/licenses/>.
  *
- * Copyright (c)  YumeLira 2025 - Present
+ * Copyright (c)  YumeYucca 2025 - Present
  *
  */
 
 
+@file:Suppress("JavaDefaultMethodsNotOverriddenByDelegation")
 
 package com.github.yumelira.yumebox.core.model
 
@@ -27,24 +28,16 @@ import android.os.Parcelable
 import com.github.yumelira.yumebox.core.util.createListFromParcelSlice
 import com.github.yumelira.yumebox.core.util.writeToParcelSlice
 
-class ProviderList(data: List<Provider>) : List<Provider> by data, Parcelable {
+class ProviderList(providers: List<Provider>) : List<Provider> by providers, Parcelable {
     constructor(parcel: Parcel) : this(Provider.createListFromParcelSlice(parcel, 0, 20))
 
-    override fun describeContents(): Int {
-        return 0
-    }
+    override fun describeContents(): Int = 0
 
-    override fun writeToParcel(parcel: Parcel, flags: Int) {
-        return writeToParcelSlice(parcel, flags)
-    }
+    override fun writeToParcel(parcel: Parcel, flags: Int) = writeToParcelSlice(parcel, flags)
 
     companion object CREATOR : Parcelable.Creator<ProviderList> {
-        override fun createFromParcel(parcel: Parcel): ProviderList {
-            return ProviderList(parcel)
-        }
+        override fun createFromParcel(parcel: Parcel): ProviderList = ProviderList(parcel)
 
-        override fun newArray(size: Int): Array<ProviderList?> {
-            return arrayOfNulls(size)
-        }
+        override fun newArray(size: Int): Array<ProviderList?> = arrayOfNulls(size)
     }
 }

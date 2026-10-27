@@ -1,0 +1,146 @@
+{
+  "formatVersion": 1,
+  "database": {
+    "version": 1,
+    "identityHash": "457dc11d649e2d41f1f2802edeb28ecf",
+    "entities": [
+      {
+        "tableName": "app_traffic_daily",
+        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`date_millis` INTEGER NOT NULL, `app_key` TEXT NOT NULL, `package_name` TEXT, `app_name` TEXT NOT NULL, `total_upload` INTEGER NOT NULL, `total_download` INTEGER NOT NULL, `last_active_at` INTEGER NOT NULL, PRIMARY KEY(`date_millis`, `app_key`))",
+        "fields": [
+          {
+            "fieldPath": "dateMillis",
+            "columnName": "date_millis",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "appKey",
+            "columnName": "app_key",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "packageName",
+            "columnName": "package_name",
+            "affinity": "TEXT"
+          },
+          {
+            "fieldPath": "appName",
+            "columnName": "app_name",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "totalUpload",
+            "columnName": "total_upload",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "totalDownload",
+            "columnName": "total_download",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "lastActiveAt",
+            "columnName": "last_active_at",
+            "affinity": "INTEGER",
+            "notNull": true
+          }
+        ],
+        "primaryKey": {
+          "autoGenerate": false,
+          "columnNames": [
+            "date_millis",
+            "app_key"
+          ]
+        },
+        "indices": [
+          {
+            "name": "index_app_traffic_daily_date_millis",
+            "unique": false,
+            "columnNames": [
+              "date_millis"
+            ],
+            "orders": [],
+            "createSql": "CREATE INDEX IF NOT EXISTS `index_app_traffic_daily_date_millis` ON `${TABLE_NAME}` (`date_millis`)"
+          }
+        ]
+      },
+      {
+        "tableName": "route_traffic_daily",
+        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`date_millis` INTEGER NOT NULL, `app_key` TEXT NOT NULL, `route_key` TEXT NOT NULL, `route_label` TEXT NOT NULL, `total_upload` INTEGER NOT NULL, `total_download` INTEGER NOT NULL, `last_active_at` INTEGER NOT NULL, PRIMARY KEY(`date_millis`, `app_key`, `route_key`))",
+        "fields": [
+          {
+            "fieldPath": "dateMillis",
+            "columnName": "date_millis",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "appKey",
+            "columnName": "app_key",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "routeKey",
+            "columnName": "route_key",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "routeLabel",
+            "columnName": "route_label",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "totalUpload",
+            "columnName": "total_upload",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "totalDownload",
+            "columnName": "total_download",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "lastActiveAt",
+            "columnName": "last_active_at",
+            "affinity": "INTEGER",
+            "notNull": true
+          }
+        ],
+        "primaryKey": {
+          "autoGenerate": false,
+          "columnNames": [
+            "date_millis",
+            "app_key",
+            "route_key"
+          ]
+        },
+        "indices": [
+          {
+            "name": "index_route_traffic_daily_date_millis_app_key",
+            "unique": false,
+            "columnNames": [
+              "date_millis",
+              "app_key"
+            ],
+            "orders": [],
+            "createSql": "CREATE INDEX IF NOT EXISTS `index_route_traffic_daily_date_millis_app_key` ON `${TABLE_NAME}` (`date_millis`, `app_key`)"
+          }
+        ]
+      }
+    ],
+    "setupQueries": [
+      "CREATE TABLE IF NOT EXISTS room_master_table (id INTEGER PRIMARY KEY,identity_hash TEXT)",
+      "INSERT OR REPLACE INTO room_master_table (id,identity_hash) VALUES(42, '457dc11d649e2d41f1f2802edeb28ecf')"
+    ]
+  }
+}

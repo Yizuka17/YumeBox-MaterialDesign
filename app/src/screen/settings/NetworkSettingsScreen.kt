@@ -35,9 +35,9 @@ import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.input.KeyboardType
 import com.github.yumelira.yumebox.common.util.VpnUtils
 import com.github.yumelira.yumebox.common.util.toast
-import com.github.yumelira.yumebox.core.model.RootTunDnsMode
+import com.github.yumelira.yumebox.core.model.TunDnsMode
 import com.github.yumelira.yumebox.data.model.AccessControlMode
-import com.github.yumelira.yumebox.data.model.ProxyMode
+import com.github.yumelira.yumebox.data.model.RunMode
 import com.github.yumelira.yumebox.data.model.TunStack
 import com.github.yumelira.yumebox.presentation.component.AppTextFieldDialog
 import com.github.yumelira.yumebox.presentation.component.Card
@@ -49,7 +49,7 @@ import com.github.yumelira.yumebox.presentation.component.Title
 import com.github.yumelira.yumebox.presentation.component.combinePaddingValues
 import com.github.yumelira.yumebox.presentation.component.rememberStandalonePageMainPadding
 import com.github.yumelira.yumebox.presentation.component.TopBar
-import com.github.yumelira.yumebox.service.root.RootAccessSupport
+import com.github.yumelira.yumebox.runtime.service.root.RootAccessSupport
 import com.ramcosta.composedestinations.annotation.Destination
 import com.ramcosta.composedestinations.annotation.RootGraph
 import com.ramcosta.composedestinations.generated.destinations.AccessControlScreenDestination
@@ -80,7 +80,7 @@ fun NetworkSettingsScreen(
         contract = ActivityResultContracts.StartActivityForResult(),
     ) { result ->
         if (result.resultCode == android.app.Activity.RESULT_OK) {
-            viewModel.onProxyModeChange(ProxyMode.Tun)
+            viewModel.onProxyModeChange(RunMode.VpnService)
         } else {
             context.toast(MLang.NetworkSettings.Error.VpnDenied)
         }
@@ -126,7 +126,7 @@ fun NetworkSettingsScreen(
 @Composable
 private fun NetworkVpnServiceSection(
     viewModel: NetworkSettingsViewModel,
-    configuredMode: ProxyMode,
+    configuredMode: RunMode,
     vpnPermissionLauncher: androidx.activity.result.ActivityResultLauncher<android.content.Intent>,
 ) {
     val context = LocalContext.current
@@ -139,18 +139,18 @@ private fun NetworkVpnServiceSection(
             summary = MLang.NetworkSettings.VpnService.RouteTrafficSummary,
             currentValue = configuredMode,
             items = listOf(
-                MLang.NetworkSettings.VpnService.SystemProxy,
+                "eBPF (Root)",
                 MLang.NetworkSettings.VpnService.VpnMode,
                 MLang.NetworkSettings.VpnService.RootTunMode,
             ),
             values = listOf(
-                ProxyMode.Http,
-                ProxyMode.Tun,
-                ProxyMode.RootTun,
+                RunMode.Ebpf,
+                RunMode.VpnService,
+                RunMode.Tun,
             ),
             onValueChange = { mode ->
                 when (mode) {
-                    ProxyMode.Tun -> {
+                    RunMode.VpnService -> {
                         if (!VpnUtils.checkVpnPermission(context)) {
                             VpnUtils.getVpnPermissionIntent(context)?.let(vpnPermissionLauncher::launch)
                                 ?: viewModel.onProxyModeChange(mode)
@@ -159,20 +159,17 @@ private fun NetworkVpnServiceSection(
                         }
                     }
 
-                    ProxyMode.RootTun -> {
+                    RunMode.Tun, RunMode.Ebpf -> {
                         coroutineScope.launch {
-                            val rootStatus = RootAccessSupport.evaluateAsync(context)
-                            if (!rootStatus.canStartRootTun) {
-                                context.toast(rootStatus.rootTunBlockedMessage())
+                            val rootStatus = RootAccessSupport.isGranted()
+                            if (!rootStatus) {
+                                context.toast(MLang.NetworkSettings.Error.RootRequired)
                                 return@launch
                             }
                             viewModel.onProxyModeChange(mode)
                         }
                     }
 
-                    ProxyMode.Http -> {
-                        viewModel.onProxyModeChange(mode)
-                    }
                 }
             },
         )
@@ -200,7 +197,7 @@ private fun NetworkServiceOptionsSection(
     Title(MLang.NetworkSettings.Section.VpnOptions)
     Card {
         when (uiState.configuredMode) {
-            ProxyMode.Tun -> {
+            RunMode.VpnService -> {
                 TunServiceOptions(
                     state = tunServiceOptionsUiState,
                     actions = TunServiceOptionActions(
@@ -211,7 +208,7 @@ private fun NetworkServiceOptionsSection(
                 )
             }
 
-            ProxyMode.RootTun -> {
+            RunMode.Tun -> {
                 RootTunServiceOptions(
                     state = rootTunServiceOptionsUiState,
                     showFakeIpRange = uiState.showFakeIpRange,
@@ -221,7 +218,7 @@ private fun NetworkServiceOptionsSection(
                             onRootTunAutoRouteChange = viewModel::onRootTunAutoRouteChange,
                             onRootTunStrictRouteChange = viewModel::onRootTunStrictRouteChange,
                             onRootTunAutoRedirectChange = viewModel::onRootTunAutoRedirectChange,
-                            onRootTunDnsModeChange = viewModel::onRootTunDnsModeChange,
+                            onTunDnsModeChange = viewModel::onTunDnsModeChange,
                             onRootTunIfNameDraftChange = viewModel::onRootTunIfNameDraftChange,
                             onRootTunMtuDraftChange = viewModel::onRootTunMtuDraftChange,
                             onRootTunFakeIpRangeDraftChange = viewModel::onRootTunFakeIpRangeDraftChange,
@@ -235,7 +232,7 @@ private fun NetworkServiceOptionsSection(
                 )
             }
 
-            ProxyMode.Http -> Unit
+            RunMode.Ebpf -> Unit
         }
     }
 }
@@ -338,7 +335,7 @@ private fun RootTunAdvancedOptions(
         onRootTunAutoRouteChange = actions.onRootTunAutoRouteChange,
         onRootTunStrictRouteChange = actions.onRootTunStrictRouteChange,
         onRootTunAutoRedirectChange = actions.onRootTunAutoRedirectChange,
-        onRootTunDnsModeChange = actions.onRootTunDnsModeChange,
+        onTunDnsModeChange = actions.onTunDnsModeChange,
     )
     RootTunFakeIpOptions(
         showFakeIpRange = showFakeIpRange,
@@ -380,11 +377,11 @@ private fun RootTunRoutingOptions(
     rootTunAutoRoute: Boolean,
     rootTunStrictRoute: Boolean,
     rootTunAutoRedirect: Boolean,
-    rootTunDnsMode: RootTunDnsMode,
+    rootTunDnsMode: TunDnsMode,
     onRootTunAutoRouteChange: (Boolean) -> Unit,
     onRootTunStrictRouteChange: (Boolean) -> Unit,
     onRootTunAutoRedirectChange: (Boolean) -> Unit,
-    onRootTunDnsModeChange: (RootTunDnsMode) -> Unit,
+    onTunDnsModeChange: (TunDnsMode) -> Unit,
 ) {
     PreferenceSwitchItem(
         title = MLang.NetworkSettings.RootTun.AutoRouteTitle,
@@ -412,8 +409,8 @@ private fun RootTunRoutingOptions(
             MLang.NetworkSettings.RootTun.DnsModeRedirHost,
             MLang.NetworkSettings.RootTun.DnsModeFakeIp,
         ),
-        values = RootTunDnsMode.entries,
-        onValueChange = onRootTunDnsModeChange,
+        values = TunDnsMode.entries,
+        onValueChange = onTunDnsModeChange,
     )
 }
 
@@ -582,7 +579,7 @@ private data class RootTunServiceOptionActions(
     val onRootTunAutoRouteChange: (Boolean) -> Unit,
     val onRootTunStrictRouteChange: (Boolean) -> Unit,
     val onRootTunAutoRedirectChange: (Boolean) -> Unit,
-    val onRootTunDnsModeChange: (RootTunDnsMode) -> Unit,
+    val onTunDnsModeChange: (TunDnsMode) -> Unit,
     val onRootTunIfNameDraftChange: (String) -> Unit,
     val onRootTunMtuDraftChange: (String) -> Unit,
     val onRootTunFakeIpRangeDraftChange: (String) -> Unit,

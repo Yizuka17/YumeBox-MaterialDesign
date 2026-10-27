@@ -23,7 +23,7 @@
 package com.github.yumelira.yumebox.data.controller
 
 import android.util.Base64
-import com.github.yumelira.yumebox.core.model.RootTunDnsMode
+import com.github.yumelira.yumebox.core.model.TunDnsMode
 import com.github.yumelira.yumebox.core.model.TunnelState
 import com.github.yumelira.yumebox.data.model.AccessControlMode
 import com.github.yumelira.yumebox.data.model.AppColorTheme
@@ -31,7 +31,7 @@ import com.github.yumelira.yumebox.data.model.AppLanguage
 import com.github.yumelira.yumebox.data.model.MonetContrast
 import com.github.yumelira.yumebox.data.model.MonetStyle
 import com.github.yumelira.yumebox.data.model.ProxyDisplayMode
-import com.github.yumelira.yumebox.data.model.ProxyMode
+import com.github.yumelira.yumebox.data.model.RunMode
 import com.github.yumelira.yumebox.data.model.ProxySortMode
 import com.github.yumelira.yumebox.data.model.ThemeMode
 import com.github.yumelira.yumebox.data.model.TunStack
@@ -82,7 +82,7 @@ class UserSettingsBackupController(
 ) {
     companion object {
         const val BACKUP_FORMAT = "YumeBoxUserSettingsBackup"
-        const val BACKUP_VERSION = 3
+        const val BACKUP_VERSION = 4
     }
 
     private val json = Json {
@@ -158,6 +158,7 @@ class UserSettingsBackupController(
         put("hideAppIcon", appSettingsStore.hideAppIcon.value)
         put("excludeFromRecents", appSettingsStore.excludeFromRecents.value)
         put("showTrafficNotification", appSettingsStore.showTrafficNotification.value)
+        put("superIslandEnabled", appSettingsStore.superIslandEnabled.value)
         put("bottomBarAutoHide", appSettingsStore.bottomBarAutoHide.value)
         put("bottomBarUseLegacyStyle", appSettingsStore.bottomBarUseLegacyStyle.value)
         put("acgMainUiEnabled", appSettingsStore.acgMainUiEnabled.value)
@@ -200,6 +201,7 @@ class UserSettingsBackupController(
         obj.bool("hideAppIcon")?.let(appSettingsStore.hideAppIcon::set)
         obj.bool("excludeFromRecents")?.let(appSettingsStore.excludeFromRecents::set)
         obj.bool("showTrafficNotification")?.let(appSettingsStore.showTrafficNotification::set)
+        obj.bool("superIslandEnabled")?.let(appSettingsStore.superIslandEnabled::set)
         obj.bool("bottomBarAutoHide")?.let(appSettingsStore.bottomBarAutoHide::set)
         obj.bool("bottomBarUseLegacyStyle")?.let(appSettingsStore.bottomBarUseLegacyStyle::set)
         obj.bool("acgMainUiEnabled")?.let(appSettingsStore.acgMainUiEnabled::set)
@@ -255,7 +257,7 @@ class UserSettingsBackupController(
     }
 
     private fun exportNetworkSettings(): JsonObject = buildJsonObject {
-        put("proxyMode", networkSettingsStore.proxyMode.value.name)
+        put("runMode", networkSettingsStore.runMode.value.name)
         put("bypassPrivateNetwork", networkSettingsStore.bypassPrivateNetwork.value)
         put("dnsHijack", networkSettingsStore.dnsHijack.value)
         put("allowBypass", networkSettingsStore.allowBypass.value)
@@ -263,22 +265,28 @@ class UserSettingsBackupController(
         put("systemProxy", networkSettingsStore.systemProxy.value)
         put("tunStack", networkSettingsStore.tunStack.value.name)
         put("tunRouteExcludeAddress", networkSettingsStore.tunRouteExcludeAddress.value.toStringJsonArray())
-        put("rootTunIfName", networkSettingsStore.rootTunIfName.value)
-        put("rootTunMtu", networkSettingsStore.rootTunMtu.value)
-        put("rootTunAutoRoute", networkSettingsStore.rootTunAutoRoute.value)
-        put("rootTunStrictRoute", networkSettingsStore.rootTunStrictRoute.value)
-        put("rootTunAutoRedirect", networkSettingsStore.rootTunAutoRedirect.value)
-        put("rootTunIncludeAndroidUser", networkSettingsStore.rootTunIncludeAndroidUser.value.toIntJsonArray())
-        put("rootTunRouteExcludeAddress", networkSettingsStore.rootTunRouteExcludeAddress.value.toStringJsonArray())
-        put("rootTunDnsMode", networkSettingsStore.rootTunDnsMode.value.name)
-        put("rootTunFakeIpRange", networkSettingsStore.rootTunFakeIpRange.value)
-        put("rootTunFakeIpRange6", networkSettingsStore.rootTunFakeIpRange6.value)
+        put("rootTunIfName", networkSettingsStore.tunIfName.value)
+        put("rootTunMtu", networkSettingsStore.tunMtu.value)
+        put("rootTunAutoRoute", networkSettingsStore.tunAutoRoute.value)
+        put("rootTunStrictRoute", networkSettingsStore.tunStrictRoute.value)
+        put("rootTunAutoRedirect", networkSettingsStore.tunAutoRedirect.value)
+        put("rootTunIncludeAndroidUser", networkSettingsStore.tunIncludeAndroidUser.value.toIntJsonArray())
+        put("rootTunRouteExcludeAddress", networkSettingsStore.tunRouteExcludeAddress.value.toStringJsonArray())
+        put("rootTunDnsMode", networkSettingsStore.tunDnsMode.value.name)
+        put("rootTunFakeIpRange", networkSettingsStore.tunFakeIpRange.value)
+        put("rootTunFakeIpRange6", networkSettingsStore.tunFakeIpRange6.value)
         put("accessControlMode", networkSettingsStore.accessControlMode.value.name)
         put("accessControlPackages", networkSettingsStore.accessControlPackages.value.sorted().toStringJsonArray())
     }
 
     private fun importNetworkSettings(obj: JsonObject) {
-        obj.enumValue<ProxyMode>("proxyMode")?.let(networkSettingsStore.proxyMode::set)
+        val mode = obj.enumValue<RunMode>("runMode") ?: when (obj.string("proxyMode")) {
+            "Tun", "VpnService", "Http" -> RunMode.VpnService
+            "RootTun" -> RunMode.Tun
+            "Ebpf" -> RunMode.Ebpf
+            else -> null
+        }
+        mode?.let(networkSettingsStore.runMode::set)
         obj.bool("bypassPrivateNetwork")?.let(networkSettingsStore.bypassPrivateNetwork::set)
         obj.bool("dnsHijack")?.let(networkSettingsStore.dnsHijack::set)
         obj.bool("allowBypass")?.let(networkSettingsStore.allowBypass::set)
@@ -286,16 +294,16 @@ class UserSettingsBackupController(
         obj.bool("systemProxy")?.let(networkSettingsStore.systemProxy::set)
         obj.enumValue<TunStack>("tunStack")?.let(networkSettingsStore.tunStack::set)
         obj.stringList("tunRouteExcludeAddress")?.let(networkSettingsStore.tunRouteExcludeAddress::set)
-        obj.string("rootTunIfName")?.let(networkSettingsStore.rootTunIfName::set)
-        obj.int("rootTunMtu")?.let(networkSettingsStore.rootTunMtu::set)
-        obj.bool("rootTunAutoRoute")?.let(networkSettingsStore.rootTunAutoRoute::set)
-        obj.bool("rootTunStrictRoute")?.let(networkSettingsStore.rootTunStrictRoute::set)
-        obj.bool("rootTunAutoRedirect")?.let(networkSettingsStore.rootTunAutoRedirect::set)
-        obj.intList("rootTunIncludeAndroidUser")?.let(networkSettingsStore.rootTunIncludeAndroidUser::set)
-        obj.stringList("rootTunRouteExcludeAddress")?.let(networkSettingsStore.rootTunRouteExcludeAddress::set)
-        obj.enumValue<RootTunDnsMode>("rootTunDnsMode")?.let(networkSettingsStore.rootTunDnsMode::set)
-        obj.string("rootTunFakeIpRange")?.let(networkSettingsStore.rootTunFakeIpRange::set)
-        obj.string("rootTunFakeIpRange6")?.let(networkSettingsStore.rootTunFakeIpRange6::set)
+        obj.string("rootTunIfName")?.let(networkSettingsStore.tunIfName::set)
+        obj.int("rootTunMtu")?.let(networkSettingsStore.tunMtu::set)
+        obj.bool("rootTunAutoRoute")?.let(networkSettingsStore.tunAutoRoute::set)
+        obj.bool("rootTunStrictRoute")?.let(networkSettingsStore.tunStrictRoute::set)
+        obj.bool("rootTunAutoRedirect")?.let(networkSettingsStore.tunAutoRedirect::set)
+        obj.intList("rootTunIncludeAndroidUser")?.let(networkSettingsStore.tunIncludeAndroidUser::set)
+        obj.stringList("rootTunRouteExcludeAddress")?.let(networkSettingsStore.tunRouteExcludeAddress::set)
+        obj.enumValue<TunDnsMode>("rootTunDnsMode")?.let(networkSettingsStore.tunDnsMode::set)
+        obj.string("rootTunFakeIpRange")?.let(networkSettingsStore.tunFakeIpRange::set)
+        obj.string("rootTunFakeIpRange6")?.let(networkSettingsStore.tunFakeIpRange6::set)
         obj.enumValue<AccessControlMode>("accessControlMode")?.let(networkSettingsStore.accessControlMode::set)
         obj.stringList("accessControlPackages")?.toSet()?.let(networkSettingsStore.accessControlPackages::set)
     }

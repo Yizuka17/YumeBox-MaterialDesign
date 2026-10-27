@@ -1,0 +1,114 @@
+---
+title: JavaScript syntax overview
+sidebarTitle: JS Overview
+icon: file-braces-corner
+---
+The <Info> script only modifies the current configuration copy and does not directly modify the original subscription text. </Info>
+
+<Prompt description="生成一个符合 YumeBox 运行时约束的 JavaScript 覆写">
+Please generate a JavaScript override for YumeBox.
+
+- `main(profile)` must be defined.
+- A configuration object must be returned; use `async main(profile)` when asynchronous requests are required.
+- Directly assign values ​​when modifying object fields, and use `deepMerge(profile, patch, true)` when modifying arrays.
+- Only use `yaml`, `deepMerge`, `fetch`, `console`, `b64e`, `b64d` and `Buffer` provided by YumeBox.
+- Do not return arrays, strings, numbers, or `undefined`.
+
+Goal:
+</Prompt>
+
+## Execution process
+
+<Steps>
+  <Step title="Initialize runtime">
+    Initializes the JavaScript runtime and built-in methods the first time a `.js` file appears in the current override chain.
+  </Step>
+
+  <Step title="Pass in configuration object">
+    The current configuration is converted to a JavaScript object and passed in as the `profile` parameter.
+  </Step>
+
+  <Step title="execute main">
+    The script can modify `profile` directly or return a new configuration object. Both synchronous return values ​​and completed Promises are supported.
+  </Step>
+
+  <Step title="Check return value">
+    The return value must be convertible to a JSON object. Script errors, missing `main`, or returning non-object values ​​will stop the current override chain.
+  </Step>
+</Steps>
+
+The same override chain reuses the JavaScript runtime, but each script executes in an isolated scope; the `main`, variables, and declarations of the previous script are not leaked to the next script.
+
+## `main(profile)`
+
+### Minimal script
+
+```js 最小覆写.js icon="braces" lines
+function main(profile) {
+  return profile;
+}
+```
+
+### Modify fields
+
+```js 修改字段.js icon="braces" lines
+function main(profile) {
+  profile["log-level"] = "info";
+  profile["mixed-port"] = 7890;
+  return profile;
+}
+```
+
+### expected diff
+
+```js 修改字段 diff.js icon="braces" lines
+function main(profile) {
+-  profile["log-level"] = "info"; // [!code --]
++  profile["log-level"] = "debug"; // [!code ++]
+  return profile;
+}
+```
+
+`// [!code --]` and `// [!code ++]` are only used for diff display in documentation and are legal JavaScript comments themselves.
+
+### Condition modification
+
+```js 按模式修改.js icon="braces" lines
+function main(profile) {
+  if (profile.mode === "global") {
+    profile["log-level"] = "warning";
+  }
+  return profile;
+}
+```
+
+### Asynchronous script
+
+```js 异步 main.js icon="braces" lines
+async function main(profile) {
+  await Promise.resolve();
+  profile.extra = "ready";
+  return profile;
+}
+```
+
+Promise must eventually complete; it will return `async main(profile) did not settle` when it is pending.
+
+## Return value requirements
+
+| return value | result |
+| --- | --- |
+| Configuration object | Success, hand over to next overwrite. |
+| Promise completed with result object | success. |
+| Array, string, number, boolean, `null` or `undefined` | Failure: `JS override result must be an object`. |
+| Object that cannot be converted to JSON | Fails and stops compilation. |
+
+Error example:
+
+```js 错误的返回值.js icon="braces" lines
+function main(profile) {
+  return profile.rules;
+}
+```
+
+If `profile.rules` is an array, the script will fail instead of continuing with the array as a complete configuration.

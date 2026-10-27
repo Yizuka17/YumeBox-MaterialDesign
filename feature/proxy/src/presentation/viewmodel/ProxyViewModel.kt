@@ -59,7 +59,7 @@ class ProxyViewModel(
 
     private val groupSorter = ProxyGroupSorter()
 
-    val tunnelMode: StateFlow<TunnelState.Mode> = proxyFacade.preferredTunnelMode
+    val tunnelMode: StateFlow<TunnelState.Mode> = proxyDisplaySettingsStore.proxyMode.state
 
     val sortMode: StateFlow<ProxySortMode> = proxyDisplaySettingsStore.sortMode.state
         .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), ProxySortMode.DEFAULT)
@@ -185,7 +185,7 @@ class ProxyViewModel(
     ) {
         val groupName = group.name
         val targets = group.proxies
-            .filterNot { proxy -> proxy.type.group }
+            .filterNot { proxy -> proxy.isGroup }
             .distinctBy(Proxy::name)
         if (targets.isEmpty()) {
             proxyFacade.healthCheck(groupName)
@@ -205,7 +205,7 @@ class ProxyViewModel(
                         _testingProxyNames.update { it + proxyName }
                         try {
                             val delay = runCatching {
-                                proxyFacade.healthCheckProxy(groupName, proxyName)
+                                proxyFacade.healthCheckProxy(proxyName)
                             }.getOrDefault(-1)
                             if (tunnelMode.value == testMode && proxyGroups.value.any { it.name == groupName }) {
                                 lockedGroupTestDelays.update { all ->
@@ -230,7 +230,13 @@ class ProxyViewModel(
         viewModelScope.launch {
             cancelActiveTests()
             runCatching {
-                proxyFacade.switchPreferredTunnelMode(mode)
+                runtimeOverrideController.updateProfile { source ->
+                    val values = com.github.yumelira.yumebox.core.util.YamlCodec.loadMap(source).toMutableMap()
+                    values["mode"] = mode.name.lowercase()
+                    com.github.yumelira.yumebox.core.util.YamlCodec.dumpMap(values)
+                }.getOrThrow()
+                if (proxyFacade.isRunning.value) proxyFacade.reloadProxy()
+                proxyDisplaySettingsStore.proxyMode.set(mode)
                 showMessage(MLang.Proxy.Mode.Switched.format(mode.displayName()))
             }.onFailure { error ->
                 showError(MLang.Proxy.Mode.SwitchFailed.format(error.message ?: mode.displayName()))
@@ -279,7 +285,7 @@ class ProxyViewModel(
             val testMode = tunnelMode.value
             _testingProxyNames.update { it + proxyName }
             runCatching {
-                val delay = proxyFacade.healthCheckProxy(groupName, proxyName)
+                val delay = proxyFacade.healthCheckProxy(proxyName)
                 lockedGroupTestDelays.update { all ->
                     val groupDelays = all[groupName]
                     if (groupDelays == null) {

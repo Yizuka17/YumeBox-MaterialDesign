@@ -14,11 +14,9 @@
  * You should have received a copy of the GNU Affero General Public License
  * along with this program. If not, see <https://www.gnu.org/licenses/>.
  *
- * Copyright (c)  YumeLira 2025 - Present
+ * Copyright (c)  YumeYucca 2025 - Present
  *
  */
-
-
 
 package com.github.yumelira.yumebox.core.util
 
@@ -34,9 +32,7 @@ object DateSerializer : KSerializer<Date> {
     override val descriptor: SerialDescriptor
         get() = PrimitiveSerialDescriptor("Date", PrimitiveKind.LONG)
 
-    override fun deserialize(decoder: Decoder): Date {
-        return Date(decoder.decodeLong())
-    }
+    override fun deserialize(decoder: Decoder): Date = Date(decoder.decodeLong())
 
     override fun serialize(encoder: Encoder, value: Date) {
         encoder.encodeLong(value.time)

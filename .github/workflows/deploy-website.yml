@@ -1,0 +1,66 @@
+name: Deploy Website
+
+on:
+  push:
+    branches: [ Moe ]
+    paths:
+      - 'website/**'
+      - '.github/workflows/deploy-website.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+concurrency:
+  group: pages
+  cancel-in-progress: false
+
+jobs:
+  build:
+    name: Build Website
+    runs-on: macos-26
+    steps:
+      - uses: actions/checkout@v7.0.1
+
+      - uses: actions/setup-node@v7.1.0
+        with:
+          node-version: '24'
+
+      - name: Install pnpm and Mint CLI
+        run: |
+          npm install -g pnpm
+          export PNPM_HOME="$HOME/.local/share/pnpm"
+          export PATH="$PNPM_HOME:$PATH"
+          pnpm add -g mint
+          echo "$PNPM_HOME" >> "$GITHUB_PATH"
+
+      - name: Export static site
+        working-directory: website
+        run: mint export --output export.zip
+
+      - name: Unpack static site
+        run: |
+          mkdir -p _site
+          unzip -q website/export.zip -d _site
+          rm -f _site/serve.js '_site/Start Docs.command' '_site/Start Docs.bat'
+          touch _site/.nojekyll
+
+      - uses: actions/configure-pages@v6.0.0
+
+      - uses: actions/upload-pages-artifact@v5.0.0
+        with:
+          path: _site
+
+  deploy:
+    name: Deploy to GitHub Pages
+    needs: build
+    runs-on: macos-26
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - name: Deploy
+        id: deployment
+        uses: actions/deploy-pages@v5.0.1

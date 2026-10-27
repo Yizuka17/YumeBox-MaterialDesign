@@ -14,20 +14,19 @@
  * You should have received a copy of the GNU Affero General Public License
  * along with this program. If not, see <https://www.gnu.org/licenses/>.
  *
- * Copyright (c)  YumeLira 2025 - Present
+ * Copyright (c)  YumeYucca 2025 - Present
  *
  */
 
 package com.github.yumelira.yumebox.data.controller
 
-import com.github.yumelira.yumebox.core.Clash
 import com.github.yumelira.yumebox.data.model.AppLanguage
 import com.github.yumelira.yumebox.data.store.AppSettingsStore
 
 class AppSettingsController(
     private val store: AppSettingsStore,
     private val applyLanguage: (AppLanguage) -> Unit = {},
-    private val applyUserAgent: (String) -> Unit = Clash::setCustomUserAgent,
+    private val applyUserAgent: (String) -> Unit = {},
 ) {
     fun applyAppLanguage(language: AppLanguage) {
         store.appLanguage.set(language)

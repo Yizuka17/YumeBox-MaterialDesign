@@ -27,7 +27,6 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.lazy.LazyListScope
@@ -61,7 +60,7 @@ private data class GroupBadge(
 
 private const val ZAKO_GROUP_NAME = "zako"
 
-private fun groupBadge(type: Proxy.Type): GroupBadge = GroupBadge(type.name)
+private fun groupBadge(type: String): GroupBadge = GroupBadge(type)
 
 private fun ProxyGroupInfo.isZakoGroup(): Boolean = name.equals(ZAKO_GROUP_NAME, ignoreCase = true)
 
@@ -73,7 +72,7 @@ internal fun LazyListScope.nodeGroupItems(
 ) {
     items(
         items = groups,
-        key = { group -> "${group.type.name}:${group.name}" },
+        key = { group -> "${group.type}:${group.name}" },
         contentType = { "NodeGroupCard" },
     ) { group ->
         NodeGroupCard(
@@ -128,7 +127,7 @@ internal fun NodeGroupCard(
     NodeSelectableCard(
         isSelected = isSelected,
         onClick = onCardClick,
-        modifier = modifier.heightIn(min = 156.dp),
+        modifier = modifier,
         paddingVertical = spacing.space12,
     ) {
         Column(

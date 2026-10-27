@@ -33,7 +33,6 @@ package com.github.yumelira.yumebox.data.controller
 
 import android.content.Context
 import android.net.Uri
-import com.github.yumelira.yumebox.core.Clash
 import com.github.yumelira.yumebox.core.model.GeoFileType
 import com.github.yumelira.yumebox.core.util.runtimeHomeDir
 import timber.log.Timber
@@ -73,6 +72,7 @@ data class GeoXCacheEntry(
 
 class GeoXDataController(
     private val context: Context,
+    private val validateGeo: (File, GeoFileType) -> com.github.yumelira.yumebox.core.model.GeoValidationResult,
 ) {
     private val runtimeHome: File get() = context.runtimeHomeDir
     private val fallbackDir: File get() = runtimeHome.resolve("geo-fallback")
@@ -212,7 +212,7 @@ class GeoXDataController(
         if (!deep) return true
         val type = GEO_FILE_TYPE_BY_NAME[filename] ?: return true
         return runCatching {
-            val result = Clash.validateGeoFile(file, type)
+            val result = validateGeo(file, type)
             if (!result.valid) {
                 Timber.w(
                     "Geo file validation failed: %s, path=%s, size=%d, message=%s",

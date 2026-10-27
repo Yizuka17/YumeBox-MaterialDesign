@@ -1,0 +1,249 @@
+/*
+ * This file is part of YumeBox.
+ *
+ * YumeBox is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU Affero General Public License as
+ * published by the Free Software Foundation, either version 3 of the
+ * License.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+ * GNU Affero General Public License for more details.
+ *
+ * You should have received a copy of the GNU Affero General Public License
+ * along with this program. If not, see <https://www.gnu.org/licenses/>.
+ *
+ * Copyright (c)  YumeYucca 2025 - Present
+ *
+ */
+
+package com.github.yumelira.yumebox.runtime.service
+
+import android.app.Notification
+import android.app.NotificationChannel
+import android.app.NotificationManager
+import android.app.Service
+import android.content.Intent
+import android.content.pm.ServiceInfo
+import android.net.VpnService
+import android.os.Build
+import android.os.IBinder
+import androidx.core.app.NotificationCompat
+import androidx.core.app.ServiceCompat
+import com.github.yumelira.yumebox.common.util.XiaomiAutoStart
+import com.github.yumelira.yumebox.core.util.AutoStartSessionGate
+import com.github.yumelira.yumebox.core.util.StartupTaskCoordinator
+import com.github.yumelira.yumebox.data.model.RunMode
+import com.github.yumelira.yumebox.data.store.*
+import com.github.yumelira.yumebox.runtime.api.RuntimeOwner
+import com.github.yumelira.yumebox.runtime.api.RuntimePhase
+import com.github.yumelira.yumebox.runtime.api.RuntimeStartSource
+import com.github.yumelira.yumebox.runtime.service.log.RuntimeLog
+import com.github.yumelira.yumebox.runtime.service.profile.ProfileService
+import com.github.yumelira.yumebox.runtime.service.util.*
+import kotlinx.coroutines.CancellationException
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.Job
+import kotlinx.coroutines.SupervisorJob
+import kotlinx.coroutines.TimeoutCancellationException
+import kotlinx.coroutines.cancel
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.withTimeout
+import timber.log.Timber
+import java.util.concurrent.atomic.AtomicBoolean
+
+class AutoRestartService : Service() {
+    companion object {
+        private const val TAG = "AutoRestartService"
+        private const val NOTIFICATION_ID = 1101
+        private const val CHANNEL_ID = "auto_restart_channel"
+        const val EXTRA_REASON = "auto_restart_reason"
+        const val REASON_BOOT_COMPLETED = "boot_completed"
+        const val REASON_PACKAGE_REPLACED = "package_replaced"
+        private const val ACTIVATION_TIMEOUT_MS = 60_000L
+    }
+
+    private val serviceScope = CoroutineScope(SupervisorJob() + Dispatchers.Default)
+    private val mmkvProvider by lazy { MMKVProvider() }
+    private val appSettingsStorage by lazy { AppSettingsStore(mmkvProvider.getMMKV("settings")) }
+    private val featureStore by lazy { FeatureStore(mmkvProvider.getMMKV("substore")) }
+    private val networkSettingsStorage by lazy {
+        NetworkSettingsStore(mmkvProvider.getMMKV("network_settings"))
+    }
+    private val serviceCache by lazy { mmkvProvider.getMMKV("service_cache") }
+    private val profileManager by lazy { ProfileService(applicationContext) }
+    private val foregroundStarted = AtomicBoolean(false)
+    private var autoStartJob: Job? = null
+
+    // Duplicate triggers (boot + replaced racing) are merged into one job; the finally block
+    // must stop with the latest delivered startId or the service lingers in foreground forever.
+    @Volatile private var lastStartId = -1
+
+    override fun onBind(intent: Intent?): IBinder? = null
+
+    override fun onCreate() {
+        super.onCreate()
+        ensureForegroundStarted()
+    }
+
+    override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int {
+        ensureForegroundStarted()
+        lastStartId = startId
+        if (autoStartJob?.isActive == true) {
+            return START_NOT_STICKY
+        }
+        AutoStartExecutionGate.markStarted(serviceCache)
+
+        val reason = intent?.getStringExtra(EXTRA_REASON).orEmpty().ifBlank { "unknown" }
+        autoStartJob = serviceScope.launch {
+            try {
+                runCatching { checkAndAutoStart(reason) }
+                    .onFailure { error ->
+                        Timber.tag(TAG).e(error, "Auto start failed: ${error.message}")
+                    }
+            } finally {
+                AutoStartExecutionGate.clear(serviceCache)
+                ServiceCompat.stopForeground(
+                    this@AutoRestartService,
+                    ServiceCompat.STOP_FOREGROUND_REMOVE,
+                )
+                stopSelf(lastStartId)
+            }
+        }
+
+        return START_NOT_STICKY
+    }
+
+    private fun ensureForegroundStarted() {
+        if (!foregroundStarted.compareAndSet(false, true)) return
+
+        createNotificationChannel()
+        val type =
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.UPSIDE_DOWN_CAKE) {
+                ServiceInfo.FOREGROUND_SERVICE_TYPE_SPECIAL_USE
+            } else {
+                0
+            }
+        ServiceCompat.startForeground(this, NOTIFICATION_ID, createNotification(), type)
+    }
+
+    private suspend fun checkAndAutoStart(reason: String) {
+        val runMode = networkSettingsStorage.runMode.value
+        val log = RuntimeLog.writer(this, runMode)
+        // This line is the first evidence that the broadcast reached the app. If a boot is not
+        // logged at all, the process was never started (on MIUI/HyperOS: autostart not allowed).
+        log.i(RuntimeLog.Type.AutoStart, "check reason=$reason mode=$runMode")
+        if (XiaomiAutoStart.isSupported()) {
+            log.i(
+                RuntimeLog.Type.AutoStart,
+                "system autostart=${XiaomiAutoStart.readState(this)}",
+            )
+        }
+
+        // An APK replacement kills app-owned services but not the detached root daemon. Tear it
+        // down before checking the restart preference so no process keeps running replaced code.
+        // verify() also reattaches a surviving root daemon before anything below reads state.
+        RuntimeCoordinator.verify()
+        if (reason == REASON_PACKAGE_REPLACED &&
+            RuntimeCoordinator.state.value.owner == RuntimeOwner.RootDaemon
+        ) {
+            RuntimeCoordinator.stop()
+        }
+        if (!appSettingsStorage.automaticRestart.value) {
+            log.skip("automatic restart is disabled")
+            return
+        }
+        if (RemoteControllerStore.isActive()) {
+            log.skip("remote controller mode active")
+            return
+        }
+        if (AutoStartSessionGate.shouldSkipAutoStart()) {
+            log.skip("manual pause gate is active in current session")
+            return
+        }
+        StartupTaskCoordinator.awaitWarmup()
+        // This background start is the post-update cold start; the next UI launch must not skip.
+        // Boot and replace starts never auto-update the profile: the network may not be up yet.
+        featureStore.consumePostUpdateColdStartPending()
+
+        val activeProfile = profileManager.queryActive()
+        if (activeProfile == null) {
+            log.w(RuntimeLog.Type.AutoStart, "skip: no active profile")
+            Timber.tag(TAG).w("No active profile for auto start")
+            return
+        }
+
+        // A restart against an already-active runtime would tear down the live core.
+        if (RuntimeCoordinator.state.value.active) {
+            log.skip("${runMode.name} runtime already active")
+            return
+        }
+        if (runMode == RunMode.VpnService && VpnService.prepare(this) != null) {
+            // The consent dialog cannot be shown from the background; the user must open the app.
+            log.skip("VPN permission is missing")
+            return
+        }
+
+        val source =
+            when (reason) {
+                REASON_BOOT_COMPLETED -> RuntimeStartSource.AutoRestartBoot
+                REASON_PACKAGE_REPLACED -> RuntimeStartSource.AutoRestartReplaced
+                else -> RuntimeStartSource.AutoRestart
+            }
+        try {
+            withTimeout(ACTIVATION_TIMEOUT_MS) { RuntimeCoordinator.start(runMode, source) }
+        } catch (error: TimeoutCancellationException) {
+            RuntimeCoordinator.stop()
+            log.e(RuntimeLog.Type.AutoStart, "timeout reason=$reason mode=$runMode")
+            throw IllegalStateException("runtime activation timed out", error)
+        } catch (error: CancellationException) {
+            throw error
+        } catch (@Suppress("TooGenericExceptionCaught") error: Exception) {
+            log.e(RuntimeLog.Type.AutoStart, "failed reason=$reason error=${error.message}")
+            throw error
+        }
+        if (RuntimeCoordinator.state.value.phase == RuntimePhase.Running) {
+            log.i(RuntimeLog.Type.AutoStart, "success: running reason=$reason mode=$runMode")
+            Timber.tag(TAG)
+                .i("Auto start active: reason=$reason profile=${activeProfile.name}, mode=$runMode")
+        }
+    }
+
+    /** Mirrors a skipped gate into both logcat and the in-app runtime log. */
+    private fun RuntimeLog.Writer.skip(message: String) {
+        i(RuntimeLog.Type.AutoStart, "skip: $message")
+        Timber.tag(TAG).i("Skip auto start: $message")
+    }
+
+    private fun createNotificationChannel() {
+        val channel =
+            NotificationChannel(
+                    CHANNEL_ID,
+                    "Auto Restart Service",
+                    NotificationManager.IMPORTANCE_LOW,
+                )
+                .apply {
+                    description = "Used to restart proxy service automatically"
+                    setShowBadge(false)
+                }
+
+        val notificationManager = getSystemService(NOTIFICATION_SERVICE) as NotificationManager
+        notificationManager.createNotificationChannel(channel)
+    }
+
+    private fun createNotification(): Notification =
+        NotificationCompat.Builder(this, CHANNEL_ID)
+            .setContentTitle("YumeBox")
+            .setContentText("Checking auto-start...")
+            .setSmallIcon(ServiceLogoIcons.resId())
+            .setOngoing(true)
+            .build()
+
+    override fun onDestroy() {
+        AutoStartExecutionGate.clear(serviceCache)
+        serviceScope.cancel()
+        super.onDestroy()
+    }
+}

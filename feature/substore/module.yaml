@@ -1,0 +1,37 @@
+product:
+  type: kmp/lib
+  platforms: [android]
+apply:
+  - //compose.module-template.yaml
+plugins:
+  build-logic: enabled
+settings:
+  android:
+    namespace: com.github.yumelira.yumebox.feature.substore
+dependencies:
+  - //core
+  - //common
+  - //locale
+  - //ui
+  - //data
+  - $libs.kotlinx.coroutines.android
+  - $libs.koin.core
+  - $libs.koin.android
+  - $libs.koin.androidx.compose
+  - $libs.androidx.lifecycle.viewmodel.ktx
+  - $libs.ktor.client.core
+  - $libs.ktor.client.android
+  - $libs.commons.compress
+  - $libs.xz
+  - $libs.javet.node.android
+  - $libs.timber
+  - $libs.miuix.ui
+  - $libs.miuix.preference
+
+  - androidx.compose.material3:material3:1.5.0-alpha22
+  - androidx.compose.material:material-icons-extended
+
+  - //ui-miuix
+  - io.github.raamcosta.compose-destinations:core:2.3.0
+  - androidx.navigation:navigation-compose:2.9.8
+  - com.squareup.okio:okio:3.16.0

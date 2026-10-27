@@ -14,11 +14,9 @@
  * You should have received a copy of the GNU Affero General Public License
  * along with this program. If not, see <https://www.gnu.org/licenses/>.
  *
- * Copyright (c)  YumeLira 2025 - Present
+ * Copyright (c)  YumeYucca 2025 - Present
  *
  */
-
-
 
 package com.github.yumelira.yumebox.data.store
 
@@ -26,7 +24,6 @@ import com.github.yumelira.yumebox.data.model.ProfileBinding
 import kotlinx.coroutines.flow.Flow
 
 interface ProfileBindingProvider {
-
     suspend fun getBinding(profileId: String): ProfileBinding?
 
     fun getBindingFlow(profileId: String): Flow<ProfileBinding?>
@@ -45,13 +42,11 @@ interface ProfileBindingProvider {
 
     suspend fun getOverrideUsageCount(overrideId: String): Int
 
-    suspend fun enableOverride(profileId: String)
-
-    suspend fun disableOverride(profileId: String)
-
     suspend fun addOverride(profileId: String, overrideId: String, index: Int? = null)
 
     suspend fun removeOverride(profileId: String, overrideId: String)
+
+    suspend fun removeOverrideFromAllBindings(overrideId: String)
 
     suspend fun clearOverrides(profileId: String)
 }

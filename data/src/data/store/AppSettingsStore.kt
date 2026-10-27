@@ -75,6 +75,22 @@ class AppSettingsStore(externalMmkv: MMKV) : MMKVPreference(externalMmkv = exter
 
     val customUserAgent by strFlow("")
 
+    val homePreviewGuideShown by boolFlow(false)
+    val superIslandEnabled by boolFlow(true)
+    val topBarBlurEnabled by boolFlow(false)
+    val classicHomeEnabled by boolFlow(false)
+    val useSystemWallpaper by boolFlow(true)
+    val systemWallpaperPermissionRequested by boolFlow(false)
+    val moeWallpaperUri by strFlow("")
+    val moeWallpaperSourceUri by strFlow("")
+    val moeWallpaperZoom by floatFlow(1.0f)
+    val moeWallpaperBiasX by floatFlow(0.0f)
+    val moeWallpaperBiasY by floatFlow(0.0f)
+    val moeHomeQuote by strFlow("さよなら君の声 忘れたりしない ずっと")
+    val moeSidebarExpanded by boolFlow(true)
+    val splitLeftRatio by floatFlow(0.42f)
+    val predictiveBackEnabled by boolFlow(false)
+    val predictiveBackMaxProgress by floatFlow(50.0f)
 }
 
 const val DEFAULT_HEALTH_CHECK_CONCURRENCY = 8

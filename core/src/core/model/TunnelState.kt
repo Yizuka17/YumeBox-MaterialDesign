@@ -14,13 +14,14 @@
  * You should have received a copy of the GNU Affero General Public License
  * along with this program. If not, see <https://www.gnu.org/licenses/>.
  *
- * Copyright (c)  YumeLira 2025 - Present
+ * Copyright (c)  YumeYucca 2025 - Present
  *
  */
 
-
+@file:Suppress("UnusedSymbol")
 
 package com.github.yumelira.yumebox.core.model
+
 
 import android.os.Parcel
 import android.os.Parcelable
@@ -29,20 +30,15 @@ import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
 
 @Serializable
-data class TunnelState(
-    val mode: Mode,
-) : Parcelable {
+data class TunnelState(val mode: Mode) : Parcelable {
     @Serializable
     enum class Mode {
         @SerialName("direct")
         Direct,
-
         @SerialName("global")
         Global,
-
         @SerialName("rule")
         Rule,
-
         @SerialName("script")
         Script,
     }
@@ -51,17 +47,12 @@ data class TunnelState(
         Parcelizer.encodeToParcel(serializer(), parcel, this)
     }
 
-    override fun describeContents(): Int {
-        return 0
-    }
+    override fun describeContents(): Int = 0
 
     companion object CREATOR : Parcelable.Creator<TunnelState> {
-        override fun createFromParcel(parcel: Parcel): TunnelState {
-            return Parcelizer.decodeFromParcel(serializer(), parcel)
-        }
+        override fun createFromParcel(parcel: Parcel): TunnelState =
+            Parcelizer.decodeFromParcel(serializer(), parcel)
 
-        override fun newArray(size: Int): Array<TunnelState?> {
-            return arrayOfNulls(size)
-        }
+        override fun newArray(size: Int): Array<TunnelState?> = arrayOfNulls(size)
     }
 }

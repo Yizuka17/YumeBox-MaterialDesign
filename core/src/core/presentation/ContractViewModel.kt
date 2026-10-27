@@ -14,48 +14,39 @@
  * You should have received a copy of the GNU Affero General Public License
  * along with this program. If not, see <https://www.gnu.org/licenses/>.
  *
- * Copyright (c)  YumeLira 2025 - Present
+ * Copyright (c)  YumeYucca 2025 - Present
  *
  */
 
+@file:Suppress("UnusedSymbol", "PropertyName")
+
 package com.github.yumelira.yumebox.core.presentation
+
 
 import android.app.Application
 import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.ViewModel
-import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.channels.BufferOverflow
-import kotlinx.coroutines.flow.MutableSharedFlow
-import kotlinx.coroutines.flow.SharedFlow
-import kotlinx.coroutines.flow.asSharedFlow
-import kotlinx.coroutines.flow.asStateFlow
-import kotlinx.coroutines.flow.update
+import kotlinx.coroutines.flow.*
 
-/**
- * UI contract base: strongly-typed one-shot effects/event channel for ViewModels.
- */
+/** UI contract base: strongly-typed one-shot effects/event channel for ViewModels. */
 abstract class ContractViewModel<Effect : Any> : ViewModel() {
-    private val _effect = MutableSharedFlow<Effect>(
-        replay = 0,
-        extraBufferCapacity = 1,
-        onBufferOverflow = BufferOverflow.DROP_OLDEST,
-    )
+    private val _effect =
+        MutableSharedFlow<Effect>(
+            replay = 0,
+            extraBufferCapacity = 1,
+            onBufferOverflow = BufferOverflow.DROP_OLDEST,
+        )
     val effect: SharedFlow<Effect> = _effect.asSharedFlow()
-
-    protected suspend fun emitEffect(effect: Effect) {
-        _effect.emit(effect)
-    }
 
     protected fun tryEmitEffect(effect: Effect) {
         _effect.tryEmit(effect)
     }
 }
 
-/**
- * Contract base with strongly-typed state and one-shot effect channel.
- */
+/** Contract base with strongly-typed state and one-shot effect channel. */
 abstract class ContractStateViewModel<State : LoadableState<State>, Effect : Any>(
-    initialState: State,
+    initialState: State
 ) : ContractViewModel<Effect>() {
     protected val _uiState = MutableStateFlow(initialState)
     val uiState = _uiState.asStateFlow()
@@ -87,9 +78,7 @@ abstract class ContractStateViewModel<State : LoadableState<State>, Effect : Any
     }
 }
 
-/**
- * AndroidViewModel variant for state/effect contract ViewModels requiring Application context.
- */
+/** AndroidViewModel variant for state/effect contract ViewModels requiring Application context. */
 abstract class AndroidContractStateViewModel<State : LoadableState<State>, Effect : Any>(
     application: Application,
     initialState: State,
@@ -97,16 +86,13 @@ abstract class AndroidContractStateViewModel<State : LoadableState<State>, Effec
     protected val _uiState = MutableStateFlow(initialState)
     val uiState = _uiState.asStateFlow()
 
-    private val _effect = MutableSharedFlow<Effect>(
-        replay = 0,
-        extraBufferCapacity = 1,
-        onBufferOverflow = BufferOverflow.DROP_OLDEST,
-    )
+    private val _effect =
+        MutableSharedFlow<Effect>(
+            replay = 0,
+            extraBufferCapacity = 1,
+            onBufferOverflow = BufferOverflow.DROP_OLDEST,
+        )
     val effect: SharedFlow<Effect> = _effect.asSharedFlow()
-
-    protected suspend fun emitEffect(effect: Effect) {
-        _effect.emit(effect)
-    }
 
     protected fun tryEmitEffect(effect: Effect) {
         _effect.tryEmit(effect)
@@ -138,4 +124,3 @@ abstract class AndroidContractStateViewModel<State : LoadableState<State>, Effec
         updateState { it.withMessage(null) }
     }
 }
-

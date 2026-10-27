@@ -1,6 +1,6 @@
-<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor"
-     stroke-width="2" stroke-linecap="round" stroke-linejoin="round"
-     class="lucide lucide-redo-dot-icon lucide-redo-dot">
+<svg class="lucide lucide-redo-dot-icon lucide-redo-dot" fill="none" height="24" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"
+     stroke-width="2" viewBox="0 0 24 24" width="24"
+     xmlns="http://www.w3.org/2000/svg">
     <circle cx="12" cy="17" r="1"/>
     <path d="M21 7v6h-6"/>
     <path d="M3 17a9 9 0 0 1 9-9 9 9 0 0 1 6 2.3l3 2.7"/>

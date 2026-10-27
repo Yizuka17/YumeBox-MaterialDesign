@@ -1,0 +1,6 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<lint>
+    <issue id="IconDuplicates" severity="ignore" />
+    <issue id="UnusedAttribute" severity="ignore" />
+    <issue id="MissingClass" severity="ignore" />
+</lint>

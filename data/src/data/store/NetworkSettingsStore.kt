@@ -14,42 +14,101 @@
  * You should have received a copy of the GNU Affero General Public License
  * along with this program. If not, see <https://www.gnu.org/licenses/>.
  *
- * Copyright (c)  YumeLira 2025 - Present
+ * Copyright (c)  YumeYucca 2025 - Present
  *
  */
 
-
-
 package com.github.yumelira.yumebox.data.store
 
-import com.github.yumelira.yumebox.core.model.RootTunDnsMode
+import com.github.yumelira.yumebox.core.model.TunDnsMode
 import com.github.yumelira.yumebox.data.model.AccessControlMode
-import com.github.yumelira.yumebox.data.model.ProxyMode
+import com.github.yumelira.yumebox.data.model.AccessControlSortMode
+import com.github.yumelira.yumebox.data.model.RunMode
 import com.github.yumelira.yumebox.data.model.TunStack
+import com.github.yumelira.yumebox.data.model.WifiAutomationFallbackAction
+import com.github.yumelira.yumebox.data.model.WifiAutomationRule
 import com.tencent.mmkv.MMKV
+import kotlinx.serialization.decodeFromString
+import kotlinx.serialization.encodeToString
 
 class NetworkSettingsStore(externalMmkv: MMKV) : MMKVPreference(externalMmkv = externalMmkv) {
-
-    val proxyMode by enumFlow(ProxyMode.Tun)
+    init {
+        if (!mmkv.containsKey("runMode")) {
+            val oldMode = mmkv.decodeString("proxyMode")
+            mmkv.encode("runMode", if (oldMode == "RootTun") "Tun" else "VpnService")
+        }
+        listOf("IfName", "Mtu", "AutoRoute", "StrictRoute", "AutoRedirect", "IncludeAndroidUser",
+            "RouteExcludeAddress", "DnsMode", "FakeIpRange", "FakeIpRange6").forEach { suffix ->
+            val old = "rootTun$suffix"
+            val target = "tun$suffix"
+            if (mmkv.containsKey(old) && !mmkv.containsKey(target)) {
+                when (suffix) {
+                    "Mtu" -> mmkv.encode(target, mmkv.decodeInt(old, 1500))
+                    "AutoRoute", "StrictRoute", "AutoRedirect" -> mmkv.encode(target, mmkv.decodeBool(old, false))
+                    else -> mmkv.decodeString(old)?.let { mmkv.encode(target, it) }
+                }
+            }
+        }
+    }
+    // Run mode selected in the UI (VpnService / Tun).
+    val runMode by enumFlow(RunMode.VpnService)
 
     val bypassPrivateNetwork by boolFlow(true)
+    val ebpfBypassCn by boolFlow(true)
     val dnsHijack by boolFlow(true)
     val allowBypass by boolFlow(true)
     val enableIPv6 by boolFlow(false)
     val systemProxy by boolFlow(true)
 
-    val tunStack by enumFlow(TunStack.System)
+    // All modes: drop the user override chain. Root Tun additionally skips mode geometry
+    // injection and compiler runtime patches (skipRuntimePatches).
+    val disableAllOverride by boolFlow(false)
+
+    // Network stack for both Root Tun and VpnService. VpnService cannot attach System/Mixed to its
+    // app-owned fd, so the start path maps those onto gVisor.
+    val tunStack by enumFlow(TunStack.GVisor)
     val tunRouteExcludeAddress by stringListFlow(emptyList())
-    val rootTunIfName by strFlow("Yume")
-    val rootTunMtu by intFlow(1500)
-    val rootTunAutoRoute by boolFlow(true)
-    val rootTunStrictRoute by boolFlow(true)
-    val rootTunAutoRedirect by boolFlow(true)
-    val rootTunIncludeAndroidUser by intListFlow(listOf(0, 10))
-    val rootTunRouteExcludeAddress by stringListFlow(emptyList())
-    val rootTunDnsMode by enumFlow(RootTunDnsMode.RedirHost)
-    val rootTunFakeIpRange by strFlow("198.18.0.1/16")
-    val rootTunFakeIpRange6 by strFlow("fc00::/18")
+    val tunIfName by strFlow("Yume")
+    val tunMtu by intFlow(1500)
+    val tunAutoRoute by boolFlow(true)
+
+    // strict-route off (can black-hole traffic); auto-redirect on — it carries the app TCP egress.
+    val tunStrictRoute by boolFlow(false)
+    val tunAutoRedirect by boolFlow(true)
+
+    // Empty: omit include-android-user so the core includes every Android user automatically.
+    val tunIncludeAndroidUser by intListFlow(emptyList())
+
+    // redir-host is the reliable default (real IPs, no fake-ip pool/filter to get wrong); fake-ip
+    // stays selectable.
+    val tunDnsMode by enumFlow(TunDnsMode.RedirHost)
+    val tunFakeIpRange by strFlow("198.18.0.1/16")
+    val tunFakeIpRange6 by strFlow("fc00::/18")
+
     val accessControlMode by enumFlow(AccessControlMode.ALLOW_ALL)
     val accessControlPackages by stringSetFlow(emptySet())
+    val accessControlSelectedFirst by boolFlow(true)
+    val accessControlShowSystemApps by boolFlow(false)
+    val accessControlSortMode by enumFlow(AccessControlSortMode.LABEL)
+
+    // Wi-Fi SSIDs are location-sensitive on Android. This state is only enabled after the user
+    // explicitly completes the location-permission flow from the Wi-Fi automation screen.
+    val wifiAutomationEnabled by boolFlow(false)
+    val wifiAutomationLocationRequested by boolFlow(false)
+    val wifiAutomationRules: Preference<List<WifiAutomationRule>> by
+        jsonListFlow(
+            default = emptyList(),
+            decode = { source -> decodeFromString<List<WifiAutomationRule>>(source) },
+            encode = { rules -> encodeToString(rules) },
+        )
+
+    // These explicitly cover physical Wi-Fi transport changes. They intentionally default to
+    // Keep so enabling SSID automation never changes behavior outside the user's rules.
+    val wifiAutomationOtherWifiAction by enumFlow(WifiAutomationFallbackAction.Keep)
+    val wifiAutomationNoWifiAction by enumFlow(WifiAutomationFallbackAction.Keep)
+
+    // Empty string means "do not switch" when the corresponding fallback action is Start.
+    val wifiAutomationOtherWifiProfileUuid by strFlow("")
+    val wifiAutomationNoWifiProfileUuid by strFlow("")
+
 }

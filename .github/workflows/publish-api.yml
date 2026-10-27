@@ -1,0 +1,49 @@
+name: Publish API Package
+
+on:
+  workflow_dispatch:
+    inputs:
+      version:
+        description: "Maven version to publish (for example 0.1.0)"
+        required: true
+        type: string
+
+concurrency:
+  group: publish-api-${{ inputs.version }}
+  cancel-in-progress: false
+
+permissions:
+  contents: read
+  packages: write
+
+jobs:
+  publish:
+    runs-on: macos-26
+    env:
+      GITHUB_ACTOR: ${{ github.actor }}
+      GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v7.0.1
+
+      - name: Setup Java
+        uses: actions/setup-java@v6.1.0
+        with:
+          distribution: zulu
+          java-version: "25"
+
+      - name: Cache Kotlin Toolchain
+        uses: actions/cache@v6.1.0
+        with:
+          path: |
+            ~/Library/Caches/JetBrains/Kotlin
+            .kotlin/yumebox/maven
+            .kotlin/yumebox/gradle-*
+          key: ${{ runner.os }}-toolchain-${{ hashFiles('kotlin', '*module-template.yaml', '**/module.yaml', 'gradle/libs.versions.toml') }}
+          restore-keys: |
+            ${{ runner.os }}-toolchain-
+
+      - name: Publish API package
+        env:
+          API_VERSION: ${{ inputs.version }}
+        run: sh kotlin run --module=packaging -- --publish-api "-Papi.version=${API_VERSION}"

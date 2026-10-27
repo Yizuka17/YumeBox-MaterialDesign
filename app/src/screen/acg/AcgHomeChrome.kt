@@ -60,8 +60,8 @@ import androidx.compose.ui.unit.sp
 import com.github.yumelira.yumebox.common.util.LocaleUtil
 import com.github.yumelira.yumebox.common.util.formatBytesForDisplay
 import com.github.yumelira.yumebox.core.model.TunnelState
-import com.github.yumelira.yumebox.data.gateway.IpMonitoringState
-import com.github.yumelira.yumebox.data.model.ProxyMode
+import com.github.yumelira.yumebox.data.network.IpMonitoringState
+import com.github.yumelira.yumebox.data.model.RunMode
 import com.github.yumelira.yumebox.presentation.component.CountryFlagCircle
 import com.github.yumelira.yumebox.presentation.icon.AppMd3Icons
 import com.github.yumelira.yumebox.presentation.icon.ShellIcons
@@ -149,7 +149,7 @@ internal fun AcgSidebarDecoration(
 internal fun AcgSidebarContent(
     topValue: String,
     bottomValue: String,
-    proxyMode: ProxyMode,
+    proxyMode: RunMode,
     icons: List<AcgSidebarIconItem>,
     visibleWidth: Dp,
 ) {

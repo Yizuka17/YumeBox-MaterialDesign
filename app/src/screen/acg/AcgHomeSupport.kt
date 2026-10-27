@@ -48,7 +48,7 @@ import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.compose.ui.unit.times
-import com.github.yumelira.yumebox.data.model.ProxyMode
+import com.github.yumelira.yumebox.data.model.RunMode
 import com.github.yumelira.yumebox.presentation.theme.AppTheme
 import com.github.yumelira.yumebox.presentation.theme.Sizes
 import com.github.yumelira.yumebox.presentation.theme.Opacity
@@ -159,7 +159,7 @@ internal fun calculateAcgSidebarLaneStart(visibleWidth: Dp): Dp {
 internal fun AcgSidebarRail(
     topValue: String,
     bottomValue: String,
-    proxyMode: ProxyMode,
+    proxyMode: RunMode,
     icons: List<AcgSidebarIconItem>,
     modifier: Modifier = Modifier,
 ) {
@@ -334,10 +334,10 @@ internal data class AcgQuote(
     val author: String,
 )
 
-internal fun ProxyMode.toAcgDisplayName(): String = when (this) {
-    ProxyMode.Tun -> MLang.Home.ProxyMode.Vpn
-    ProxyMode.RootTun -> MLang.Home.ProxyMode.Tun
-    ProxyMode.Http -> MLang.Home.ProxyMode.Http
+internal fun RunMode.toAcgDisplayName(): String = when (this) {
+    RunMode.VpnService -> MLang.Home.ProxyMode.Vpn
+    RunMode.Tun -> MLang.Home.ProxyMode.Tun
+    RunMode.Ebpf -> "eBPF"
 }
 
 internal data class AcgDurationPair(

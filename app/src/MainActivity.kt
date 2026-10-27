@@ -116,7 +116,7 @@ class MainActivity : FragmentActivity() {
         applyExcludeFromRecents(appSettingsStorage.excludeFromRecents.value)
         applyScreenshotProtection(appSettingsStorage.screenshotProtectionEnabled.value)
 
-        intentController = IntentController(lifecycleScope)
+        intentController = IntentController(this, lifecycleScope)
         handleIntent(intent)
 
         if (!appSettingsStorage.initialSetupCompleted.value) {
@@ -124,7 +124,6 @@ class MainActivity : FragmentActivity() {
             finish()
             return
         }
-        updateManager.startAutoCheck(applicationScope)
 
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
             if (checkSelfPermission(android.Manifest.permission.POST_NOTIFICATIONS) != android.content.pm.PackageManager.PERMISSION_GRANTED) {
@@ -206,6 +205,7 @@ class MainActivity : FragmentActivity() {
                                     defaultTransitions = NavigationTransitions.defaultStyle,
                                 )
                                 ToastDialogHost()
+                                com.github.yumelira.yumebox.update.ReleaseUpdateHost()
                             }
                         }
                     }
@@ -215,24 +215,20 @@ class MainActivity : FragmentActivity() {
         }
 
         applicationScope.launch {
-            if (!AutoStartSessionGate.tryBeginForegroundAutoActions()) {
+            if (!AutoStartSessionGate.tryBeginAutoActions()) {
                 return@launch
             }
             var handled = false
             try {
-                StartupTaskCoordinator.awaitRuntimeWarmup()
-                ProxyAutoStartHelper.checkAndAutoStart(
-                    context = this@MainActivity,
-                    featureStore = featureStore,
-                    proxyFacade = proxyFacade,
-                    profilesRepository = profilesRepository,
-                    appSettingsStorage = appSettingsStorage,
-                    networkSettingsStorage = networkSettingsStorage,
-                    serviceCache = serviceCache,
-                )
+                StartupTaskCoordinator.awaitWarmup()
+                with(com.github.yumelira.yumebox.common.util.AutoStartDependencies(
+                    featureStore, proxyFacade, profilesRepository, appSettingsStorage,
+                    networkSettingsStorage, serviceCache,
+                )) { ProxyAutoStartHelper.checkAndAutoStart(this@MainActivity) }
+
                 handled = true
             } finally {
-                AutoStartSessionGate.finishForegroundAutoActions(markHandled = handled)
+                AutoStartSessionGate.finishAutoActions(markHandled = handled)
             }
         }
     }

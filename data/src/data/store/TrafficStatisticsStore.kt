@@ -14,203 +14,161 @@
  * You should have received a copy of the GNU Affero General Public License
  * along with this program. If not, see <https://www.gnu.org/licenses/>.
  *
- * Copyright (c)  YumeLira 2025 - Present
+ * Copyright (c)  YumeYucca 2025 - Present
  *
  */
 
+@file:Suppress("DuplicatedCode", "UnusedSymbol")
+
 package com.github.yumelira.yumebox.data.store
 
-import com.github.yumelira.yumebox.core.util.PollingTimerSpecs
-import com.github.yumelira.yumebox.core.util.PollingTimers
-import com.github.yumelira.yumebox.data.model.AppTrafficDeltaRecord
-import com.github.yumelira.yumebox.data.model.AppRouteTrafficUsage
-import com.github.yumelira.yumebox.data.model.AppTrafficUsage
-import com.github.yumelira.yumebox.data.model.DailyAppTrafficSummary
-import com.github.yumelira.yumebox.data.model.DailyRouteTrafficSummary
-import com.github.yumelira.yumebox.data.model.DailyTrafficSummary
-import com.github.yumelira.yumebox.data.model.StatisticsTimeRange
-import com.github.yumelira.yumebox.data.model.TrafficStatisticsBuckets
+
+import com.github.yumelira.yumebox.data.model.*
+import com.github.yumelira.yumebox.data.store.room.AppTrafficDelta
+import com.github.yumelira.yumebox.data.store.room.RouteTrafficDelta
+import com.github.yumelira.yumebox.data.store.room.TrafficStatisticsDao
 import com.tencent.mmkv.MMKV
-import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.Job
-import kotlinx.coroutines.SupervisorJob
-import kotlinx.coroutines.flow.MutableStateFlow
-import kotlinx.coroutines.flow.StateFlow
-import kotlinx.coroutines.flow.asStateFlow
-import kotlinx.coroutines.launch
-import kotlinx.serialization.json.Json
-import java.util.Calendar
+import kotlinx.coroutines.*
+import kotlinx.coroutines.flow.*
+import kotlinx.serialization.json.*
+import com.github.yumelira.yumebox.data.store.room.AppTrafficDailyEntity
+import com.github.yumelira.yumebox.data.store.room.RouteTrafficDailyEntity
+import java.util.*
 
-class TrafficStatisticsStore(private val mmkv: MMKV) {
-    private val json = Json {
-        ignoreUnknownKeys = true
-        encodeDefaults = true
+/**
+ * Facade over traffic statistics persistence.
+ *
+ * Daily per-app / per-route aggregation lives in Room (see [TrafficStatisticsDao]); each record is
+ * a row-level accumulate rather than a whole-history JSON rewrite. The only state that stays in
+ * MMKV is the collector's resume baseline (last total upload/download + profile id), kept
+ * synchronous.
+ */
+class TrafficStatisticsStore(
+    private val mmkv: MMKV,
+    private val dao: TrafficStatisticsDao,
+    private val now: () -> Long = { System.currentTimeMillis() },
+) {
+    private val legacyImport = CoroutineScope(SupervisorJob() + Dispatchers.IO).async {
+        try {
+            val marker = "fork_stats_room_imported_v1"
+            if (mmkv.decodeBool(marker, false)) return@async
+            val json = Json { ignoreUnknownKeys = true }
+            fun read(key: String): JsonObject = mmkv.decodeString(key)?.takeIf(String::isNotBlank)
+                ?.let { json.parseToJsonElement(it).jsonObject } ?: JsonObject(emptyMap())
+            fun JsonObject.long(key: String): Long = this[key]?.jsonPrimitive?.longOrNull ?: 0L
+            fun JsonObject.string(key: String): String = this[key]?.jsonPrimitive?.contentOrNull.orEmpty()
+            val apps = read(KEY_DAILY_APP_SUMMARIES).map { (day, value) ->
+                val summary = value.jsonObject
+                val date = summary.long("dateMillis").takeIf { it > 0 } ?: day.toLong()
+                summary["appUsages"]?.jsonObject.orEmpty().map { (key, entry) ->
+                    val usage = entry.jsonObject
+                    AppTrafficDailyEntity(date, key, usage.string("packageName").takeIf(String::isNotBlank),
+                        usage.string("appName"), usage.long("totalUpload"), usage.long("totalDownload"), usage.long("lastActiveAt"))
+                }
+            }.flatten()
+            val routes = read(KEY_DAILY_ROUTE_SUMMARIES).map { (day, value) ->
+                val summary = value.jsonObject
+                val date = summary.long("dateMillis").takeIf { it > 0 } ?: day.toLong()
+                summary["routeUsagesByApp"]?.jsonObject.orEmpty().map { (app, entries) ->
+                    entries.jsonObject.map { (route, entry) ->
+                        val usage = entry.jsonObject
+                        RouteTrafficDailyEntity(date, app, route, usage.string("routeLabel"),
+                            usage.long("totalUpload"), usage.long("totalDownload"), usage.long("lastActiveAt"))
+                    }
+                }.flatten()
+            }.flatten()
+            dao.importLegacy(apps, routes)
+            mmkv.encode(marker, true)
+        } catch (error: CancellationException) {
+            throw error
+        } catch (error: Exception) {
+            timber.log.Timber.w(error, "Legacy statistics import failed; source retained for recovery")
+        }
     }
 
-    private val storeScope = CoroutineScope(SupervisorJob() + Dispatchers.IO)
-    private val lock = Any()
-    private var flushJob: Job? = null
-    private var dailyAppDirty = false
-    private var dailyRouteDirty = false
-    private var lastTrafficDirty = false
-    private var lastTrafficUpload = NO_PERSISTED_TRAFFIC
-    private var lastTrafficDownload = NO_PERSISTED_TRAFFIC
-    private var lastProfileId: String? = null
+    // region writes (Room row-level accumulate)
 
-    private val _dailyAppSummaries = MutableStateFlow<Map<Long, DailyAppTrafficSummary>>(emptyMap())
-    val dailyAppSummaries: StateFlow<Map<Long, DailyAppTrafficSummary>> = _dailyAppSummaries.asStateFlow()
-    private val _dailyRouteSummaries = MutableStateFlow<Map<Long, DailyRouteTrafficSummary>>(emptyMap())
-    val dailyRouteSummaries: StateFlow<Map<Long, DailyRouteTrafficSummary>> = _dailyRouteSummaries.asStateFlow()
-
-    init {
-        upgradeSchemaIfNeeded()
-        loadData()
-    }
-
-    fun recordAppTraffic(
-        timestamp: Long,
-        appKey: String,
-        packageName: String?,
-        appName: String,
-        uploadDelta: Long,
-        downloadDelta: Long,
-        routeKey: String?,
-        routeLabel: String?,
-    ) {
-        recordAppTrafficBatch(
-            timestamp = timestamp,
-            records = listOf(
-                AppTrafficDeltaRecord(
-                    appKey = appKey,
-                    packageName = packageName,
-                    appName = appName,
-                    uploadDelta = uploadDelta,
-                    downloadDelta = downloadDelta,
-                    routeKey = routeKey,
-                    routeLabel = routeLabel,
-                ),
-            ),
-        )
-    }
-
-    fun recordAppTrafficBatch(
-        timestamp: Long,
-        records: List<AppTrafficDeltaRecord>,
-    ) {
+    suspend fun recordAppTrafficBatch(timestamp: Long, records: List<AppTrafficDeltaRecord>) {
+        legacyImport.await()
         if (records.isEmpty()) return
 
-        val dayKey = getDayKey(timestamp)
-        val currentDailyApp = _dailyAppSummaries.value.toMutableMap()
-        val daySummary = currentDailyApp[dayKey] ?: DailyAppTrafficSummary(dateMillis = dayKey)
-        val updatedAppUsages = daySummary.appUsages.toMutableMap()
-        val currentDailyRoute = _dailyRouteSummaries.value.toMutableMap()
-        val routeSummary = currentDailyRoute[dayKey] ?: DailyRouteTrafficSummary(dateMillis = dayKey)
-        val updatedRouteUsagesByApp = routeSummary.routeUsagesByApp
-            .mapValuesTo(linkedMapOf()) { (_, routeUsages) -> routeUsages.toMutableMap() }
-        var hasChanges = false
-        var routeChanges = false
+        val dayKey = startOfDay(timestamp)
+        val appDeltas = ArrayList<AppTrafficDelta>(records.size)
+        val routeDeltas = ArrayList<RouteTrafficDelta>(records.size)
 
         records.forEach { record ->
             if (record.uploadDelta <= 0L && record.downloadDelta <= 0L) return@forEach
 
-            val currentUsage = updatedAppUsages[record.appKey] ?: AppTrafficUsage(
-                appKey = record.appKey,
-                packageName = record.packageName,
-                appName = record.appName,
-            )
-            updatedAppUsages[record.appKey] = currentUsage.copy(
-                packageName = record.packageName ?: currentUsage.packageName,
-                appName = record.appName.ifBlank { currentUsage.appName },
-                totalUpload = currentUsage.totalUpload + record.uploadDelta,
-                totalDownload = currentUsage.totalDownload + record.downloadDelta,
-                lastActiveAt = timestamp,
-            )
-            hasChanges = true
-
-            val routeKey = record.routeKey?.takeIf(String::isNotBlank)
-                ?: TrafficStatisticsBuckets.UNATTRIBUTED_ROUTE_KEY
-            val routeLabel = record.routeLabel?.takeIf(String::isNotBlank)
-                ?: TrafficStatisticsBuckets.UNATTRIBUTED_ROUTE_NAME
-            val currentRouteUsages = updatedRouteUsagesByApp
-                .getOrPut(record.appKey) { linkedMapOf() }
-            val currentRouteUsage = currentRouteUsages[routeKey] ?: AppRouteTrafficUsage(
-                appKey = record.appKey,
-                routeKey = routeKey,
-                routeLabel = routeLabel,
-            )
-            currentRouteUsages[routeKey] = currentRouteUsage.copy(
-                routeLabel = routeLabel,
-                totalUpload = currentRouteUsage.totalUpload + record.uploadDelta,
-                totalDownload = currentRouteUsage.totalDownload + record.downloadDelta,
-                lastActiveAt = timestamp,
-            )
-            routeChanges = true
+            appDeltas +=
+                AppTrafficDelta(
+                    dateMillis = dayKey,
+                    appKey = record.appKey,
+                    packageName = record.packageName,
+                    appName = record.appName,
+                    uploadDelta = record.uploadDelta,
+                    downloadDelta = record.downloadDelta,
+                    lastActiveAt = timestamp,
+                )
+            routeDeltas +=
+                RouteTrafficDelta(
+                    dateMillis = dayKey,
+                    appKey = record.appKey,
+                    routeKey =
+                        record.routeKey?.takeIf(String::isNotBlank)
+                            ?: TrafficStatisticsBuckets.UNATTRIBUTED_ROUTE_KEY,
+                    routeLabel =
+                        record.routeLabel?.takeIf(String::isNotBlank)
+                            ?: TrafficStatisticsBuckets.UNATTRIBUTED_ROUTE_NAME,
+                    uploadDelta = record.uploadDelta,
+                    downloadDelta = record.downloadDelta,
+                    lastActiveAt = timestamp,
+                )
         }
 
-        if (!hasChanges) return
+        if (appDeltas.isEmpty()) return
 
-        currentDailyApp[dayKey] = daySummary.copy(appUsages = updatedAppUsages)
-        _dailyAppSummaries.value = cleanOldDailyAppData(currentDailyApp)
-        if (routeChanges) {
-            currentDailyRoute[dayKey] = routeSummary.copy(routeUsagesByApp = updatedRouteUsagesByApp)
-            _dailyRouteSummaries.value = cleanOldDailyRouteData(currentDailyRoute)
-        }
-        markDailyDataDirty(routeChanges = routeChanges)
-    }
-
-    fun getTodayAppUsagesSorted(): List<AppTrafficUsage> = aggregateAppUsages(days = 1)
-
-    fun getWeekAppUsagesSorted(): List<AppTrafficUsage> = aggregateAppUsages(days = 7)
-
-    fun getAppUsagesSorted(range: StatisticsTimeRange): List<AppTrafficUsage> = aggregateAppUsages(days = range.days)
-
-    fun getTodayTotalSummary(): DailyTrafficSummary = buildTotalSummary(days = 1)
-
-    fun getWeekTotalSummary(): DailyTrafficSummary = buildTotalSummary(days = 7)
-
-    fun getTotalSummary(range: StatisticsTimeRange): DailyTrafficSummary = buildTotalSummary(days = range.days)
-
-    fun getAppRouteUsages(appKey: String, range: StatisticsTimeRange): List<AppRouteTrafficUsage> {
-        if (appKey.isBlank()) return emptyList()
-        val aggregated = linkedMapOf<String, AppRouteTrafficUsage>()
-        rangeDayKeys(range.days).forEach { dayKey ->
-            _dailyRouteSummaries.value[dayKey]
-                ?.routeUsagesByApp
-                ?.get(appKey)
-                ?.values
-                ?.forEach { usage ->
-                    val existing = aggregated[usage.routeKey]
-                    aggregated[usage.routeKey] = if (existing == null) {
-                        usage
-                    } else {
-                        existing.copy(
-                            routeLabel = usage.routeLabel.ifBlank { existing.routeLabel },
-                            totalUpload = existing.totalUpload + usage.totalUpload,
-                            totalDownload = existing.totalDownload + usage.totalDownload,
-                            lastActiveAt = maxOf(existing.lastActiveAt, usage.lastActiveAt),
-                        )
-                    }
-                }
-        }
-        return aggregated.values.sortedWith(
-            compareByDescending<AppRouteTrafficUsage> { it.totalBytes }
-                .thenByDescending { it.lastActiveAt },
+        dao.recordBatch(
+            hourStartMillis = startOfHour(timestamp),
+            hourlyUploadDelta = appDeltas.sumOf(AppTrafficDelta::uploadDelta),
+            hourlyDownloadDelta = appDeltas.sumOf(AppTrafficDelta::downloadDelta),
+            appDeltas = appDeltas,
+            routeDeltas = routeDeltas,
+            retentionCutoffMillis = now() - (MAX_APP_DAYS_TO_KEEP * DAY_MS),
         )
     }
 
-    fun clearAll() {
-        flushJob?.cancel()
-        _dailyAppSummaries.value = emptyMap()
-        synchronized(lock) {
-            dailyAppDirty = false
-            dailyRouteDirty = false
-            lastTrafficDirty = false
-            lastTrafficUpload = NO_PERSISTED_TRAFFIC
-            lastTrafficDownload = NO_PERSISTED_TRAFFIC
-            lastProfileId = null
-        }
-        _dailyRouteSummaries.value = emptyMap()
+    // endregion
+
+    // region reads (SQL aggregation)
+
+    fun getAppUsagesFlow(range: StatisticsTimeRange): Flow<List<AppTrafficUsage>> =
+        flow { legacyImport.await(); emitAll(dao.getAppUsagesFlow(rangeCutoff(range))) }
+
+    fun getDailyTotalsFlow(range: StatisticsTimeRange): Flow<List<DailyTrafficSummary>> =
+        flow { legacyImport.await(); emitAll(dao.getDailyTotalsFlow(rangeCutoff(range))) }
+
+    fun getTodayHourlyTotalsFlow(): Flow<List<HourlyTrafficSummary>> =
+        dao.getHourlyTotalsFlow(startOfDay(now()))
+
+    suspend fun getAppUsagesSorted(range: StatisticsTimeRange): List<AppTrafficUsage> =
+        legacyImport.await().let { dao.getAppUsagesSorted(rangeCutoff(range)) }
+
+    suspend fun getAppRouteUsages(
+        appKey: String,
+        range: StatisticsTimeRange,
+    ): List<AppRouteTrafficUsage> {
+        legacyImport.await()
+        if (appKey.isBlank()) return emptyList()
+        return dao.getAppRouteUsages(appKey, rangeCutoff(range))
+    }
+
+    // endregion
+
+    // region clear
+
+    suspend fun clearAll() {
+        legacyImport.await()
+        dao.clearAll()
         mmkv.removeValueForKey(KEY_DAILY_APP_SUMMARIES)
         mmkv.removeValueForKey(KEY_DAILY_ROUTE_SUMMARIES)
         mmkv.removeValueForKey(KEY_LAST_TRAFFIC_UPLOAD)
@@ -218,117 +176,45 @@ class TrafficStatisticsStore(private val mmkv: MMKV) {
         mmkv.removeValueForKey(KEY_LAST_PROFILE_ID)
     }
 
-    fun flushNow() {
-        flushJob?.cancel()
-        flushPendingData()
-    }
+    // endregion
 
-    fun getLastTrafficUpload(): Long = synchronized(lock) { lastTrafficUpload }
+    // region resume baseline (synchronous MMKV scalars)
 
-    fun getLastTrafficDownload(): Long = synchronized(lock) { lastTrafficDownload }
+    fun getLastTrafficUpload(): Long =
+        mmkv.decodeLong(KEY_LAST_TRAFFIC_UPLOAD, NO_PERSISTED_TRAFFIC)
 
-    fun getLastProfileId(): String? = synchronized(lock) { lastProfileId }
+    fun getLastTrafficDownload(): Long =
+        mmkv.decodeLong(KEY_LAST_TRAFFIC_DOWNLOAD, NO_PERSISTED_TRAFFIC)
 
+    fun getLastProfileId(): String? = mmkv.decodeString(KEY_LAST_PROFILE_ID)
+
+    /**
+     * Persists the resume baseline scalars. [forcePersist] is retained for source compatibility
+     * with the collector but no longer schedules a flush — Room/MMKV writes are already immediate.
+     */
     fun setLastTraffic(
         upload: Long,
         download: Long,
         profileId: String?,
-        forcePersist: Boolean = false,
+        @Suppress("UNUSED_PARAMETER") forcePersist: Boolean = false,
     ) {
-        var changed = false
-        synchronized(lock) {
-            if (lastTrafficUpload != upload) {
-                lastTrafficUpload = upload
-                changed = true
-            }
-            if (lastTrafficDownload != download) {
-                lastTrafficDownload = download
-                changed = true
-            }
-            if (lastProfileId != profileId) {
-                lastProfileId = profileId
-                changed = true
-            }
-            if (changed) {
-                lastTrafficDirty = true
-            }
-        }
-
-        if (!changed) return
-
-        if (forcePersist) {
-            flushNow()
+        mmkv.encode(KEY_LAST_TRAFFIC_UPLOAD, upload)
+        mmkv.encode(KEY_LAST_TRAFFIC_DOWNLOAD, download)
+        if (profileId.isNullOrBlank()) {
+            mmkv.removeValueForKey(KEY_LAST_PROFILE_ID)
         } else {
-            scheduleFlush()
+            mmkv.encode(KEY_LAST_PROFILE_ID, profileId)
         }
     }
 
-    private fun loadData() {
-        lastTrafficUpload = mmkv.decodeLong(KEY_LAST_TRAFFIC_UPLOAD, NO_PERSISTED_TRAFFIC)
-        lastTrafficDownload = mmkv.decodeLong(KEY_LAST_TRAFFIC_DOWNLOAD, NO_PERSISTED_TRAFFIC)
-        lastProfileId = mmkv.decodeString(KEY_LAST_PROFILE_ID)
-        mmkv.decodeString(KEY_DAILY_APP_SUMMARIES)?.let { jsonStr ->
-            runCatching {
-                val summaries: Map<Long, DailyAppTrafficSummary> = json.decodeFromString(jsonStr)
-                _dailyAppSummaries.value = cleanOldDailyAppData(summaries.toMutableMap())
-            }
-        }
-        mmkv.decodeString(KEY_DAILY_ROUTE_SUMMARIES)?.let { jsonStr ->
-            runCatching {
-                val summaries: Map<Long, DailyRouteTrafficSummary> = json.decodeFromString(jsonStr)
-                _dailyRouteSummaries.value = cleanOldDailyRouteData(summaries.toMutableMap())
-            }
-        }
-    }
+    /** No-op: writes are now immediate (Room row-level upsert + synchronous MMKV scalars). */
+    fun flushNow() = Unit
 
-    private fun aggregateAppUsages(days: Int): List<AppTrafficUsage> {
-        val aggregated = linkedMapOf<String, AppTrafficUsage>()
-        rangeDayKeys(days).forEach { dayKey ->
-            _dailyAppSummaries.value[dayKey]
-                ?.appUsages
-                ?.values
-                ?.forEach { usage ->
-                    val existing = aggregated[usage.appKey]
-                    aggregated[usage.appKey] = if (existing == null) {
-                        usage
-                    } else {
-                        existing.copy(
-                            packageName = existing.packageName ?: usage.packageName,
-                            appName = if (existing.appName.isNotBlank()) existing.appName else usage.appName,
-                            totalUpload = existing.totalUpload + usage.totalUpload,
-                            totalDownload = existing.totalDownload + usage.totalDownload,
-                            lastActiveAt = maxOf(existing.lastActiveAt, usage.lastActiveAt),
-                        )
-                    }
-                }
-        }
-        val unattributed = aggregated.remove(TrafficStatisticsBuckets.UNATTRIBUTED_APP_KEY)
-        val sortedApps = aggregated.values.sortedByDescending(AppTrafficUsage::totalBytes)
-        return buildList(sortedApps.size + if (unattributed != null) 1 else 0) {
-            addAll(sortedApps)
-            unattributed?.let(::add)
-        }
-    }
+    // endregion
 
-    private fun buildTotalSummary(days: Int): DailyTrafficSummary {
-        val usages = aggregateAppUsages(days)
-        return DailyTrafficSummary(
-            dateMillis = System.currentTimeMillis(),
-            totalUpload = usages.sumOf(AppTrafficUsage::totalUpload),
-            totalDownload = usages.sumOf(AppTrafficUsage::totalDownload),
-        )
-    }
+    // region helpers
 
-    private fun rangeDayKeys(days: Int): List<Long> {
-        return List(days) { offset ->
-            val calendar = Calendar.getInstance().apply {
-                add(Calendar.DAY_OF_YEAR, -offset)
-            }
-            getDayKey(calendar.timeInMillis)
-        }
-    }
-
-    private fun getDayKey(timestamp: Long): Long {
+    private fun startOfDay(timestamp: Long): Long {
         val calendar = Calendar.getInstance().apply { timeInMillis = timestamp }
         calendar.set(Calendar.HOUR_OF_DAY, 0)
         calendar.set(Calendar.MINUTE, 0)
@@ -337,111 +223,18 @@ class TrafficStatisticsStore(private val mmkv: MMKV) {
         return calendar.timeInMillis
     }
 
-    private fun cleanOldDailyAppData(data: MutableMap<Long, DailyAppTrafficSummary>): Map<Long, DailyAppTrafficSummary> {
-        val cutoffTime = System.currentTimeMillis() - (MAX_APP_DAYS_TO_KEEP * DAY_MS)
-        return data.filterKeys { it >= cutoffTime }
+    private fun startOfHour(timestamp: Long): Long {
+        val calendar = Calendar.getInstance().apply { timeInMillis = timestamp }
+        calendar.set(Calendar.MINUTE, 0)
+        calendar.set(Calendar.SECOND, 0)
+        calendar.set(Calendar.MILLISECOND, 0)
+        return calendar.timeInMillis
     }
 
-    private fun cleanOldDailyRouteData(data: MutableMap<Long, DailyRouteTrafficSummary>): Map<Long, DailyRouteTrafficSummary> {
-        val cutoffTime = System.currentTimeMillis() - (MAX_APP_DAYS_TO_KEEP * DAY_MS)
-        return data.filterKeys { it >= cutoffTime }
-    }
+    private fun rangeCutoff(range: StatisticsTimeRange): Long =
+        startOfDay(now()) - ((range.days - 1) * DAY_MS)
 
-    private fun markDailyDataDirty(routeChanges: Boolean) {
-        synchronized(lock) {
-            dailyAppDirty = true
-            if (routeChanges) {
-                dailyRouteDirty = true
-            }
-        }
-        scheduleFlush()
-    }
-
-    private fun scheduleFlush() {
-        flushJob?.cancel()
-        flushJob = storeScope.launch {
-            PollingTimers.awaitTick(
-                PollingTimerSpecs.dynamic(
-                    name = "traffic_store_flush_debounce",
-                    intervalMillis = FLUSH_DEBOUNCE_MS,
-                    initialDelayMillis = FLUSH_DEBOUNCE_MS,
-                ),
-            )
-            flushPendingData()
-        }
-    }
-
-    private fun flushPendingData() {
-        val dailyAppSnapshot: Map<Long, DailyAppTrafficSummary>?
-        val dailyRouteSnapshot: Map<Long, DailyRouteTrafficSummary>?
-        val trafficSnapshot: Triple<Long, Long, String?>?
-
-        synchronized(lock) {
-            dailyAppSnapshot = if (dailyAppDirty) _dailyAppSummaries.value else null
-            dailyRouteSnapshot = if (dailyRouteDirty) _dailyRouteSummaries.value else null
-            trafficSnapshot = if (lastTrafficDirty) {
-                Triple(lastTrafficUpload, lastTrafficDownload, lastProfileId)
-            } else {
-                null
-            }
-            dailyAppDirty = false
-            dailyRouteDirty = false
-            lastTrafficDirty = false
-        }
-
-        dailyAppSnapshot?.let { summaries ->
-            runCatching {
-                mmkv.encode(KEY_DAILY_APP_SUMMARIES, json.encodeToString(summaries))
-            }
-        }
-        dailyRouteSnapshot?.let { summaries ->
-            runCatching {
-                mmkv.encode(KEY_DAILY_ROUTE_SUMMARIES, json.encodeToString(summaries))
-            }
-        }
-
-        trafficSnapshot?.let { (upload, download, profileId) ->
-            mmkv.encode(KEY_LAST_TRAFFIC_UPLOAD, upload)
-            mmkv.encode(KEY_LAST_TRAFFIC_DOWNLOAD, download)
-            if (profileId.isNullOrBlank()) {
-                mmkv.removeValueForKey(KEY_LAST_PROFILE_ID)
-            } else {
-                mmkv.encode(KEY_LAST_PROFILE_ID, profileId)
-            }
-        }
-    }
-
-    private fun upgradeSchemaIfNeeded() {
-        val currentVersion = mmkv.decodeInt(KEY_STATS_SCHEMA_VERSION, 0)
-        if (currentVersion >= CURRENT_STATS_SCHEMA_VERSION) {
-            return
-        }
-        clearAllForSchemaUpgrade()
-        mmkv.encode(KEY_STATS_SCHEMA_VERSION, CURRENT_STATS_SCHEMA_VERSION)
-    }
-
-    private fun clearAllForSchemaUpgrade() {
-        _dailyAppSummaries.value = emptyMap()
-        synchronized(lock) {
-            dailyAppDirty = false
-            dailyRouteDirty = false
-            lastTrafficDirty = false
-            lastTrafficUpload = NO_PERSISTED_TRAFFIC
-            lastTrafficDownload = NO_PERSISTED_TRAFFIC
-            lastProfileId = null
-        }
-        _dailyRouteSummaries.value = emptyMap()
-        mmkv.removeValueForKey(KEY_DAILY_APP_SUMMARIES)
-        mmkv.removeValueForKey(KEY_DAILY_ROUTE_SUMMARIES)
-        mmkv.removeValueForKey(KEY_LAST_TRAFFIC_UPLOAD)
-        mmkv.removeValueForKey(KEY_LAST_TRAFFIC_DOWNLOAD)
-        mmkv.removeValueForKey(KEY_LAST_PROFILE_ID)
-        mmkv.removeValueForKey(LEGACY_KEY_DAILY_SUMMARIES)
-        mmkv.removeValueForKey(LEGACY_KEY_PROFILE_USAGES)
-        mmkv.removeValueForKey(LEGACY_KEY_LAST_TRAFFIC_UPLOAD)
-        mmkv.removeValueForKey(LEGACY_KEY_LAST_TRAFFIC_DOWNLOAD)
-        mmkv.removeValueForKey(LEGACY_KEY_LAST_PROFILE_ID)
-    }
+    // endregion
 
     companion object {
         private const val KEY_DAILY_APP_SUMMARIES = "daily_app_summaries_v2"
@@ -452,11 +245,6 @@ class TrafficStatisticsStore(private val mmkv: MMKV) {
         private const val KEY_STATS_SCHEMA_VERSION = "traffic_stats_schema_version"
         private const val LEGACY_KEY_DAILY_SUMMARIES = "daily_summaries"
         private const val LEGACY_KEY_PROFILE_USAGES = "profile_usages"
-        private const val LEGACY_KEY_LAST_TRAFFIC_UPLOAD = "last_traffic_upload"
-        private const val LEGACY_KEY_LAST_TRAFFIC_DOWNLOAD = "last_traffic_download"
-        private const val LEGACY_KEY_LAST_PROFILE_ID = "last_profile_id"
-        private const val CURRENT_STATS_SCHEMA_VERSION = 3
-        private const val FLUSH_DEBOUNCE_MS = 30_000L
         private const val DAY_MS = 24 * 60 * 60 * 1000L
         private const val MAX_APP_DAYS_TO_KEEP = 90
         private const val NO_PERSISTED_TRAFFIC = -1L

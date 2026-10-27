@@ -14,19 +14,14 @@
  * You should have received a copy of the GNU Affero General Public License
  * along with this program. If not, see <https://www.gnu.org/licenses/>.
  *
- * Copyright (c)  YumeLira 2025 - Present
+ * Copyright (c)  YumeYucca 2025 - Present
  *
  */
-
-
 
 package com.github.yumelira.yumebox.data.model
 
 enum class AccessControlMode {
-
     ALLOW_ALL,
-
     ALLOW_SPECIFIC,
-
-    DENY_SPECIFIC
+    DENY_SPECIFIC,
 }

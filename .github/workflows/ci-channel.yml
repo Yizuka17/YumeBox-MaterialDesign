@@ -2,14 +2,12 @@ name: CI Channel
 
 on:
   push:
-    branches: [ "Yume", "Dev" ]
+    branches: [ "Yume", "Moe", "Dev" ]
     paths-ignore:
       - "**.md"
       - "docs/**"
       - "website/**"
       - ".gitignore"
-  schedule:
-    - cron: "0 18 * * *"
   workflow_dispatch:
 
 concurrency:
@@ -19,36 +17,90 @@ concurrency:
 permissions:
   contents: write
 
+# Version counter N = commit count of the built commit (`git rev-list --count HEAD`),
+# computed inside reusable-build-apk-only.yml / reusable-prepare-publish.yml after their
+# fetch-depth:0 checkouts - no build_number input is passed from here anymore. versionCode
+# = project.version.code (product.properties) + N, one formula shared by channel, PR and
+# official release builds, so releases get unique versionCodes in the same sequence as
+# channel packages. Unlike the retired run_number scheme this survives workflow-file
+# renames, and it stays monotonic vs already-published packages because the commit count
+# grows with every commit and is >= the number of pushes >= run_number. If history is ever
+# rewritten so the count shrinks, bump project.version.code above the last published versionCode.
 jobs:
-  build-geo-pre:
-    uses: ./.github/workflows/reusable-build-geo.yml
+  validate-channel:
+    name: "00 · Validate (arm64-v8a)"
+    runs-on: macos-26
+    permissions:
+      contents: read
+    steps:
+      - uses: actions/checkout@v7.0.1
+
+      - name: Verify channel build contract
+        shell: bash
+        run: |
+          set -eu
+          test "$(awk -F= '$1 == "abi.app.list" { print $2 }' kernel.properties)" = "arm64-v8a"
+
+          test -f scripts/native-build.py
+          test -f scripts/native/cli.py
+          test -f scripts/native/go_core.py
+          test -f lib/native/go/native/entry.go
+          test -f lib/native/go/go.mod
+          test -f lib/native/shell/CMakeLists.txt
+          test -f lib/native/shell/shell.c
+          test -f kernel.properties
+          # Character classes keep this pattern from matching its own line here.
+          ! grep -Eq 'channel:[[:space:]]*smart|YumeBox[-]smart' .github/workflows/ci-channel.yml
+
+  # Prebuild Java/Kotlin & module resources in parallel with the native build jobs.
+  prebuild-modules-pre:
+    name: "01 · Prebuild Modules (Pre)"
+    needs: validate-channel
+    uses: ./.github/workflows/reusable-prebuild-modules.yml
     with:
       channel: pre
+      build_type: release
+    secrets: inherit
+
+  # Keep the channel and ABI as matrix inputs even while each has one supported value.
+  # Adding a supported target later expands the graph without changing artifact wiring.
+  build-geo-pre:
+    name: "01 · Geo (${{ matrix.channel }})"
+    needs: validate-channel
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - channel: pre
+    uses: ./.github/workflows/reusable-build-geo.yml
+    with:
+      channel: ${{ matrix.channel }}
     secrets: inherit
 
   build-native-abi-pre-arm64-v8a:
+    name: "02 · Native (${{ matrix.abi }})"
+    needs: validate-channel
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - channel: pre
+            kernel_channel: alpha
+            abi: arm64-v8a
     uses: ./.github/workflows/reusable-build-native-abi.yml
     with:
-      channel: pre
-      kernel_channel: alpha
-      abi: arm64-v8a
+      channel: ${{ matrix.channel }}
+      kernel_channel: ${{ matrix.kernel_channel }}
+      abi: ${{ matrix.abi }}
     secrets: inherit
 
-  build-geo-smart:
-    uses: ./.github/workflows/reusable-build-geo.yml
-    with:
-      channel: smart
-    secrets: inherit
-
-  build-native-abi-smart-arm64-v8a:
-    uses: ./.github/workflows/reusable-build-native-abi.yml
-    with:
-      channel: smart
-      kernel_channel: smart
-      abi: arm64-v8a
-    secrets: inherit
+  build-telegram-bot-api:
+    name: "02 · Telegram Bot API"
+    needs: validate-channel
+    uses: ./.github/workflows/reusable-build-telegram-bot-api.yml
 
   bundle-native-pre:
+    name: "03 · Bundle (Pre)"
     needs:
       - build-geo-pre
       - build-native-abi-pre-arm64-v8a
@@ -57,111 +109,107 @@ jobs:
       channel: pre
     secrets: inherit
 
-  bundle-native-smart:
-    needs:
-      - build-geo-smart
-      - build-native-abi-smart-arm64-v8a
-    uses: ./.github/workflows/reusable-bundle-native.yml
-    with:
-      channel: smart
-    secrets: inherit
-
   build-apk-pre-app:
-    needs: bundle-native-pre
+    name: "05 · APK (Pre)"
+    needs:
+      - bundle-native-pre
+      - prebuild-modules-pre
     uses: ./.github/workflows/reusable-build-apk-only.yml
     with:
       channel: pre
       module: app
-      artifact_prefix: yumebox-pre
       release_tag: Pre-release
-      meta_asset_name: yumebox-pre-meta.json
+      meta_asset_name: YumeBox-pre-meta.json
       raw_apk_artifact_name: apk-raw-pre-app
+      build_type: release
+      build_hash: ${{ github.sha }}
+      build_branch: ${{ github.ref_name }}
     secrets: inherit
 
-  build-apk-smart-app:
-    needs: bundle-native-smart
-    uses: ./.github/workflows/reusable-build-apk-only.yml
-    with:
-      channel: smart
-      module: app
-      artifact_prefix: yumebox-smart
-      release_tag: Smart
-      meta_asset_name: yumebox-smart-meta.json
-      raw_apk_artifact_name: apk-raw-smart-app
-    secrets: inherit
+  verify-native-bundle:
+    name: "04 · Verify bundle (arm64-v8a)"
+    needs: bundle-native-pre
+    runs-on: macos-26
+    permissions:
+      actions: read
+    steps:
+      - name: Download bundled native artifact
+        uses: actions/download-artifact@v8.0.2
+        with:
+          name: native-pre
+          path: native
+
+      - name: Verify bundled native files
+        shell: bash
+        run: |
+          set -eu
+          abi=arm64-v8a
+          for file in libmihomo.so libpreview.so libmihomocore.so liboverride.so libcompat.so libloader.so core-version.properties; do
+            test -s "native/jniLibs/${abi}/${file}"
+          done
+          for file in geoip.metadb.xz geosite.dat.xz ASN.mmdb.xz; do
+            test -s "native/build/generated/assets/geo/${file}"
+          done
+          test ! -e "native/build/generated/assets/geo/BundleMRS.7z"
 
   prepare-publish-pre-app:
-    needs: build-apk-pre-app
+    name: "06 · Publish (Pre)"
+    needs:
+      - build-apk-pre-app
+      - verify-native-bundle
     uses: ./.github/workflows/reusable-prepare-publish.yml
     with:
       channel: pre
       module: app
-      artifact_prefix: yumebox-pre
+      artifact_prefix: YumeBox
       release_tag: Pre-release
-      meta_asset_name: yumebox-pre-meta.json
+      meta_asset_name: YumeBox-pre-meta.json
       raw_apk_artifact_name: apk-raw-pre-app
-      publish_artifact_name: publish-pre-app
-    secrets: inherit
-
-  prepare-publish-smart-app:
-    needs: build-apk-smart-app
-    uses: ./.github/workflows/reusable-prepare-publish.yml
-    with:
-      channel: smart
-      module: app
-      artifact_prefix: yumebox-smart
-      release_tag: Smart
-      meta_asset_name: yumebox-smart-meta.json
-      raw_apk_artifact_name: apk-raw-smart-app
-      publish_artifact_name: publish-smart-app
-    secrets: inherit
-
-  publish-release-pre:
-    needs: prepare-publish-pre-app
-    uses: ./.github/workflows/reusable-publish-release.yml
-    with:
-      channel: pre
-      release_tag: Pre-release
-      release_name: Pre-release
-      prerelease: true
-      publish_artifacts: publish-pre-app
-      cleanup_assets: true
-    secrets: inherit
-
-  publish-release-smart:
-    needs: prepare-publish-smart-app
-    uses: ./.github/workflows/reusable-publish-release.yml
-    with:
-      channel: smart
-      release_tag: Smart
-      release_name: Smart
-      prerelease: true
-      publish_artifacts: publish-smart-app
-      cleanup_assets: true
+      build_hash: ${{ github.sha }}
+      build_branch: ${{ github.ref_name }}
+      apk_name_tail: ${{ needs.build-apk-pre-app.outputs.apk_name_tail }}
     secrets: inherit
 
   notify-pre:
+    name: "08 · Notify (Pre)"
     needs:
       - prepare-publish-pre-app
-      - publish-release-pre
+      - build-telegram-bot-api
     uses: ./.github/workflows/reusable-notify-telegram.yml
     with:
       channel: pre
-      release_tag: Pre-release
-      publish_artifact_name: publish-pre-app
-      meta_asset_name: yumebox-pre-meta.json
+      apk_artifact_name: ${{ needs.prepare-publish-pre-app.outputs.default_apk_name }}
+      builtin_apk_artifact_name: ${{ needs.prepare-publish-pre-app.outputs.builtin_apk_name }}
       telegram_title: YumeBox Pre
     secrets: inherit
 
-  notify-smart:
+  verify-published-apk:
+    name: "07 · Verify APK (arm64-v8a)"
+    needs: prepare-publish-pre-app
+    runs-on: macos-26
+    permissions:
+      actions: read
+    steps:
+      - name: Download published APK artifact
+        uses: actions/download-artifact@v8.0.2
+        with:
+          name: ${{ needs.prepare-publish-pre-app.outputs.default_apk_name }}
+          path: apk
+
+      - name: Verify APK archive
+        shell: bash
+        run: |
+          set -eu
+          shopt -s nullglob
+          apks=(apk/*.apk)
+          test "${#apks[@]}" -eq 1
+          unzip -t "${apks[0]}" >/dev/null
+
+  cleanup-artifacts:
+    name: "09 · Cleanup"
     needs:
-      - prepare-publish-smart-app
-      - publish-release-smart
-    uses: ./.github/workflows/reusable-notify-telegram.yml
-    with:
-      channel: smart
-      release_tag: Smart
-      publish_artifact_name: publish-smart-app
-      meta_asset_name: yumebox-smart-meta.json
-      telegram_title: YumeBox Smart
-    secrets: inherit
+      - notify-pre
+      - verify-published-apk
+    permissions:
+      actions: write
+    uses: ./.github/workflows/reusable-cleanup-artifacts.yml

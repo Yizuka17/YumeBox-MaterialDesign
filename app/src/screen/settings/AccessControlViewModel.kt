@@ -30,7 +30,7 @@ import com.github.yumelira.yumebox.core.presentation.LoadableState
 import com.github.yumelira.yumebox.data.controller.AccessControlController
 import com.github.yumelira.yumebox.data.model.AccessControlMode
 import com.github.yumelira.yumebox.data.store.NetworkSettingsStore
-import com.github.yumelira.yumebox.service.root.RootPackageShell
+import com.github.yumelira.yumebox.runtime.service.root.RootPackageShell
 import dev.oom_wg.purejoy.mlang.MLang
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.SharingStarted

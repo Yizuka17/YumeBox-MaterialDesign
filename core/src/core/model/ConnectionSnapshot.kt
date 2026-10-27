@@ -14,11 +14,9 @@
  * You should have received a copy of the GNU Affero General Public License
  * along with this program. If not, see <https://www.gnu.org/licenses/>.
  *
- * Copyright (c)  YumeLira 2025 - Present
+ * Copyright (c)  YumeYucca 2025 - Present
  *
  */
-
-
 
 package com.github.yumelira.yumebox.core.model
 
@@ -38,10 +36,8 @@ data class ConnectionSnapshot(
 data class ConnectionInfo(
     val id: String = "",
     val metadata: JsonObject = JsonObject(emptyMap()),
-    @SerialName("upload")
-    val upload: Long = 0L,
-    @SerialName("download")
-    val download: Long = 0L,
+    @SerialName("upload") val upload: Long = 0L,
+    @SerialName("download") val download: Long = 0L,
     val start: String = "",
     val chains: List<String> = emptyList(),
     val providerChains: List<String> = emptyList(),

@@ -1,155 +1,88 @@
 package main
 
-//#include "bridge.h"
-import "C"
-
 import (
-	"context"
-	"io"
-	"sync"
-	"unsafe"
+	"net"
+	"net/netip"
+	"strings"
 
-	"golang.org/x/sync/semaphore"
-
-	"cfa/native/app"
-	"cfa/native/tun"
+	"github.com/metacubex/mihomo/config"
+	C "github.com/metacubex/mihomo/constant"
+	LC "github.com/metacubex/mihomo/listener/config"
+	"github.com/metacubex/mihomo/listener/sing_tun"
 )
 
-var rTunLock sync.Mutex
-var rTun *remoteTun
-var rootTun io.Closer
-
-type remoteTun struct {
-	closer   io.Closer
-	callback unsafe.Pointer
-
-	closed bool
-	limit  *semaphore.Weighted
-}
-
-func (t *remoteTun) markSocket(fd int) {
-	_ = t.limit.Acquire(context.Background(), 1)
-	defer t.limit.Release(1)
-
-	if t.closed {
-		return
-	}
-
-	C.mark_socket(t.callback, C.int(fd))
-}
-
-func (t *remoteTun) querySocketOwner(protocol int, source, target string) string {
-	_ = t.limit.Acquire(context.Background(), 1)
-	defer t.limit.Release(1)
-
-	if t.closed {
-		return "-1\t"
-	}
-
-	result := C.query_socket_owner(
-		t.callback,
-		C.int(protocol),
-		C.CString(source),
-		C.CString(target),
-	)
-
-	if result == nil {
-		return "-1\t"
-	}
-
-	defer C.free(unsafe.Pointer(result))
-	return C.GoString(result)
-}
-
-func (t *remoteTun) close() {
-	_ = t.limit.Acquire(context.TODO(), 4)
-	defer t.limit.Release(4)
-
-	t.closed = true
-
-	if t.closer != nil {
-		_ = t.closer.Close()
-	}
-
-	app.ApplyTunContext(nil, nil)
-
-	C.release_object(t.callback)
-}
-
-func closeCurrentTunLocked() {
-	if rTun != nil {
-		rTun.close()
-		rTun = nil
-	}
-
-	if rootTun != nil {
-		_ = rootTun.Close()
-		rootTun = nil
-	}
-
-	app.ApplyTunContext(nil, nil)
-}
-
-//export startTun
-func startTun(fd C.int, stack, gateway, portal, dns C.c_string, callback unsafe.Pointer) C.int {
-	rTunLock.Lock()
-	defer rTunLock.Unlock()
-
-	closeCurrentTunLocked()
-
-	f := int(fd)
-	s := C.GoString(stack)
-	g := C.GoString(gateway)
-	p := C.GoString(portal)
-	d := C.GoString(dns)
-
-	remote := &remoteTun{callback: callback, closed: false, limit: semaphore.NewWeighted(4)}
-
-	app.ApplyTunContext(remote.markSocket, remote.querySocketOwner)
-
-	closer, err := tun.Start(f, s, g, p, d)
+// configureTun injects the VpnService TUN fd into the parsed config before ApplyConfig. Routes
+// and the portal address are the VpnService.Builder's business; the core only needs the gateway
+// prefixes and the DNS hijack targets.
+func configureTun(cfg *config.Config, fd int, gateway, dns, stackName string) error {
+	prefix4, prefix6, err := splitGatewayPrefixes(gateway)
 	if err != nil {
-		remote.close()
-
-		return 1
+		return err
 	}
 
-	remote.closer = closer
-
-	rTun = remote
-
-	return 0
-}
-
-//export stopTun
-func stopTun() {
-	rTunLock.Lock()
-	defer rTunLock.Unlock()
-
-	closeCurrentTunLocked()
-}
-
-//export startRootTun
-func startRootTun(configJSON C.c_string) *C.char {
-	rTunLock.Lock()
-	defer rTunLock.Unlock()
-
-	closeCurrentTunLocked()
-
-	closer, err := tun.StartRoot(C.GoString(configJSON))
-	if err != nil {
-		closeCurrentTunLocked()
-		return C.CString(err.Error())
+	cfg.General.Tun = LC.Tun{
+		Enable:    true,
+		Device:    sing_tun.InterfaceName,
+		Stack:     vpnTunStack(stackName),
+		DNSHijack: splitDNSHijack(dns),
+		AutoRoute: false, // routes are set by the VpnService.Builder
+		// Core sockets are protected through the launcher, so the TUN must not pick an interface.
+		AutoDetectInterface: false,
+		Inet4Address:        prefix4,
+		Inet6Address:        prefix6,
+		MTU:                 1500,
+		FileDescriptor:      fd,
 	}
 
-	rootTun = closer
 	return nil
 }
 
-//export stopRootTun
-func stopRootTun() {
-	rTunLock.Lock()
-	defer rTunLock.Unlock()
+// vpnTunStack maps the launcher --stack flag onto a TUNStack after config.Parse. Unknown names
+// (including mips on a core that has not added it yet) fall back to gVisor so YAML never has
+// to carry a value Parse would reject. System/Mixed need a kernel TUN this fd path does not have.
+func vpnTunStack(name string) C.TUNStack {
+	var stack C.TUNStack
+	if err := stack.UnmarshalText([]byte(strings.TrimSpace(name))); err != nil {
+		return C.TunGvisor
+	}
+	switch stack {
+	case C.TunSystem, C.TunMixed:
+		return C.TunGvisor
+	default:
+		return stack
+	}
+}
 
-	closeCurrentTunLocked()
+// splitGatewayPrefixes parses "172.19.0.1/30" or "172.19.0.1/30,fdfe:dcba:9876::1/126" into
+// per-family prefix lists.
+func splitGatewayPrefixes(gateway string) (prefix4, prefix6 []netip.Prefix, err error) {
+	for entry := range strings.SplitSeq(gateway, ",") {
+		entry = strings.TrimSpace(entry)
+		if entry == "" {
+			continue
+		}
+		prefix, err := netip.ParsePrefix(entry)
+		if err != nil {
+			return nil, nil, err
+		}
+		if prefix.Addr().Is4() {
+			prefix4 = append(prefix4, prefix)
+		} else {
+			prefix6 = append(prefix6, prefix)
+		}
+	}
+	return prefix4, prefix6, nil
+}
+
+// splitDNSHijack turns "172.19.0.2" or "172.19.0.2,fdfe:dcba:9876::2" into host:53 targets.
+func splitDNSHijack(dns string) []string {
+	var targets []string
+	for entry := range strings.SplitSeq(dns, ",") {
+		entry = strings.TrimSpace(entry)
+		if entry == "" {
+			continue
+		}
+		targets = append(targets, net.JoinHostPort(entry, "53"))
+	}
+	return targets
 }

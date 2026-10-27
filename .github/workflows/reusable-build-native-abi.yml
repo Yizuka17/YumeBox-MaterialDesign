@@ -1,4 +1,4 @@
-name: Reusable Build Native ABI
+name: Build Native
 
 on:
   workflow_call:
@@ -18,38 +18,45 @@ permissions:
 
 jobs:
   build:
-    runs-on: ubuntu-latest
-    env:
-      FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
+    runs-on: macos-26
     steps:
       - name: Checkout
-        uses: actions/checkout@v6
+        uses: actions/checkout@v7.0.1
         with:
           submodules: recursive
           fetch-depth: 0
 
-      - name: Setup Java
-        uses: actions/setup-java@v5
-        with:
-          distribution: temurin
-          java-version: "25"
-
-      - name: Setup Kotlin
-        uses: fwilhe2/setup-kotlin@main
+      - name: Validate ABI
+        run: test "${{ inputs.abi }}" = "arm64-v8a"
 
       - name: Setup Go
-        uses: actions/setup-go@4a3601121dd01d1626a1e23e37211e3254c1c06c
+        uses: actions/setup-go@v7.0.0
         with:
           go-download-base-url: 'https://github.com/MetaCubeX/go/releases/download/build'
-          go-version: '1.26'
+          go-version: '1.27'
+          # No go.mod at the repo root (modules live in lib/native/go + the later-synced
+          # mihomo tree), so setup-go's dependency cache can't resolve one — disable it to
+          # drop the "Restore cache failed: ... go.mod" warning. Go module caching, if ever
+          # wanted, would need an explicit actions/cache keyed on the real go.sum paths.
+          cache: false
+
+      - name: Apply Go patches
+        run: |
+          cd "$(go env GOROOT)"
+          for p in "$GITHUB_WORKSPACE"/.github/patch/*.patch; do patch -p1 < "$p"; done
 
       - name: Setup Rust
-        uses: dtolnay/rust-toolchain@stable
+        # nightly + rust-src: the rust build uses -Zbuild-std and
+        # -Cpanic=immediate-abort to shrink liboverride.so (~18%), see
+        # RustBuilder in scripts/native_build/rust_builder.py.
+        uses: dtolnay/rust-toolchain@683b588c487a69d01f6c6ddf40f036ff682cc2c8 # nightly
         with:
-          targets: armv7-linux-androideabi,aarch64-linux-android,i686-linux-android,x86_64-linux-android
+          toolchain: nightly
+          targets: aarch64-linux-android
+          components: rust-src
 
       - name: Cache Rust
-        uses: actions/cache@v5
+        uses: actions/cache@v6.1.0
         with:
           path: |
             ~/.cargo/bin/
@@ -69,63 +76,85 @@ jobs:
           fi
 
       - name: Setup Android SDK
-        uses: android-actions/setup-android@v4
+        uses: android-actions/setup-android@v4.0.4 # v4.0.4
         with:
           packages: ""
 
+      - name: Read native toolchain version
+        id: native-config
+        run: |
+          version="$(awk -F= '$1 == "android.ndkVersion" { print $2 }' kernel.properties)"
+          test -n "$version"
+          echo "ndk_version=$version" >> "$GITHUB_OUTPUT"
+
       - name: Cache NDK
         id: cache-ndk
-        uses: actions/cache@v5
+        uses: actions/cache@v6.1.0
         with:
-          path: ${{ env.ANDROID_SDK_ROOT }}/ndk/29.0.14206865
-          key: ${{ runner.os }}-ndk-29.0.14206865-v2
+          path: ${{ env.ANDROID_SDK_ROOT }}/ndk/${{ steps.native-config.outputs.ndk_version }}
+          key: ${{ runner.os }}-ndk-${{ steps.native-config.outputs.ndk_version }}-v4
           restore-keys: |
-            ${{ runner.os }}-ndk-29.0.14206865-v2-
+            ${{ runner.os }}-ndk-${{ steps.native-config.outputs.ndk_version }}-v3-
 
       - name: Install NDK
         if: steps.cache-ndk.outputs.cache-hit != 'true'
-        run: sdkmanager "ndk;29.0.14206865"
+        run: sdkmanager "ndk;${{ steps.native-config.outputs.ndk_version }}"
 
       - name: Configure local.properties
         run: |
           echo "sdk.dir=${ANDROID_SDK_ROOT}" > local.properties
-          echo "ndk.dir=${ANDROID_SDK_ROOT}/ndk/29.0.14206865" >> local.properties
+          echo "ndk.dir=${ANDROID_SDK_ROOT}/ndk/${{ steps.native-config.outputs.ndk_version }}" >> local.properties
 
-      - name: Update CA certificates
+      - name: Install host build tools
+        run: brew install cmake ninja
+
+      - name: Configure CA bundle
         run: |
-          sudo apt-get update
-          sudo apt-get install -y ca-certificates
-          sudo update-ca-certificates
+          set -eu
           mkdir -p core/src/foss/golang/mihomo/component/ca
-          cp -f /etc/ssl/certs/ca-certificates.crt core/src/foss/golang/mihomo/component/ca/ca-certificates.crt
+          cp -f /etc/ssl/cert.pem core/src/foss/golang/mihomo/component/ca/ca-certificates.crt
+          test -s core/src/foss/golang/mihomo/component/ca/ca-certificates.crt
 
       - name: Sync kernel
         run: |
-          chmod +x scripts/sync-kernel.sh
-          ./scripts/sync-kernel.sh "${{ inputs.kernel_channel }}"
+          python3 scripts/sync_kernel.py "${{ inputs.kernel_channel }}"
+
+      - name: Verify Rust sources
+        run: |
+          test -f lib/native/rust/Cargo.toml
+          test -f pack/native/CMakeLists.txt
+          test -f lib/native/compat/CMakeLists.txt
 
       - name: Build native libraries for ABI
         env:
           ABI_APP_LIST: ${{ inputs.abi }}
           ANDROID_HOME: ${{ env.ANDROID_SDK_ROOT }}
           ANDROID_SDK_ROOT: ${{ env.ANDROID_SDK_ROOT }}
-          ANDROID_NDK_HOME: ${{ env.ANDROID_SDK_ROOT }}/ndk/29.0.14206865
-        run: kotlin scripts/native-build.main.kts --go --rust --cpp
+          ANDROID_NDK_HOME: ${{ env.ANDROID_SDK_ROOT }}/ndk/${{ steps.native-config.outputs.ndk_version }}
+        run: python3 scripts/native-build.py --go --rust --compat --loader
 
       - name: Verify native outputs
         shell: bash
         run: |
           set -eu
-          test -f "jniLibs/${{ inputs.abi }}/libclash.so"
+          test -f "jniLibs/${{ inputs.abi }}/libmihomo.so"
+          test -f "jniLibs/${{ inputs.abi }}/libpreview.so"
+          test -f "jniLibs/${{ inputs.abi }}/libmihomocore.so"
           test -f "jniLibs/${{ inputs.abi }}/liboverride.so"
-          test -f "jniLibs/${{ inputs.abi }}/libbridge.so"
+          test -f "jniLibs/${{ inputs.abi }}/libcompat.so"
+          test -f "jniLibs/${{ inputs.abi }}/libloader.so"
+          test -f "jniLibs/${{ inputs.abi }}/core-version.properties"
 
       - name: Upload ABI artifact
-        uses: actions/upload-artifact@v7
+        uses: actions/upload-artifact@v7.0.2
         with:
           name: native-${{ inputs.channel }}-${{ inputs.abi }}
           path: |
-            jniLibs/${{ inputs.abi }}/libclash.so
+            jniLibs/${{ inputs.abi }}/libmihomo.so
+            jniLibs/${{ inputs.abi }}/libpreview.so
+            jniLibs/${{ inputs.abi }}/libmihomocore.so
             jniLibs/${{ inputs.abi }}/liboverride.so
-            jniLibs/${{ inputs.abi }}/libbridge.so
+            jniLibs/${{ inputs.abi }}/libcompat.so
+            jniLibs/${{ inputs.abi }}/libloader.so
+            jniLibs/${{ inputs.abi }}/core-version.properties
           if-no-files-found: error

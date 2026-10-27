@@ -1,4 +1,4 @@
-name: Reusable Notify Telegram
+name: Notify Telegram
 
 on:
   workflow_call:
@@ -6,13 +6,12 @@ on:
       channel:
         required: true
         type: string
-      release_tag:
+      apk_artifact_name:
+        description: "Exact per-APK artifact/file name for the arm64-v8a APK without bundled geo databases."
         required: true
         type: string
-      publish_artifact_name:
-        required: true
-        type: string
-      meta_asset_name:
+      builtin_apk_artifact_name:
+        description: "Exact per-APK artifact/file name for the arm64-v8a APK with bundled geo databases."
         required: true
         type: string
       telegram_title:
@@ -24,47 +23,105 @@ permissions:
 
 jobs:
   notify:
-    runs-on: ubuntu-latest
-    env:
-      FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
+    runs-on: macos-26
     steps:
       - name: Checkout
-        uses: actions/checkout@v6
+        uses: actions/checkout@v7.0.1
         with:
           fetch-depth: 0
 
-      - name: Download publish artifact
-        uses: actions/download-artifact@v8
+      # archive:false artifacts use the publish file name directly. Download both APK variants;
+      # the date/version segment was stamped once by prepare-publish and is passed in as output.
+      - name: Download arm64-v8a APK artifact (external geo)
+        uses: actions/download-artifact@v8.0.2
         with:
-          name: ${{ inputs.publish_artifact_name }}
+          name: ${{ inputs.apk_artifact_name }}
+          path: publish
+
+      - name: Download arm64-v8a APK artifact (builtin geo)
+        uses: actions/download-artifact@v8.0.2
+        with:
+          name: ${{ inputs.builtin_apk_artifact_name }}
           path: publish
 
       - name: Check upload availability
         id: check_upload
         shell: bash
+        env:
+          BOT_TOKEN: ${{ secrets.BOT_TOKEN }}
+          CHAT_ID: ${{ secrets.CHAT_ID }}
+          TELEGRAM_API_ID: ${{ secrets.TELEGRAM_API_ID }}
+          TELEGRAM_API_HASH: ${{ secrets.TELEGRAM_API_HASH }}
         run: |
-          if [ -n "${{ secrets.BOT_TOKEN }}" ]; then
+          if [ -n "${BOT_TOKEN}" ] \
+            && [ -n "${CHAT_ID}" ] \
+            && [ -n "${TELEGRAM_API_ID}" ] \
+            && [ -n "${TELEGRAM_API_HASH}" ]; then
             echo "UPLOAD=true" >> "$GITHUB_OUTPUT"
           else
             echo "UPLOAD=false" >> "$GITHUB_OUTPUT"
+            echo "Telegram upload skipped: BOT_TOKEN, CHAT_ID, TELEGRAM_API_ID and TELEGRAM_API_HASH are all required."
           fi
 
-      - name: Bot session cache
+      - name: Download Telegram Bot API binary
         if: steps.check_upload.outputs.UPLOAD == 'true'
-        uses: actions/cache@v5
+        uses: actions/download-artifact@v8.0.2
         with:
-          path: scripts/yumebot.session
-          key: ${{ runner.os }}-bot-session-${{ github.ref_name }}-${{ inputs.channel }}
-          restore-keys: |
-            ${{ runner.os }}-bot-session-${{ github.ref_name }}-
-            ${{ runner.os }}-bot-session-
+          name: telegram-bot-api-server
+          path: telegram-bot-api-install
+
+      - name: Install Telegram Bot API runtime
+        if: steps.check_upload.outputs.UPLOAD == 'true'
+        run: brew install openssl@3
+
+      - name: Verify Telegram Bot API server
+        if: steps.check_upload.outputs.UPLOAD == 'true'
+        run: |
+          set -eu
+          export DYLD_LIBRARY_PATH="$(brew --prefix openssl@3)/lib:${DYLD_LIBRARY_PATH:-}"
+          chmod +x telegram-bot-api-install/bin/telegram-bot-api
+          test -x telegram-bot-api-install/bin/telegram-bot-api
+          telegram-bot-api-install/bin/telegram-bot-api --help >/dev/null
+
+      - name: Start local Telegram Bot API server
+        if: steps.check_upload.outputs.UPLOAD == 'true'
+        env:
+          TELEGRAM_API_ID: ${{ secrets.TELEGRAM_API_ID }}
+          TELEGRAM_API_HASH: ${{ secrets.TELEGRAM_API_HASH }}
+        run: |
+          set -eu
+          export DYLD_LIBRARY_PATH="$(brew --prefix openssl@3)/lib:${DYLD_LIBRARY_PATH:-}"
+          mkdir -p "$RUNNER_TEMP/telegram-bot-api-data" "$RUNNER_TEMP/telegram-bot-api-temp"
+          telegram-bot-api-install/bin/telegram-bot-api \
+            --local \
+            --http-port=8081 \
+            --dir="$RUNNER_TEMP/telegram-bot-api-data" \
+            --temp-dir="$RUNNER_TEMP/telegram-bot-api-temp" \
+            >"$RUNNER_TEMP/telegram-bot-api.log" 2>&1 &
+          server_pid=$!
+          echo "TELEGRAM_BOT_API_PID=${server_pid}" >> "$GITHUB_ENV"
+
+          attempt=1
+          while [ "${attempt}" -le 30 ]; do
+            if ! kill -0 "${server_pid}" 2>/dev/null; then
+              cat "$RUNNER_TEMP/telegram-bot-api.log"
+              exit 1
+            fi
+            if curl --silent --show-error --output /dev/null http://127.0.0.1:8081/; then
+              exit 0
+            fi
+            attempt=$((attempt + 1))
+            sleep 1
+          done
+
+          cat "$RUNNER_TEMP/telegram-bot-api.log"
+          exit 1
 
       - name: Upload to Telegram
         if: steps.check_upload.outputs.UPLOAD == 'true'
         env:
           CHAT_ID: ${{ secrets.CHAT_ID }}
           BOT_TOKEN: ${{ secrets.BOT_TOKEN }}
-          MESSAGE_THREAD_ID: ${{ secrets.MESSAGE_THREAD_ID }}
           TITLE: ${{ inputs.telegram_title }}
           BRANCH: ${{ github.ref_name }}
           WORKFLOW_NAME: ${{ github.workflow }}
@@ -75,4 +132,18 @@ jobs:
           RUN_ID: ${{ github.run_id }}
           SERVER_URL: ${{ github.server_url }}
           PUBLISH_DIR: publish
-        run: python3 $GITHUB_WORKSPACE/scripts/yumebot.py
+          COMMIT_MESSAGE: ${{ github.event.head_commit.message }}
+          LOGO_PATH: website/images/brand/project-preview.webp
+          BOT_API_BASE_URL: http://127.0.0.1:8081
+        run: python3 "$GITHUB_WORKSPACE/scripts/yumebot.py"
+
+      - name: Stop local Telegram Bot API server
+        if: always() && steps.check_upload.outputs.UPLOAD == 'true'
+        run: |
+          if [ -n "${TELEGRAM_BOT_API_PID:-}" ]; then
+            kill "$TELEGRAM_BOT_API_PID" 2>/dev/null || true
+            wait "$TELEGRAM_BOT_API_PID" 2>/dev/null || true
+          fi
+          if [ -f "$RUNNER_TEMP/telegram-bot-api.log" ]; then
+            cat "$RUNNER_TEMP/telegram-bot-api.log"
+          fi

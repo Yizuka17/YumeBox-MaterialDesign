@@ -23,7 +23,7 @@
 package com.github.yumelira.yumebox.presentation.util
 
 import com.github.yumelira.yumebox.common.util.ByteFormatter
-import com.github.yumelira.yumebox.service.runtime.entity.Profile
+import com.github.yumelira.yumebox.runtime.api.Profile
 import dev.oom_wg.purejoy.mlang.MLang
 import java.io.File
 

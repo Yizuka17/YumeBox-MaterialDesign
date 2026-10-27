@@ -14,28 +14,25 @@
  * You should have received a copy of the GNU Affero General Public License
  * along with this program. If not, see <https://www.gnu.org/licenses/>.
  *
- * Copyright (c)  YumeLira 2025 - Present
+ * Copyright (c)  YumeYucca 2025 - Present
  *
  */
 
-
+@file:Suppress("UnusedSymbol", "RedundantSuspendModifier")
 
 package com.github.yumelira.yumebox.data.controller
 
-import com.github.yumelira.yumebox.core.model.ConfigurationOverride
-import com.github.yumelira.yumebox.data.store.OverrideConfigProvider
-import com.github.yumelira.yumebox.data.store.OverrideConfigStore
-import com.github.yumelira.yumebox.data.store.ProfileBindingProvider
-import com.github.yumelira.yumebox.data.model.OverrideConfig
+import com.github.yumelira.yumebox.core.model.OverrideSpec
 import com.github.yumelira.yumebox.data.model.OverrideMetadata
 import com.github.yumelira.yumebox.data.model.ProfileBinding
+import com.github.yumelira.yumebox.data.store.OverrideConfigStore
+import com.github.yumelira.yumebox.data.store.ProfileBindingProvider
 import java.util.*
 
 class OverrideResolver(
-    private val configProvider: OverrideConfigProvider,
+    private val configStore: OverrideConfigStore,
     private val bindingProvider: ProfileBindingProvider,
 ) {
-
     suspend fun resolveIds(profileId: UUID): List<String> {
         val binding = bindingProvider.getBinding(profileId.toString())
         return resolveBindingIds(binding)
@@ -46,21 +43,17 @@ class OverrideResolver(
         return resolveBindingIds(binding)
     }
 
-    suspend fun resolveConfigs(overrideIds: List<String>): List<ConfigurationOverride> {
-        return resolveOrderedConfigs(overrideIds).map(OverrideConfig::config)
-    }
+    suspend fun resolveSpecs(overrideIds: List<String>): List<OverrideSpec> =
+        resolveOrderedSpecs(overrideIds)
 
-    suspend fun getProfilesUsingOverride(overrideId: String): List<String> {
-        return bindingProvider.getProfilesUsingOverride(overrideId)
-    }
+    suspend fun getProfilesUsingOverride(overrideId: String): List<String> =
+        bindingProvider.getProfilesUsingOverride(overrideId)
 
-    suspend fun isOverrideInUse(overrideId: String): Boolean {
-        return bindingProvider.isOverrideInUse(overrideId)
-    }
+    suspend fun isOverrideInUse(overrideId: String): Boolean =
+        bindingProvider.isOverrideInUse(overrideId)
 
-    suspend fun getOverrideUsageCount(overrideId: String): Int {
-        return bindingProvider.getOverrideUsageCount(overrideId)
-    }
+    suspend fun getOverrideUsageCount(overrideId: String): Int =
+        bindingProvider.getOverrideUsageCount(overrideId)
 
     suspend fun getBinding(profileId: String) = bindingProvider.getBinding(profileId)
 
@@ -81,31 +74,31 @@ class OverrideResolver(
         bindingProvider.removeBinding(profileId)
     }
 
-    suspend fun enableOverride(profileId: String) {
-        bindingProvider.enableOverride(profileId)
-    }
-
-    suspend fun disableOverride(profileId: String) {
-        bindingProvider.disableOverride(profileId)
-    }
-
     private fun resolveBindingIds(binding: ProfileBinding?): List<String> {
-        if (binding == null) {
+        if (binding == null || !binding.enabled) {
             return emptyList()
         }
-        return buildList {
-            if (binding.enabled) {
-                add(OverrideMetadata.SYSTEM_PRESET_ID)
+        // Keep every bound id (except legacy/internal). Do not drop missing files here — callers
+        // compare resolved specs vs ids so a missing override surfaces as a failed apply instead of
+        // silently compiling a shorter chain.
+        return binding.overrideIds
+            .asSequence()
+            .filterNot { overrideId ->
+                isLegacyPresetOverrideId(overrideId) ||
+                        OverrideConfigStore.isInternalRuntimeConfig(overrideId)
             }
-            addAll(binding.overrideIds.filterNot(OverrideConfigStore::isInternalRuntimeConfig))
-        }.distinct()
+            .distinct()
+            .toList()
     }
 
-    private suspend fun resolveOrderedConfigs(
-        overrideIds: List<String>,
-    ): List<OverrideConfig> {
+    private suspend fun resolveOrderedSpecs(overrideIds: List<String>): List<OverrideSpec> {
         return overrideIds.mapNotNull { overrideId ->
-            configProvider.getById(overrideId)
+            val config = configStore.getById(overrideId) ?: return@mapNotNull null
+            val file = configStore.getConfigFilePath(overrideId) ?: return@mapNotNull null
+            OverrideSpec(path = file.absolutePath, ext = config.contentType.extension)
         }
     }
+
+    private fun isLegacyPresetOverrideId(overrideId: String): Boolean =
+        overrideId.startsWith(OverrideMetadata.LEGACY_SYSTEM_PREFIX)
 }

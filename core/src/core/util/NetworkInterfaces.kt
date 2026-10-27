@@ -14,11 +14,9 @@
  * You should have received a copy of the GNU Affero General Public License
  * along with this program. If not, see <https://www.gnu.org/licenses/>.
  *
- * Copyright (c)  YumeLira 2025 - Present
+ * Copyright (c)  YumeYucca 2025 - Present
  *
  */
-
-
 
 package com.github.yumelira.yumebox.core.util
 
@@ -27,28 +25,30 @@ import kotlinx.coroutines.withContext
 import timber.log.Timber
 import java.net.InetAddress
 import java.net.NetworkInterface
+import java.net.SocketException
 
 object NetworkInterfaces {
-    suspend fun getLocalIpAddress(): String? = withContext(Dispatchers.IO) {
-        try {
-            val interfaces = NetworkInterface.getNetworkInterfaces()
-            for (networkInterface in interfaces) {
-                if (networkInterface.isUp && !networkInterface.isLoopback) {
-                    val addresses = networkInterface.inetAddresses
-                    for (address in addresses) {
-                        if (!address.isLoopbackAddress && address is InetAddress) {
-                            val hostAddress = address.hostAddress
-                            if (hostAddress?.contains(':') == false) {
-                                return@withContext hostAddress
+    suspend fun getLocalIpAddress(): String? =
+        withContext(Dispatchers.IO) {
+            try {
+                val interfaces = NetworkInterface.getNetworkInterfaces()
+                for (networkInterface in interfaces) {
+                    if (networkInterface.isUp && !networkInterface.isLoopback) {
+                        val addresses = networkInterface.inetAddresses
+                        for (address in addresses) {
+                            if (!address.isLoopbackAddress && address is InetAddress) {
+                                val hostAddress = address.hostAddress
+                                if (hostAddress?.contains(':') == false) {
+                                    return@withContext hostAddress
+                                }
                             }
                         }
                     }
                 }
+                null
+            } catch (error: SocketException) {
+                Timber.w(error, "Failed to get local IP address")
+                null
             }
-            null
-        } catch (e: Exception) {
-            Timber.w(e, "Failed to get local IP address")
-            null
         }
-    }
 }

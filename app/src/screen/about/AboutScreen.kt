@@ -61,7 +61,7 @@ import com.github.yumelira.yumebox.BuildConfig
 import com.github.yumelira.yumebox.R
 import com.github.yumelira.yumebox.common.util.openUrl
 import com.github.yumelira.yumebox.common.util.toast
-import com.github.yumelira.yumebox.core.bridge.Bridge
+import com.github.yumelira.yumebox.BuildInfo
 import com.github.yumelira.yumebox.presentation.component.AppDialog
 import com.github.yumelira.yumebox.presentation.component.Card
 import com.github.yumelira.yumebox.presentation.component.DialogButtonRow
@@ -98,9 +98,12 @@ fun AboutScreen(navigator: DestinationsNavigator) {
     val updateViewModel = koinViewModel<GitHubUpdateViewModel>()
     val updateUiState by updateViewModel.uiState.collectAsState()
     val downloadProgress by updateViewModel.downloadProgress.collectAsState()
+    val updateManager = org.koin.compose.koinInject<com.github.yumelira.yumebox.update.GitHubUpdateManager>()
+    var automaticUpdates by remember { mutableStateOf(updateManager.autoCheck) }
+    var previewUpdates by remember { mutableStateOf(updateManager.includePrereleases) }
     val coreVersion by produceState(initialValue = MLang.About.App.VersionLoading) {
         value = try {
-            Bridge.nativeCoreVersion()
+            BuildInfo.CORE_VERSION
         } catch (e: Exception) {
             if (e is CancellationException) throw e
             MLang.About.App.VersionFailed
@@ -191,6 +194,18 @@ fun AboutScreen(navigator: DestinationsNavigator) {
                         trailingContent = { ChevronText() },
                         showDivider = false,
                     )
+                    com.github.yumelira.yumebox.presentation.component.md3.YumeMd3SwitchPreferenceItem(
+                        title = "自动检查更新",
+                        summary = "应用在前台时，每 6 小时从 GitHub Releases 检查正式版",
+                        checked = automaticUpdates,
+                        onCheckedChange = { automaticUpdates = it; updateManager.autoCheck = it },
+                    )
+                    com.github.yumelira.yumebox.presentation.component.md3.YumeMd3SwitchPreferenceItem(
+                        title = "接收预发布版本",
+                        summary = "同时检测 Alpha、Beta 和预览发布",
+                        checked = previewUpdates,
+                        onCheckedChange = { previewUpdates = it; updateManager.includePrereleases = it },
+                    )
                 }
 
                 Title(MLang.About.Section.ProjectLinks)
@@ -265,13 +280,7 @@ fun AboutScreen(navigator: DestinationsNavigator) {
         }
     }
 
-    UpdateCandidateDialog(
-        candidate = updateUiState.candidate,
-        downloadProgress = downloadProgress,
-        onDismiss = updateViewModel::dismissCandidate,
-        onDownload = updateViewModel::downloadAndInstall,
-        onCancelDownload = updateViewModel::cancelDownload,
-    )
+
 }
 
 @Composable
@@ -303,7 +312,7 @@ private fun ChevronText() {
 }
 
 @Composable
-private fun UpdateCandidateDialog(
+internal fun UpdateCandidateDialog(
     candidate: UpdateCandidate?,
     downloadProgress: UpdateDownloadProgress,
     onDismiss: () -> Unit,

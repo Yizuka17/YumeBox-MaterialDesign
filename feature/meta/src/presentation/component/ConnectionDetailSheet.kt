@@ -73,6 +73,7 @@ fun ConnectionDetailSheet(
         title = detailState?.displayHost.orEmpty(),
         onDismissRequest = onDismiss,
         onDismissFinished = onDismissFinished,
+        contentScrollEnabled = false,
     ) {
         val info = connectionInfo
         val state = detailState

@@ -1,0 +1,76 @@
+---
+title: YAML 语法概览
+sidebarTitle: YAML 概览
+icon: file-code
+---
+
+<Info>只写需要修改的字段，不要复制整份订阅.</Info>
+
+<Prompt description="生成一个符合 YumeBox 语法的 YAML 覆写">
+请根据下面的 mihomo 原始配置和修改目标，生成一个 YumeBox YAML 覆写.
+
+- 只输出可直接保存为 `.yaml` 的覆写内容.
+- 固定字段使用普通键；列表插入开头使用 `key-start`，追加到末尾使用 `key-end`.
+- 需要整字段替换时使用 `key-force`.
+- 保留原配置中没有要求修改的内容.
+- 生成后说明最终会改变哪些字段.
+
+原始配置：
+
+修改目标：
+</Prompt>
+
+
+## 执行流程
+
+<Steps>
+  <Step title="读取原始配置">
+    先解析订阅或本地配置.原始 YAML 错误会停止本次编译.
+  </Step>
+
+  <Step title="读取覆写链">
+    按绑定顺序读取 `.yaml` 和 `.yml` 文件.空文件会跳过并记录提示.
+  </Step>
+
+  <Step title="应用当前文件">
+    解析键名修饰符，再根据字段类型执行替换、追加、合并或强制覆盖.
+  </Step>
+
+  <Step title="生成运行配置">
+    用户覆写完成后，YumeBox 才会补充运行时需要的 DNS、Tun、监听器和 Provider 路径设置.
+  </Step>
+</Steps>
+
+## 修饰符速查
+
+| 写法 | 作用 | 详细说明 |
+| --- | --- | --- |
+| `key` | 普通写入. | 对象递归、数组替换、标量覆盖. |
+| `key-start` | 插入列表开头. | [列表与规则](/override/yaml/lists.mdx) |
+| `key-end` | 追加列表末尾. | [列表与规则](/override/yaml/lists.mdx) |
+| `key-merge` | 合并对象或追加列表项. | [字段行为](/override/yaml/fields.mdx) |
+| `key-force` | 直接替换整个字段. | [字段行为](/override/yaml/fields.mdx) |
+| `+key` | `key-start` 简写. | [列表与规则](/override/yaml/lists.mdx) |
+| `key+` | `key-end` 简写. | [列表与规则](/override/yaml/lists.mdx) |
+| `<key>` | 保留字面量键名. | [示例与排错](/override/yaml/examples.mdx) |
+
+显式的 `-start`、`-end`、`-merge`、`-force` 优先于 `+key` 和 `key+`.例如 `<rules+>` 最终写入真实键名 `rules+`.
+
+## 最小示例
+
+```yaml 修改端口.yaml icon="file-code" lines
+mixed-port: 7890
+```
+
+```yaml 添加规则.yaml icon="file-code" lines
+rules-start:
+  - DOMAIN-SUFFIX,lan,DIRECT
+```
+
+```yaml 替换 DNS.yaml icon="file-code" lines
+dns-force:
+  enable: true
+  enhanced-mode: fake-ip
+  nameserver:
+    - 1.1.1.1
+```

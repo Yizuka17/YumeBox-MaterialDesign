@@ -14,40 +14,37 @@
  * You should have received a copy of the GNU Affero General Public License
  * along with this program. If not, see <https://www.gnu.org/licenses/>.
  *
- * Copyright (c)  YumeLira 2025 - Present
+ * Copyright (c)  YumeYucca 2025 - Present
  *
  */
-
-
 
 package com.github.yumelira.yumebox.data.controller
 
 import android.content.Context
 import android.content.Intent
-import com.github.yumelira.yumebox.core.model.OverrideInternalConstants
-import com.github.yumelira.yumebox.service.common.constants.Intents
-import com.github.yumelira.yumebox.service.common.util.appContextOrSelf
+import com.github.yumelira.yumebox.runtime.api.Intents
+import com.github.yumelira.yumebox.runtime.api.appContextOrSelf
 import timber.log.Timber
 
 class OverrideService(
     context: Context,
     private val resolver: OverrideResolver,
-    private val onRuntimeOverrideChanged: () -> Unit = {},
 ) {
     private val appContext = context.appContextOrSelf
 
+    @Suppress("TooGenericExceptionCaught")
     suspend fun applyOverride(profileId: String): Boolean {
         return try {
             val overrideIds = resolver.resolveIds(profileId)
-            val resolvedConfigs = resolver.resolveConfigs(overrideIds)
-            val expectedConfigIds = overrideIds.filterNot(::isVirtualOverrideId)
-            val missingOverrideCount = expectedConfigIds.size - resolvedConfigs.size
+            val resolvedSpecs = resolver.resolveSpecs(overrideIds)
+            val missingOverrideCount = overrideIds.size - resolvedSpecs.size
 
             Timber.i(
-                "Apply override chain: profile=%s ids=%s resolved=%d missing=%d",
+                "Apply override chain: profile=%s ids=%s specs=%s resolved=%d missing=%d",
                 profileId,
                 overrideIds.joinToString(","),
-                resolvedConfigs.size,
+                resolvedSpecs.joinToString(",") { spec -> "${spec.ext}:${spec.path}" },
+                resolvedSpecs.size,
                 missingOverrideCount,
             )
 
@@ -63,21 +60,18 @@ class OverrideService(
             notifyRuntimeOverrideChanged()
 
             true
-        } catch (e: Exception) {
-            Timber.e(e, "Failed to apply override for profile: %s", profileId)
+        } catch (
+            error: Exception
+        ) { // fault barrier: any resolver/broadcast failure degrades to false
+            Timber.e(error, "Failed to apply override for profile: %s", profileId)
             false
         }
-    }
-
-    private fun isVirtualOverrideId(overrideId: String): Boolean {
-        return overrideId == OverrideInternalConstants.CUSTOM_ROUTING_OVERRIDE_ID
     }
 
     private fun notifyRuntimeOverrideChanged() {
         appContext.sendBroadcast(
             Intent(Intents.actionOverrideChanged(appContext.packageName))
-                .setPackage(appContext.packageName),
+                .setPackage(appContext.packageName)
         )
-        onRuntimeOverrideChanged()
     }
 }

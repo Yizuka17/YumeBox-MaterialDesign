@@ -40,18 +40,14 @@ class GitHubUpdateViewModel(
 ) : ViewModel() {
     private val _uiState = MutableStateFlow(GitHubUpdateUiState())
     val uiState: StateFlow<GitHubUpdateUiState> = _uiState.asStateFlow()
-    val downloadProgress: StateFlow<UpdateDownloadProgress> = updateManager.downloadProgress
+    val downloadProgress: StateFlow<UpdateDownloadProgress> = updateManager.progress
     private var downloadJob: Job? = null
 
     fun checkForUpdate() {
         if (_uiState.value.isChecking) return
-        updateManager.cachedCandidate.value?.let { candidate ->
-            _uiState.value = _uiState.value.copy(candidate = candidate, message = null)
-            return
-        }
         _uiState.value = _uiState.value.copy(isChecking = true, message = null)
         viewModelScope.launch {
-            updateManager.checkForUpdate()
+            runCatching { updateManager.checkForUpdate() }
                 .onSuccess { candidate ->
                     _uiState.value = GitHubUpdateUiState(
                         isChecking = false,
@@ -73,7 +69,7 @@ class GitHubUpdateViewModel(
     fun downloadAndInstall(candidate: UpdateCandidate) {
         if (downloadJob?.isActive == true) return
         downloadJob = viewModelScope.launch {
-            updateManager.downloadAndInstall(candidate)
+            runCatching { updateManager.downloadAndInstall(candidate) }
                 .onSuccess {
                     _uiState.value = _uiState.value.copy(
                         candidate = null,
@@ -81,7 +77,7 @@ class GitHubUpdateViewModel(
                     )
                 }
                 .onFailure { throwable ->
-                    val message = if (throwable.isUpdateDownloadCancelled()) {
+                    val message = if (throwable.message?.contains("取消") == true) {
                         MLang.Component.Update.Message.DownloadCancelled
                     } else {
                         MLang.Component.Update.Message.InstallFailed.format(

@@ -67,7 +67,7 @@ import com.github.yumelira.yumebox.presentation.component.Md3EIndeterminateCircu
 import com.github.yumelira.yumebox.presentation.component.md3.YumeMd3DropdownPreference
 import com.github.yumelira.yumebox.presentation.component.md3.YumeMd3OutlinedTextField
 import com.github.yumelira.yumebox.presentation.icon.AppMd3Icons
-import com.github.yumelira.yumebox.service.runtime.entity.Profile
+import com.github.yumelira.yumebox.runtime.api.Profile
 import dev.oom_wg.purejoy.mlang.MLang
 import kotlinx.coroutines.launch
 import java.io.File

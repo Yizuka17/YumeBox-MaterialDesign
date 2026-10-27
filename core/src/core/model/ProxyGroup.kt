@@ -14,11 +14,11 @@
  * You should have received a copy of the GNU Affero General Public License
  * along with this program. If not, see <https://www.gnu.org/licenses/>.
  *
- * Copyright (c)  YumeLira 2025 - Present
+ * Copyright (c)  YumeYucca 2025 - Present
  *
  */
 
-
+@file:Suppress("JavaDefaultMethodsNotOverriddenByDelegation", "UnusedSymbol", "RedundantIf")
 
 package com.github.yumelira.yumebox.core.model
 
@@ -31,36 +31,32 @@ import kotlinx.serialization.Serializable
 @Serializable
 data class ProxyGroup(
     val name: String = "",
-    val type: Proxy.Type,
+    val type: String,
     val proxies: List<Proxy>,
     val now: String,
     val icon: String? = null,
     val hidden: Boolean = false,
 ) : Parcelable {
-    class SliceProxyList(data: List<Proxy>) : List<Proxy> by data, Parcelable {
+    class SliceProxyList(proxies: List<Proxy>) : List<Proxy> by proxies, Parcelable {
         constructor(parcel: Parcel) : this(Proxy.createListFromParcelSlice(parcel, 0, 50))
 
-        override fun describeContents(): Int {
-            return 0
-        }
+        override fun describeContents(): Int = 0
 
         override fun writeToParcel(dest: Parcel, flags: Int) {
             writeToParcelSlice(dest, flags)
         }
 
         companion object CREATOR : Parcelable.Creator<SliceProxyList> {
-            override fun createFromParcel(parcel: Parcel): SliceProxyList {
-                return SliceProxyList(parcel)
-            }
+            override fun createFromParcel(parcel: Parcel): SliceProxyList = SliceProxyList(parcel)
 
-            override fun newArray(size: Int): Array<SliceProxyList?> {
-                return arrayOfNulls(size)
-            }
+            override fun newArray(size: Int): Array<SliceProxyList?> = arrayOfNulls(size)
         }
     }
 
-    constructor(parcel: Parcel) : this(
-        type = Proxy.Type.entries[parcel.readInt()],
+    constructor(
+        parcel: Parcel
+    ) : this(
+        type = parcel.readString().orEmpty(),
         proxies = SliceProxyList(parcel),
         now = parcel.readString().orEmpty(),
         icon = parcel.readString(),
@@ -69,7 +65,7 @@ data class ProxyGroup(
     )
 
     override fun writeToParcel(parcel: Parcel, flags: Int) {
-        parcel.writeInt(type.ordinal)
+        parcel.writeString(type)
         SliceProxyList(proxies).writeToParcel(parcel, 0)
         parcel.writeString(now)
         parcel.writeString(icon)
@@ -77,17 +73,17 @@ data class ProxyGroup(
         parcel.writeByte(if (hidden) 1.toByte() else 0.toByte())
     }
 
-    override fun describeContents(): Int {
-        return 0
-    }
+    override fun describeContents(): Int = 0
 
     companion object CREATOR : Parcelable.Creator<ProxyGroup> {
-        override fun createFromParcel(parcel: Parcel): ProxyGroup {
-            return ProxyGroup(parcel)
-        }
+        override fun createFromParcel(parcel: Parcel): ProxyGroup = ProxyGroup(parcel)
 
-        override fun newArray(size: Int): Array<ProxyGroup?> {
-            return arrayOfNulls(size)
-        }
+        override fun newArray(size: Int): Array<ProxyGroup?> = arrayOfNulls(size)
     }
 }
+
+val ProxyGroup.isSelectable: Boolean
+    get() = type.isManuallySelectable
+
+val ProxyGroup.isProxyGroup: Boolean
+    get() = type in Proxy.Type.groupTypes || now.isNotBlank() || proxies.isNotEmpty()

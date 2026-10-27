@@ -14,11 +14,9 @@
  * You should have received a copy of the GNU Affero General Public License
  * along with this program. If not, see <https://www.gnu.org/licenses/>.
  *
- * Copyright (c)  YumeLira 2025 - Present
+ * Copyright (c)  YumeYucca 2025 - Present
  *
  */
-
-
 
 package com.github.yumelira.yumebox.data.model
 
@@ -26,54 +24,36 @@ import kotlinx.serialization.Serializable
 
 @Serializable
 data class ProfileBinding(
-    val profileId: String,
+    val profileId: String = "",
     val overrideIds: List<String> = emptyList(),
-    val enabled: Boolean = false,
+    val enabled: Boolean = true,
 ) {
     companion object {
+        fun disabled(profileId: String): ProfileBinding =
+            ProfileBinding(profileId = profileId, overrideIds = emptyList(), enabled = false)
 
-        fun disabled(profileId: String): ProfileBinding {
-            return ProfileBinding(
-                profileId = profileId,
-                overrideIds = emptyList(),
-                enabled = false,
-            )
-        }
+        fun withOverrides(profileId: String, overrideIds: List<String>): ProfileBinding =
+            ProfileBinding(profileId = profileId, overrideIds = overrideIds)
 
-        fun withOverrides(profileId: String, overrideIds: List<String>): ProfileBinding {
-            return ProfileBinding(
-                profileId = profileId,
-                overrideIds = overrideIds,
-                enabled = false,
-            )
-        }
-
-        fun withOverride(profileId: String, overrideId: String): ProfileBinding {
-            return ProfileBinding(
-                profileId = profileId,
-                overrideIds = listOf(overrideId),
-                enabled = false,
-            )
-        }
+        fun withOverride(profileId: String, overrideId: String): ProfileBinding =
+            ProfileBinding(profileId = profileId, overrideIds = listOf(overrideId))
     }
 
     fun addOverride(overrideId: String, index: Int? = null): ProfileBinding {
         if (overrideIds.contains(overrideId)) return this
 
-        val newList = if (index != null) {
-            overrideIds.toMutableList().apply {
-                add(index.coerceAtMost(size), overrideId)
+        val newList =
+            if (index != null) {
+                overrideIds.toMutableList().apply { add(index.coerceAtMost(size), overrideId) }
+            } else {
+                overrideIds + overrideId
             }
-        } else {
-            overrideIds + overrideId
-        }
 
         return copy(overrideIds = newList)
     }
 
-    fun removeOverride(overrideId: String): ProfileBinding {
-        return copy(overrideIds = overrideIds - overrideId)
-    }
+    fun removeOverride(overrideId: String): ProfileBinding =
+        copy(overrideIds = overrideIds - overrideId)
 
     fun moveOverride(fromIndex: Int, toIndex: Int): ProfileBinding {
         if (fromIndex !in overrideIds.indices || toIndex !in overrideIds.indices) return this
@@ -86,23 +66,7 @@ data class ProfileBinding(
         return copy(overrideIds = newList)
     }
 
-    fun setOverrides(overrideIds: List<String>): ProfileBinding {
-        return copy(overrideIds = overrideIds)
-    }
+    fun setOverrides(overrideIds: List<String>): ProfileBinding = copy(overrideIds = overrideIds)
 
-    fun clearOverrides(): ProfileBinding {
-        return copy(overrideIds = emptyList())
-    }
-
-    fun setEnabled(enabled: Boolean): ProfileBinding {
-        return copy(enabled = enabled)
-    }
-
-    fun enableSystemPreset(): ProfileBinding {
-        return copy(enabled = true)
-    }
-
-    fun disableSystemPreset(): ProfileBinding {
-        return copy(enabled = false)
-    }
+    fun clearOverrides(): ProfileBinding = copy(overrideIds = emptyList())
 }

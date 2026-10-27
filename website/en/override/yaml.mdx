@@ -1,0 +1,75 @@
+---
+title: YAML syntax overview
+sidebarTitle: YAML overview
+icon: file-code
+---
+<Info> Only write the fields that need to be modified, do not copy the entire subscription. </Info>
+
+<Prompt description="生成一个符合 YumeBox 语法的 YAML 覆写">
+Please generate a YumeBox YAML override based on the original mihomo configuration and modification target below.
+
+- Only output overrides that can be saved directly as `.yaml`.
+- Fixed fields use ordinary keys; list insertion uses `key-start` at the beginning, and appending to the end uses `key-end`.
+- Use `key-force` when whole field replacement is required.
+- Keep the original configuration without any modifications required.
+- Post-generation description of which fields will ultimately be changed.
+
+Original configuration:
+
+Modify target:
+</Prompt>
+
+
+## Execution process
+
+<Steps>
+  <Step title="Read original configuration">
+    First resolve the subscription or local configuration. Raw YAML errors will stop this compilation.
+  </Step>
+
+  <Step title="Read overwrite chain">
+    Read the `.yaml` and `.yml` files in binding order. Empty files are skipped and a prompt is logged.
+  </Step>
+
+  <Step title="Apply current file">
+    Parse key name modifiers and then perform replacement, append, merge, or force override based on field type.
+  </Step>
+
+  <Step title="Generate run configuration">
+    After the user overwrite is completed, YumeBox will supplement the DNS, Tun, listener and Provider path settings required for runtime.
+  </Step>
+</Steps>
+
+## Modifier quick check
+
+| Writing method | Function | Detailed description |
+| --- | --- | --- |
+| `key` | Normal write. | Object recursion, array replacement, scalar coverage. |
+| `key-start` | Insert at the beginning of the list. | [Lists and Rules](./yaml/lists.mdx) |
+| `key-end` | Append to the end of the list. | [Lists and Rules](./yaml/lists.mdx) |
+| `key-merge` | Merge objects or append list items. | [Field Behavior](./yaml/fields.mdx) |
+| `key-force` | Directly replaces the entire field. | [Field Behavior](./yaml/fields.mdx) |
+| `+key` | `key-start` Abbreviation. | [Lists and Rules](./yaml/lists.mdx) |
+| `key+` | `key-end` Abbreviation. | [Lists and Rules](./yaml/lists.mdx) |
+| `<key>` | Reserve literal key names. | [Examples and Troubleshooting](./yaml/examples.mdx) |
+
+Explicit `-start`, `-end`, `-merge`, `-force` take precedence over `+key` and `key+`. For example, `<rules+>` eventually writes the real key name `rules+`.
+
+## Minimal example
+
+```yaml 修改端口.yaml icon="file-code" lines
+mixed-port: 7890
+```
+
+```yaml 添加规则.yaml icon="file-code" lines
+rules-start:
+  - DOMAIN-SUFFIX,lan,DIRECT
+```
+
+```yaml 替换 DNS.yaml icon="file-code" lines
+dns-force:
+  enable: true
+  enhanced-mode: fake-ip
+  nameserver:
+    - 1.1.1.1
+```

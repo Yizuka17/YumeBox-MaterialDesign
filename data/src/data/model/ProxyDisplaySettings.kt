@@ -14,15 +14,16 @@
  * You should have received a copy of the GNU Affero General Public License
  * along with this program. If not, see <https://www.gnu.org/licenses/>.
  *
- * Copyright (c)  YumeLira 2025 - Present
+ * Copyright (c)  YumeYucca 2025 - Present
  *
  */
 
-
+@file:Suppress("UnusedSymbol")
 
 package com.github.yumelira.yumebox.data.model
 
-import dev.oom_wg.purejoy.mlang.MLang
+
+import com.github.yumelira.yumebox.core.locale.YumeTxt
 
 const val PROXY_SHEET_HEIGHT_FRACTION_MIN = 0.5f
 const val PROXY_SHEET_HEIGHT_FRACTION_MAX = 0.8f
@@ -38,12 +39,13 @@ enum class ProxyDisplayMode {
     DOUBLE_SIMPLE;
 
     val displayName: String
-        get() = when (this) {
-            SINGLE_DETAILED -> MLang.Proxy.DisplayMode.SingleDetailed
-            SINGLE_SIMPLE -> MLang.Proxy.DisplayMode.SingleSimple
-            DOUBLE_DETAILED -> MLang.Proxy.DisplayMode.DoubleDetailed
-            DOUBLE_SIMPLE -> MLang.Proxy.DisplayMode.DoubleSimple
-        }
+        get() =
+            when (this) {
+                SINGLE_DETAILED -> YumeTxt.Proxy.DisplayMode.SingleDetailed
+                SINGLE_SIMPLE -> YumeTxt.Proxy.DisplayMode.SingleSimple
+                DOUBLE_DETAILED -> YumeTxt.Proxy.DisplayMode.DoubleDetailed
+                DOUBLE_SIMPLE -> YumeTxt.Proxy.DisplayMode.DoubleSimple
+            }
 
     val isSingleColumn: Boolean
         get() = this == SINGLE_DETAILED || this == SINGLE_SIMPLE
@@ -58,9 +60,10 @@ enum class ProxySortMode {
     BY_LATENCY;
 
     val displayName: String
-        get() = when (this) {
-            DEFAULT -> MLang.Proxy.SortMode.Default
-            BY_NAME -> MLang.Proxy.SortMode.ByName
-            BY_LATENCY -> MLang.Proxy.SortMode.ByLatency
-        }
+        get() =
+            when (this) {
+                DEFAULT -> YumeTxt.Proxy.SortMode.Default
+                BY_NAME -> YumeTxt.Proxy.SortMode.ByName
+                BY_LATENCY -> YumeTxt.Proxy.SortMode.ByLatency
+            }
 }

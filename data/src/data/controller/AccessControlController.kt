@@ -14,33 +14,30 @@
  * You should have received a copy of the GNU Affero General Public License
  * along with this program. If not, see <https://www.gnu.org/licenses/>.
  *
- * Copyright (c)  YumeLira 2025 - Present
+ * Copyright (c)  YumeYucca 2025 - Present
  *
  */
 
 package com.github.yumelira.yumebox.data.controller
 
-import com.github.yumelira.yumebox.core.util.PollingTimerSpecs
-import com.github.yumelira.yumebox.core.util.PollingTimers
+import com.github.yumelira.yumebox.core.model.RunMode
 import com.github.yumelira.yumebox.data.model.AccessControlMode
-import com.github.yumelira.yumebox.data.model.ProxyMode
 import com.github.yumelira.yumebox.data.store.NetworkSettingsStore
 import kotlinx.coroutines.CancellationException
-import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.Job
-import kotlinx.coroutines.SupervisorJob
-import kotlinx.coroutines.launch
 
 class AccessControlController(
     private val store: NetworkSettingsStore,
-    private val isRunning: () -> Boolean,
-    private val resolveActiveMode: () -> ProxyMode?,
-    private val restartProxy: suspend (ProxyMode) -> Unit,
-    private val beforeRestart: suspend (ProxyMode) -> Unit = {},
+    isRunning: () -> Boolean,
+    private val resolveActiveMode: () -> RunMode?,
+    private val restartProxy: suspend (RunMode) -> Unit,
+    private val beforeRestart: suspend (RunMode) -> Unit = {},
 ) {
-    private val scope = CoroutineScope(SupervisorJob() + Dispatchers.Main.immediate)
-    private var applyJob: Job? = null
+    private val restarter =
+        DebouncedProxyRestarter(
+            timerName = "access_control_apply_packages",
+            debounceMillis = 350L,
+            isRunning = isRunning,
+        )
 
     fun setAccessControlMode(mode: AccessControlMode) {
         if (store.accessControlMode.value == mode) return
@@ -54,27 +51,20 @@ class AccessControlController(
         scheduleApply()
     }
 
+    @Suppress("TooGenericExceptionCaught")
     private fun scheduleApply() {
-        applyJob?.cancel()
-        applyJob = scope.launch {
-            PollingTimers.awaitTick(
-                PollingTimerSpecs.dynamic(
-                    name = "access_control_apply_packages",
-                    intervalMillis = 350L,
-                    initialDelayMillis = 350L,
-                ),
-            )
-
-            if (!isRunning()) return@launch
-            val activeMode = resolveActiveMode()
-            val targetMode = activeMode ?: store.proxyMode.value
-            if (targetMode == ProxyMode.Http) return@launch
-            if (store.accessControlMode.value == AccessControlMode.ALLOW_ALL) return@launch
+        restarter.schedule {
+            val targetMode = resolveActiveMode() ?: store.runMode.value
+            if (store.accessControlMode.value == AccessControlMode.ALLOW_ALL) return@schedule
 
             try {
                 beforeRestart(targetMode)
                 restartProxy(targetMode)
-            } catch (error: Exception) {
+            } catch (
+                error:
+                Exception
+            ) { // best-effort restart: any failure keeps the current session
+                // running
                 if (error is CancellationException) throw error
             }
         }

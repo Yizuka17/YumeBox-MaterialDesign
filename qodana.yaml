@@ -1,10 +1,32 @@
-####################################################################################################################
-# WARNING: Do not store sensitive information in this file, as its contents will be included in the Qodana report. #
-####################################################################################################################
+#-------------------------------------------------------------------------------#
+#               Qodana analysis configuration for YumeBox                        #
+#        https://www.jetbrains.com/help/qodana/qodana-yaml.html                  #
+#-------------------------------------------------------------------------------#
 
 version: "1.0"
-linter: jetbrains/qodana-jvm-android:2025.2
+
+linter: jetbrains/qodana-jvm-android:2026.2
+
+# Built-in inspection profile. Use qodana.starter for a lighter, lower-noise first run.
 profile:
   name: qodana.recommended
-include:
-  - name: CheckDependencyLicenses
+
+# Kotlin/Java static analysis only. Exclude everything that is not app source:
+#  - lib/      native libs (Go libmihomocore, C PIE shell/libcompat/libloader, Rust liboverride) + mihomo
+#  - scripts/  standalone Python build tooling and locale codegen
+#  - website/  documentation site (mdx/css)
+#  - .trellis/ task-management workspace
+# Module build/ output is git-ignored and excluded automatically.
+exclude:
+  - name: All
+    paths:
+      - lib
+      - scripts
+      - website
+      - .trellis
+  - name: AndroidLintNewerVersionAvailable
+  - name: AndroidLintGradleDependency
+  - name: AndroidLintUseTomlInstead
+  - name: AndroidLintIconDuplicates
+  - name: AndroidLintUnusedAttribute
+  - name: AndroidDomInspection

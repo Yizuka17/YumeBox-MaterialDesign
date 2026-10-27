@@ -22,6 +22,7 @@ package com.github.yumelira.yumebox.presentation.component
 
 import androidx.compose.foundation.lazy.LazyListState
 import androidx.compose.foundation.lazy.grid.LazyGridState
+import androidx.compose.foundation.lazy.staggeredgrid.LazyStaggeredGridState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.remember
 
@@ -36,6 +37,10 @@ import androidx.compose.runtime.remember
 object PageScrollStateStore {
     private val lazyListStates = linkedMapOf<String, LazyListState>()
     private val lazyGridStates = linkedMapOf<String, LazyGridState>()
+    private val staggeredGridStates = linkedMapOf<String, LazyStaggeredGridState>()
+
+    fun staggeredGridState(key: String): LazyStaggeredGridState =
+        staggeredGridStates.getOrPut(key) { LazyStaggeredGridState() }
 
     fun lazyListState(key: String): LazyListState {
         return lazyListStates.getOrPut(key) { LazyListState() }
@@ -48,11 +53,13 @@ object PageScrollStateStore {
     fun clear(key: String) {
         lazyListStates.remove(key)
         lazyGridStates.remove(key)
+        staggeredGridStates.remove(key)
     }
 
     fun clearAll() {
         lazyListStates.clear()
         lazyGridStates.clear()
+        staggeredGridStates.clear()
     }
 }
 
@@ -65,3 +72,7 @@ fun rememberRetainedLazyListState(key: String): LazyListState {
 fun rememberRetainedLazyGridState(key: String): LazyGridState {
     return remember(key) { PageScrollStateStore.lazyGridState(key) }
 }
+
+@Composable
+fun rememberRetainedStaggeredGridState(key: String): LazyStaggeredGridState =
+    remember(key) { PageScrollStateStore.staggeredGridState(key) }

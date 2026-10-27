@@ -1,399 +1,195 @@
-/*
- * This file is part of YumeBox.
- *
- * YumeBox is free software: you can redistribute it and/or modify
- * it under the terms of the GNU Affero General Public License as
- * published by the Free Software Foundation, either version 3 of the
- * License.
- *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
- * GNU Affero General Public License for more details.
- *
- * You should have received a copy of the GNU Affero General Public License
- * along with this program. If not, see <https://www.gnu.org/licenses/>.
- *
- * Copyright (c)  YumeLira 2025 - Present
- *
- */
-
 package com.github.yumelira.yumebox.update
 
 import android.content.Context
 import android.content.Intent
-import android.net.Uri
-import android.util.Base64
+import android.content.pm.PackageManager
+import android.os.Build
 import androidx.core.content.FileProvider
-import com.github.yumelira.yumebox.BuildConfig
-import dev.oom_wg.purejoy.mlang.MLang
-import kotlinx.coroutines.CancellationException
-import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.Job
-import kotlinx.coroutines.delay
-import kotlinx.coroutines.ensureActive
-import kotlinx.coroutines.flow.MutableStateFlow
-import kotlinx.coroutines.flow.StateFlow
-import kotlinx.coroutines.flow.asStateFlow
-import kotlinx.coroutines.isActive
-import kotlinx.coroutines.launch
-import kotlinx.coroutines.withContext
+import com.github.yumelira.yumebox.BuildInfo
+import com.github.yumelira.yumebox.core.util.AppVisibilityTracker
+import kotlinx.coroutines.*
+import kotlinx.coroutines.flow.*
+import kotlinx.coroutines.sync.Mutex
+import kotlinx.coroutines.sync.withLock
 import kotlinx.serialization.json.Json
+import okhttp3.Cache
 import okhttp3.Call
 import okhttp3.OkHttpClient
 import okhttp3.Request
-import timber.log.Timber
 import java.io.File
 import java.io.IOException
+import java.security.MessageDigest
 import java.util.concurrent.TimeUnit
 import kotlin.coroutines.coroutineContext
 
-class GitHubUpdateManager(
+class GitHubUpdateManager @JvmOverloads constructor(
     context: Context,
-    private val client: OkHttpClient = OkHttpClient.Builder()
-        .connectTimeout(15, TimeUnit.SECONDS)
-        .readTimeout(60, TimeUnit.SECONDS)
-        .build(),
+    private val currentVersion: String = BuildInfo.BASE_VERSION,
+    private val currentVersionCode: Long = BuildInfo.VERSION_CODE.toLong(),
+    private val buildTimestamp: Long = BuildInfo.BUILD_TIMESTAMP,
+    private val buildCommit: String = BuildInfo.BUILD_COMMIT,
+    providedClient: OkHttpClient? = null,
 ) {
-    private val appContext = context.applicationContext
+    private val context = context.applicationContext
+    private val preferences = this.context.getSharedPreferences("release_updates", Context.MODE_PRIVATE)
     private val json = Json { ignoreUnknownKeys = true }
-    private val _downloadProgress = MutableStateFlow(UpdateDownloadProgress())
-    @Volatile
-    private var activeDownloadCall: Call? = null
-    @Volatile
-    private var downloadCancelRequested: Boolean = false
-    @Volatile
-    private var autoCheckJob: Job? = null
-    val downloadProgress: StateFlow<UpdateDownloadProgress> = _downloadProgress.asStateFlow()
-    private val _cachedCandidate = MutableStateFlow<UpdateCandidate?>(null)
-    val cachedCandidate: StateFlow<UpdateCandidate?> = _cachedCandidate.asStateFlow()
+    private val checkMutex = Mutex()
+    private val downloadMutex = Mutex()
+    private val client = providedClient ?: OkHttpClient.Builder()
+        .cache(Cache(File(this.context.cacheDir, "release-http"), 2L * 1024 * 1024))
+        .connectTimeout(15, TimeUnit.SECONDS).readTimeout(45, TimeUnit.SECONDS).build()
+    private val _candidate = MutableStateFlow<UpdateCandidate?>(null)
+    val candidate = _candidate.asStateFlow()
+    private val _progress = MutableStateFlow(UpdateDownloadProgress())
+    val progress = _progress.asStateFlow()
+    @Volatile private var downloadCall: Call? = null
+    @Volatile private var cancelled = false
+    var autoCheck: Boolean
+        get() = preferences.getBoolean("auto", true)
+        set(value) { preferences.edit().putBoolean("auto", value).apply() }
+    var includePrereleases: Boolean
+        get() = preferences.getBoolean("prereleases", false)
+        set(value) { preferences.edit().putBoolean("prereleases", value).apply(); _candidate.value = null }
 
-    suspend fun checkForUpdate(): Result<UpdateCandidate?> = withContext(Dispatchers.IO) {
-        runCatching {
-            val manifest = fetchManifest()
-            if (manifest.versionCode <= BuildConfig.VERSION_CODE.toLong()) {
-                _cachedCandidate.value = null
-                return@runCatching null
+    suspend fun checkForUpdate(manual: Boolean = true): UpdateCandidate? = withContext(Dispatchers.IO) {
+        checkMutex.withLock {
+            val endpoint = if (includePrereleases) "$API/releases?per_page=30" else "$API/releases/latest"
+            val request = Request.Builder().url(endpoint)
+                .header("Accept", "application/vnd.github+json")
+                .header("X-GitHub-Api-Version", "2022-11-28")
+                .header("User-Agent", "YumeBoxMD3/${BuildInfo.BASE_VERSION}")
+                .header("Cache-Control", if (manual) "no-cache" else "max-age=21600").build()
+            val releases = client.newCall(request).execute().use { response ->
+                if (response.code == 404) return@withLock null.also { _candidate.value = null }
+                if (!response.isSuccessful) throw IOException(if (response.code == 403 || response.code == 429) "GitHub 请求受限，请稍后重试" else "GitHub HTTP ${response.code}")
+                val body = response.body.string()
+                if (includePrereleases) json.decodeFromString<List<GitHubRelease>>(body) else listOf(json.decodeFromString<GitHubRelease>(body))
             }
-            val candidate = UpdateCandidate(manifest)
-            _cachedCandidate.value = candidate
-            candidate
-                .withCachedCover()
-                .also { _cachedCandidate.value = it }
+            val current = ReleaseVersion.parse(currentVersion) ?: error("当前版本信息无效")
+            val release = releases.filter { item ->
+                if (item.draft || (!includePrereleases && item.prerelease) || item.publishedAt == null) return@filter false
+                val parsed = ReleaseVersion.parse(item.tag)
+                if (parsed != null) parsed > current
+                else includePrereleases && item.prerelease &&
+                    item.assets.none { buildCommit.length >= 7 && buildCommit in it.name } &&
+                    runCatching { java.time.Instant.parse(item.publishedAt).epochSecond > buildTimestamp + 300 }.getOrDefault(false)
+            }.maxByOrNull { it.publishedAt.orEmpty() }
+            preferences.edit().putLong("last_check", System.currentTimeMillis()).apply()
+            val result = release?.let { UpdateCandidate(it, it.selectApk(Build.SUPPORTED_ABIS.toList())) }
+            _candidate.value = result?.takeUnless { !manual && preferences.getLong("ignored", -1) == it.release.id }
+            result
         }
     }
 
-    fun startAutoCheck(scope: CoroutineScope, intervalMs: Long = AUTO_CHECK_INTERVAL_MS) {
-        if (autoCheckJob?.isActive == true) return
-        synchronized(this) {
-            if (autoCheckJob?.isActive == true) return
-            autoCheckJob = scope.launch(Dispatchers.IO) {
+    fun startAutoCheck(scope: CoroutineScope) {
+        scope.launch {
+            AppVisibilityTracker.isForeground.collectLatest { foreground ->
+                if (!foreground) return@collectLatest
+                delay(5_000)
                 while (isActive) {
-                    runCatching {
-                        checkForUpdate()
-                    }.onFailure { throwable ->
-                        if (throwable is CancellationException) throw throwable
-                        Timber.w(throwable, "Update auto check failed")
+                    if (autoCheck && System.currentTimeMillis() - preferences.getLong("last_check", 0) >= 6 * 60 * 60 * 1000L) {
+                        try { checkForUpdate(manual = false) } catch (e: CancellationException) { throw e } catch (_: Exception) { }
                     }
-                    delay(intervalMs)
+                    delay(30 * 60 * 1000L)
                 }
             }
         }
     }
 
-    suspend fun downloadAndInstall(candidate: UpdateCandidate): Result<Unit> = withContext(Dispatchers.IO) {
-        if (_downloadProgress.value.isDownloading) {
-            return@withContext Result.failure(IllegalStateException(MLang.Component.Update.Message.DownloadAlreadyRunning))
-        }
-
-        val outputFile = File(
-            appContext.cacheDir,
-            "updates/${candidate.resolveDownloadFileName()}",
-        )
-
-        runCatching {
-            downloadCancelRequested = false
-            _downloadProgress.value = UpdateDownloadProgress(
-                isDownloading = true,
-                progress = 0,
-                message = MLang.Component.Update.Message.Preparing,
-            )
-
-            outputFile.parentFile?.mkdirs()
-            if (outputFile.exists()) outputFile.delete()
-
-            val downloadUrls = candidate.resolveDownloadUrls()
-            val errors = mutableListOf<String>()
-            for (url in downloadUrls) {
-                if (downloadCancelRequested) throw UpdateDownloadCancelledException()
-                coroutineContext.ensureActive()
-                val downloaded = runCatching {
-                    downloadToFile(url, outputFile)
-                    if (downloadCancelRequested) throw UpdateDownloadCancelledException()
-                    true
-                }.onFailure { throwable ->
-                    if (throwable is CancellationException) {
-                        throw throwable
-                    }
-                    if (throwable.isUpdateDownloadCancelled()) {
-                        throw throwable
-                    }
-                    Timber.e(throwable, "Update download failed: $url")
-                    errors += throwable.message ?: url
-                    if (outputFile.exists()) outputFile.delete()
-                }.getOrDefault(false)
-
-                if (downloaded) {
-                    _downloadProgress.value = UpdateDownloadProgress(
-                        isDownloading = false,
-                        progress = 100,
-                        message = MLang.Component.Update.Message.DownloadReady,
-                    )
-                    openInstaller(outputFile)
-                    return@runCatching
-                }
-            }
-
-            error(errors.firstOrNull() ?: MLang.Component.Update.Message.Error)
-        }.onFailure { throwable ->
-            if (throwable is CancellationException) {
-                throw throwable
-            }
-            _downloadProgress.value = UpdateDownloadProgress(
-                isDownloading = false,
-                progress = 0,
-                message = if (throwable.isUpdateDownloadCancelled()) {
-                    MLang.Component.Update.Message.DownloadCancelled
-                } else {
-                    throwable.message ?: MLang.Component.Update.Message.Error
-                },
-            )
-            if (throwable.isUpdateDownloadCancelled() && outputFile.exists()) {
-                outputFile.delete()
-            }
-        }.also {
-            downloadCancelRequested = false
-        }
+    fun dismiss(ignore: Boolean = false) {
+        if (ignore) _candidate.value?.let { preferences.edit().putLong("ignored", it.release.id).apply() }
+        _candidate.value = null
     }
 
-    fun cancelDownload() {
-        downloadCancelRequested = true
-        activeDownloadCall?.cancel()
-        _downloadProgress.value = UpdateDownloadProgress(
-            isDownloading = false,
-            progress = 0,
-            message = MLang.Component.Update.Message.DownloadCancelled,
-        )
-    }
+    fun cancelDownload() { cancelled = true; downloadCall?.cancel() }
 
-    private fun UpdateCandidate.withCachedCover(): UpdateCandidate {
-        val fallbackCachedUri = cacheCoverDataUri(versionCode, coverDataUri)
-        val fallbackCandidate = if (fallbackCachedUri.isBlank()) this else copy(cachedCoverUri = fallbackCachedUri)
-        if (fallbackCandidate.cachedCoverUri.isNotBlank()) {
-            _cachedCandidate.value = fallbackCandidate
-        }
-
-        val remoteCachedUri = prefetchCoverUrl(versionCode, coverUrl)
-        return if (remoteCachedUri.isBlank()) fallbackCandidate else copy(cachedCoverUri = remoteCachedUri)
-    }
-
-    private fun prefetchCoverUrl(versionCode: Long, url: String): String {
-        if (url.isBlank()) return ""
-        val outputFile = coverCacheFile(versionCode, "remote-${url.stableCacheKey()}")
-        if (outputFile.isFile && outputFile.length() > 0) return Uri.fromFile(outputFile).toString()
-
-        return runCatching {
-            val request = Request.Builder()
-                .url(url)
-                .header("User-Agent", UPDATE_USER_AGENT)
-                .build()
-            client.newCall(request).execute().use { response ->
-                if (!response.isSuccessful) error("HTTP ${response.code}")
-                outputFile.parentFile?.mkdirs()
-                outputFile.outputStream().use { output ->
-                    response.body.byteStream().use { input ->
-                        input.copyTo(output)
-                    }
-                }
-            }
-            Uri.fromFile(outputFile).toString()
-        }.onFailure { throwable ->
-            Timber.w(throwable, "Update cover prefetch failed")
-            if (outputFile.exists()) outputFile.delete()
-        }.getOrDefault("")
-    }
-
-    private fun cacheCoverDataUri(versionCode: Long, dataUri: String): String {
-        if (dataUri.isBlank()) return ""
-        val outputFile = coverCacheFile(versionCode, "fallback-${dataUri.stableCacheKey()}")
-        if (outputFile.isFile && outputFile.length() > 0) return Uri.fromFile(outputFile).toString()
-
-        return runCatching {
-            val base64 = dataUri.substringAfter("base64,", missingDelimiterValue = dataUri)
-            val bytes = Base64.decode(base64, Base64.DEFAULT)
-            outputFile.parentFile?.mkdirs()
-            outputFile.writeBytes(bytes)
-            Uri.fromFile(outputFile).toString()
-        }.onFailure { throwable ->
-            Timber.w(throwable, "Update cover data URI cache failed")
-            if (outputFile.exists()) outputFile.delete()
-        }.getOrDefault("")
-    }
-
-    private fun coverCacheFile(versionCode: Long, source: String): File =
-        File(appContext.cacheDir, "updates/release-cover-$versionCode-$source.img")
-
-    private fun String.stableCacheKey(): String = Integer.toHexString(hashCode())
-
-    private fun fetchManifest(): UpdateManifest {
-        val urls = resolveManifestUrls()
-        val errors = mutableListOf<String>()
-        for (url in urls) {
-            val manifest = runCatching {
-                val body = client.newCall(
-                    Request.Builder()
-                        .url(url)
-                        .header("User-Agent", UPDATE_USER_AGENT)
-                        .build(),
-                ).execute().use { response ->
-                    if (!response.isSuccessful) {
-                        error("HTTP ${response.code}")
-                    }
-                    response.body.string()
-                }
-                json.decodeFromString<UpdateManifest>(body)
-            }.onFailure { throwable ->
-                Timber.e(throwable, "Update manifest fetch failed: $url")
-                errors += throwable.message ?: url
-            }.getOrNull()
-
-            if (manifest != null) return manifest
-        }
-        error(errors.firstOrNull() ?: MLang.Component.Update.Message.MissingReleaseMetadata)
-    }
-
-    private fun resolveManifestUrls(): List<String> {
-        val officialUrl = BuildConfig.UPDATE_MANIFEST_URL.trim()
-        val urls = linkedSetOf<String>()
-        urls += officialUrl
-        urls += mirrorUrlsFor(officialUrl, BuildConfig.UPDATE_MANIFEST_MIRROR_TEMPLATES)
-        return urls.filter(String::isNotBlank)
-    }
-
-    private fun mirrorUrlsFor(sourceUrl: String, templates: String): List<String> {
-        if (sourceUrl.isBlank() || templates.isBlank()) return emptyList()
-        return templates.split('\n', ',', ';')
-            .map(String::trim)
-            .filter(String::isNotBlank)
-            .map { template ->
-                when {
-                    "{url}" in template -> template.replace("{url}", sourceUrl)
-                    "{encodedUrl}" in template -> template.replace("{encodedUrl}", Uri.encode(sourceUrl))
-                    else -> template.trimEnd('/') + "/" + sourceUrl
-                }
-            }
-    }
-
-    private fun UpdateCandidate.resolveDownloadUrls(): List<String> {
-        val downloadUrl = manifest.toApkDownloadUrl()
-        val urls = linkedSetOf<String>()
-        urls += mirrorUrlsFor(downloadUrl, BuildConfig.UPDATE_MIRROR_TEMPLATES)
-        urls += downloadUrl
-        return urls.filter(String::isNotBlank)
-    }
-
-    private fun UpdateCandidate.resolveDownloadFileName(): String =
-        RELEASE_APK_FILE_NAME
-
-    private fun UpdateManifest.toApkDownloadUrl(): String {
-        val releaseUrl = releaseUrl.trim().trimEnd('/')
-        val tag = tag.trim()
-        if (releaseUrl.isBlank() || tag.isBlank()) {
-            error(MLang.Component.Update.Message.MissingReleaseMetadata)
-        }
-        val marker = "/releases/"
-        val markerIndex = releaseUrl.indexOf(marker)
-        if (markerIndex < 0) error(MLang.Component.Update.Message.MissingReleaseMetadata)
-        val repoUrl = releaseUrl.substring(0, markerIndex)
-        return "$repoUrl/releases/download/${Uri.encode(tag)}/${Uri.encode(RELEASE_APK_FILE_NAME)}"
-    }
-
-    private suspend fun downloadToFile(url: String, outputFile: File) {
-        val request = Request.Builder()
-            .url(url)
-            .header("User-Agent", UPDATE_USER_AGENT)
-            .build()
-
-        val call = client.newCall(request)
-        activeDownloadCall = call
+    suspend fun downloadAndInstall(candidate: UpdateCandidate) = withContext(Dispatchers.IO) {
+        if (!downloadMutex.tryLock()) throw IOException("下载正在进行")
+        val directory = File(context.cacheDir, "updates").apply { mkdirs() }
+        val file = File(directory, "release-${candidate.release.id}.apk")
+        val partial = File(directory, "release-${candidate.release.id}.part")
         try {
+            val asset = candidate.asset ?: throw IOException("没有适合当前设备的 APK，请打开发布页下载")
+            require(asset.url.startsWith("https://github.com/$REPOSITORY/releases/download/")) { "发布附件地址无效" }
+            if (file.isFile) {
+                val valid = runCatching { validateApk(file) }.isSuccess && (asset.size <= 0 || file.length() == asset.size)
+                if (valid) {
+                    withContext(Dispatchers.Main) { openInstaller(file) }
+                    return@withContext
+                }
+                file.delete()
+            }
+            cancelled = false
+            _progress.value = UpdateDownloadProgress(downloading = true, total = asset.size)
+            val call = client.newCall(Request.Builder().url(asset.url).build())
+            downloadCall = call
+            val hash = MessageDigest.getInstance("SHA-256")
             call.execute().use { response ->
-                if (!response.isSuccessful) error("HTTP ${response.code}")
-                val body = response.body
-                val contentLength = body.contentLength()
-                body.byteStream().use { input ->
-                    outputFile.outputStream().use { output ->
-                        val buffer = ByteArray(DEFAULT_BUFFER_SIZE)
-                        var read: Int
-                        var total = 0L
-                        while (input.read(buffer).also { read = it } != -1) {
-                            if (downloadCancelRequested) throw UpdateDownloadCancelledException()
+                if (!response.isSuccessful) throw IOException("下载失败：HTTP ${response.code}")
+                val total = response.body.contentLength().takeIf { it > 0 } ?: asset.size
+                response.body.byteStream().use { input ->
+                    partial.outputStream().buffered().use { output ->
+                        val buffer = ByteArray(64 * 1024); var received = 0L
+                        while (true) {
                             coroutineContext.ensureActive()
-                            output.write(buffer, 0, read)
-                            total += read
-                            val progress = if (contentLength > 0) {
-                                ((total * 100) / contentLength).toInt().coerceIn(0, 100)
-                            } else {
-                                0
-                            }
-                            _downloadProgress.value = UpdateDownloadProgress(
-                                isDownloading = true,
-                                progress = progress,
-                                message = if (progress > 0) {
-                                    MLang.Component.Update.Message.DownloadingWithProgress.format(progress)
-                                } else {
-                                    MLang.Component.Update.Message.Downloading
-                                },
-                            )
+                            if (cancelled) throw IOException("下载已取消")
+                            val size = input.read(buffer); if (size < 0) break
+                            output.write(buffer, 0, size); hash.update(buffer, 0, size); received += size
+                            _progress.value = UpdateDownloadProgress(true, received, total)
                         }
+                        if (total > 0 && received != total) throw IOException("下载不完整，请重试")
                     }
                 }
             }
-        } catch (throwable: IOException) {
-            if (call.isCanceled()) {
-                throw UpdateDownloadCancelledException()
+            asset.digest?.takeIf { it.startsWith("sha256:") }?.let { expected ->
+                val actual = hash.digest().joinToString("") { "%02x".format(it) }
+                require(actual.equals(expected.substringAfter(':'), true)) { "安装包 SHA-256 校验失败" }
             }
-            throw throwable
+            validateApk(partial)
+            if (cancelled) throw IOException("下载已取消")
+            if (file.exists()) file.delete()
+            check(partial.renameTo(file)) { "无法保存安装包" }
+            withContext(Dispatchers.Main) {
+                openInstaller(file)
+            }
+        } catch (e: IOException) {
+            if (cancelled) throw IOException("下载已取消") else throw e
         } finally {
-            if (activeDownloadCall === call) {
-                activeDownloadCall = null
-            }
+            downloadCall = null
+            partial.delete()
+            _progress.value = UpdateDownloadProgress()
+            downloadMutex.unlock()
         }
+    }
+
+    @Suppress("DEPRECATION")
+    private fun validateApk(file: File) {
+        val pm = context.packageManager
+        val flags = if (Build.VERSION.SDK_INT >= 28) PackageManager.GET_SIGNING_CERTIFICATES else PackageManager.GET_SIGNATURES
+        val archive = pm.getPackageArchiveInfo(file.path, flags) ?: error("文件不是有效的 APK")
+        val installed = pm.getPackageInfo(context.packageName, flags)
+        require(archive.packageName == context.packageName) { "安装包不属于 YumeBox MD3" }
+        val code = if (Build.VERSION.SDK_INT >= 28) archive.longVersionCode else archive.versionCode.toLong()
+        require(code > currentVersionCode) { "安装包版本不高于当前版本" }
+        val old = if (Build.VERSION.SDK_INT >= 28) installed.signingInfo?.apkContentsSigners else installed.signatures
+        val new = if (Build.VERSION.SDK_INT >= 28) archive.signingInfo?.signingCertificateHistory else archive.signatures
+        require(!old.isNullOrEmpty() && !new.isNullOrEmpty() && old.all { signer -> new.any { it == signer } }) { "安装包签名不同，请前往发布页查看安装说明" }
     }
 
     private fun openInstaller(file: File) {
-        val uri = FileProvider.getUriForFile(
-            appContext,
-            "${appContext.packageName}.fileprovider",
-            file,
-        )
-        val intent = Intent(Intent.ACTION_VIEW).apply {
-            setDataAndType(uri, "application/vnd.android.package-archive")
-            addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION)
-            addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
+        if (Build.VERSION.SDK_INT >= 26 && !context.packageManager.canRequestPackageInstalls()) {
+            context.startActivity(Intent(android.provider.Settings.ACTION_MANAGE_UNKNOWN_APP_SOURCES,
+                android.net.Uri.parse("package:${context.packageName}")).addFlags(Intent.FLAG_ACTIVITY_NEW_TASK))
+            throw IOException("允许安装应用后返回，再次点击安装即可；安装包已保存")
         }
-        appContext.startActivity(intent)
+        val uri = FileProvider.getUriForFile(context, "${context.packageName}.fileprovider", file)
+        context.startActivity(Intent(Intent.ACTION_VIEW).setDataAndType(uri, "application/vnd.android.package-archive")
+            .addFlags(Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_GRANT_READ_URI_PERMISSION))
     }
 
-    private companion object {
-        val UPDATE_USER_AGENT = "YumeBox/${BuildConfig.VERSION_NAME}"
-        const val RELEASE_APK_FILE_NAME = "YumeBoxMD3-release.apk"
-        const val AUTO_CHECK_INTERVAL_MS = 5 * 60 * 1000L
+    companion object {
+        const val REPOSITORY = "Yizuka17/YumeBox-MaterialDesign"
+        const val RELEASES_URL = "https://github.com/$REPOSITORY/releases"
+        private const val API = "https://api.github.com/repos/$REPOSITORY"
     }
 }
-
-internal class UpdateDownloadCancelledException : IOException(MLang.Component.Update.Message.DownloadCancelled)
-
-internal fun Throwable.isUpdateDownloadCancelled(): Boolean =
-    this is UpdateDownloadCancelledException || message == MLang.Component.Update.Message.DownloadCancelled

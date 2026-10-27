@@ -29,7 +29,7 @@ import com.github.yumelira.yumebox.core.model.ConnectionInfo
 import com.github.yumelira.yumebox.core.model.ConnectionSnapshot
 import com.github.yumelira.yumebox.core.util.PollingTimerSpecs
 import com.github.yumelira.yumebox.core.util.PollingTimers
-import com.github.yumelira.yumebox.remote.ServiceClient
+import com.github.yumelira.yumebox.runtime.client.access.RuntimeAccess
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -126,7 +126,7 @@ class ConnectionViewModel : ViewModel() {
     suspend fun closeConnection(id: String): Boolean {
         return withContext(Dispatchers.IO) {
             runCatching {
-                ServiceClient.clash().closeConnection(id)
+                RuntimeAccess.core().closeConnection(id)
             }.onFailure { error ->
                 Timber.w(error, "Failed to close connection: %s", id)
                 _state.update { it.copy(error = error.message) }
@@ -144,7 +144,7 @@ class ConnectionViewModel : ViewModel() {
         }
         withContext(Dispatchers.IO) {
             try {
-                val snapshot = ServiceClient.clash().queryConnections()
+                val snapshot = RuntimeAccess.core().queryConnections()
                 ConnectionHistoryManager.updateConnections(snapshot.connections)
                 _state.update {
                     it.copy(

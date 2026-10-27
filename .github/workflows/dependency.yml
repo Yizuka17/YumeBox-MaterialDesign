@@ -1,15 +1,15 @@
 name: Dependency Review
 
-on: [pull_request]
+on: [ pull_request ]
 
 permissions:
   contents: read
 
 jobs:
   dependency-review:
-    runs-on: ubuntu-latest
+    runs-on: macos-26
     steps:
       - name: 'Checkout Repository'
-        uses: actions/checkout@v6
+        uses: actions/checkout@v7.0.1
       - name: 'Dependency Review'
-        uses: actions/dependency-review-action@v4
+        uses: actions/dependency-review-action@v5.0.0

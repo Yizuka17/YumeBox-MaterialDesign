@@ -52,7 +52,7 @@ import androidx.compose.ui.unit.sp
 import com.github.yumelira.yumebox.common.AppConstants
 import com.github.yumelira.yumebox.common.util.formatBytesForDisplay
 import com.github.yumelira.yumebox.core.model.TunnelState
-import com.github.yumelira.yumebox.data.model.ProxyMode
+import com.github.yumelira.yumebox.data.model.RunMode
 import com.github.yumelira.yumebox.domain.model.TrafficData
 import com.github.yumelira.yumebox.presentation.icon.AppMd3Icons
 import com.github.yumelira.yumebox.presentation.theme.AppMotion
@@ -65,7 +65,7 @@ fun TrafficDisplay(
     profileName: String?,
     tunnelMode: TunnelState.Mode?,
     controlState: HomeProxyControlState,
-    proxyMode: ProxyMode,
+    proxyMode: RunMode,
     isEnabled: Boolean,
     onClick: () -> Unit,
     modifier: Modifier = Modifier
@@ -210,7 +210,7 @@ private fun SpeedValue(speed: Long) {
 private fun UploadSection(
     uploadSpeed: Long,
     controlState: HomeProxyControlState,
-    proxyMode: ProxyMode,
+    proxyMode: RunMode,
 ) {
     val spacing = AppTheme.spacing
 
@@ -260,7 +260,7 @@ private fun UploadSection(
 }
 
 @Composable
-private fun ProxyTypeCapsule(proxyMode: ProxyMode) {
+private fun ProxyTypeCapsule(proxyMode: RunMode) {
     val spacing = AppTheme.spacing
     val componentSizes = AppTheme.sizes
     val opacity = AppTheme.opacity
@@ -278,9 +278,9 @@ private fun ProxyTypeCapsule(proxyMode: ProxyMode) {
         ) {
             Icon(
                 imageVector = when (proxyMode) {
-                    ProxyMode.Tun -> AppMd3Icons.Home.ProxyModeVpn
-                    ProxyMode.RootTun -> AppMd3Icons.Home.ProxyModeTun
-                    ProxyMode.Http -> AppMd3Icons.Home.ProxyModeHttp
+                    RunMode.VpnService -> AppMd3Icons.Home.ProxyModeVpn
+                    RunMode.Tun -> AppMd3Icons.Home.ProxyModeTun
+                    RunMode.Ebpf -> AppMd3Icons.Home.ProxyModeHttp
                 },
                 contentDescription = null,
                 tint = primary,
@@ -288,9 +288,9 @@ private fun ProxyTypeCapsule(proxyMode: ProxyMode) {
             )
             Text(
                 text = when (proxyMode) {
-                    ProxyMode.Tun -> MLang.Home.ProxyMode.Vpn
-                    ProxyMode.RootTun -> MLang.Home.ProxyMode.Tun
-                    ProxyMode.Http -> MLang.Home.ProxyMode.Http
+                    RunMode.VpnService -> MLang.Home.ProxyMode.Vpn
+                    RunMode.Tun -> MLang.Home.ProxyMode.Tun
+                    RunMode.Ebpf -> "eBPF"
                 },
                 style = MaterialTheme.typography.labelMedium.copy(
                     fontSize = 12.sp,

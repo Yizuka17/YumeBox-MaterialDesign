@@ -1,0 +1,12 @@
+---
+engines:
+  lizard:
+    exclude_paths:
+      - "**/*.kt"
+      - "**/*.kts"
+  spectral:
+    exclude_paths:
+      - "website/api/openapi.json"
+  markdownlint:
+    exclude_paths:
+      - "PRIVACY_POLICY.md"

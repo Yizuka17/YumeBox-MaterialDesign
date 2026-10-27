@@ -40,7 +40,6 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.shape.RoundedCornerShape
@@ -84,7 +83,7 @@ internal fun nodeLatencyLabel(delay: Int?): Pair<String, Color>? = when {
     else -> null
 }
 
-internal fun Proxy.Type.displayName(): String = when (this) {
+internal fun String.displayName(): String = when (this) {
     Proxy.Type.Direct -> "Direct"
     Proxy.Type.Reject -> "Reject"
     Proxy.Type.RejectDrop -> "RejectDrop"
@@ -116,9 +115,10 @@ internal fun Proxy.Type.displayName(): String = when (this) {
     Proxy.Type.Sudoku -> "Sudoku"
     Proxy.Type.Masque -> "Masque"
     Proxy.Type.TrustTunnel -> "TrustTunnel"
+    else -> this
 }
 
-internal fun Proxy.Type.iconLabel(): String = when (this) {
+internal fun String.iconLabel(): String = when (this) {
     Proxy.Type.Direct -> "DI"
     Proxy.Type.Reject -> "RJ"
     Proxy.Type.RejectDrop -> "RD"
@@ -150,6 +150,7 @@ internal fun Proxy.Type.iconLabel(): String = when (this) {
     Proxy.Type.Sudoku -> "SU"
     Proxy.Type.Masque -> "MQ"
     Proxy.Type.TrustTunnel -> "TT"
+    else -> take(2).uppercase()
 }
 
 internal data class ProxySelectionPalette(
@@ -318,7 +319,7 @@ internal fun NodeCard(
     NodeSelectableCard(
         isSelected = isSelected,
         onClick = onCardClick,
-        modifier = modifier.heightIn(min = 144.dp),
+        modifier = modifier,
         paddingVertical = spacing.space12,
     ) {
         val presentation = remember(proxy.name, proxy.title) {

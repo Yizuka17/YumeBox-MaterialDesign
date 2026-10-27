@@ -1,0 +1,68 @@
+#-------------------------------------------------------------------------------#
+#        Discover additional configuration options in our documentation         #
+#               https://www.jetbrains.com/help/qodana/github.html               #
+#-------------------------------------------------------------------------------#
+
+name: Qodana
+on:
+  workflow_dispatch:
+  pull_request:
+  push:
+    branches:
+      - Moe
+      - Dev
+
+jobs:
+  qodana:
+    runs-on: macos-26
+    permissions:
+      contents: write
+      pull-requests: write
+      checks: write
+    steps:
+      - uses: actions/checkout@v7.0.1
+        with:
+          ref: ${{ github.event.pull_request.head.sha }}
+          fetch-depth: 0
+      - name: Setup Java
+        uses: actions/setup-java@v6.1.0
+        with:
+          distribution: zulu
+          java-version: "25"
+      - name: Cache Kotlin Toolchain
+        uses: actions/cache@v6.1.0
+        with:
+          path: |
+            ~/Library/Caches/JetBrains/Kotlin
+            .kotlin/yumebox/maven
+            .kotlin/yumebox/gradle-*
+          key: ${{ runner.os }}-toolchain-${{ hashFiles('kotlin', '*module-template.yaml', '**/module.yaml', 'gradle/libs.versions.toml') }}
+          restore-keys: |
+            ${{ runner.os }}-toolchain-
+      - name: Setup Android SDK
+        uses: android-actions/setup-android@v4.0.4 # v4.0.4
+        with:
+          packages: "platform-tools platforms;android-37.0 build-tools;37.0.0"
+      - name: Configure local.properties
+        run: |
+          echo "sdk.dir=${ANDROID_SDK_ROOT}" > local.properties
+      - name: Generate locale sources
+        shell: bash
+        run: |
+          set -eu
+          sh kotlin build --module=locale
+          find build -path '*ksp*' -name Strings.kt -size +0c -print -quit | grep -q .
+      - name: 'Qodana Scan'
+        uses: JetBrains/qodana-action@v2026.2.2 # v2026.2.2
+        env:
+          QODANA_TOKEN: ${{ secrets.QODANA_TOKEN }}
+        with:
+          # When pr-mode is set to true, Qodana analyzes only the files that have been changed
+          pr-mode: false
+          use-caches: true
+          post-pr-comment: true
+          use-annotations: true
+          # Upload Qodana results (SARIF, other artifacts, logs) as an artifact to the job
+          upload-result: false
+          # quick-fixes available in Ultimate and Ultimate Plus plans
+          push-fixes: 'none'

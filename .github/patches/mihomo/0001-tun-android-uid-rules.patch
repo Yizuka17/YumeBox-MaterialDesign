@@ -1,0 +1,23 @@
+diff --git a/listener/sing_tun/server_notandroid.go b/listener/sing_tun/server_notandroid.go
+index e393d4ca..dd3778ad 100644
+--- a/listener/sing_tun/server_notandroid.go
++++ b/listener/sing_tun/server_notandroid.go
+@@ -3,9 +3,18 @@
+ package sing_tun
+ 
+ import (
++	"runtime"
++
+ 	tun "github.com/metacubex/sing-tun"
+ )
+ 
++// On Android, build the uid-range routing rules (CFA no-ops this — its Java VpnService does per-app
++// routing — but root Tun opens its own auto-route device and needs them, else every uid incl. the
++// core's own is pulled into the tun and loops). android-user expansion needs no PackageManager.
+ func (l *Listener) buildAndroidRules(tunOptions *tun.Options) error {
++	if runtime.GOOS != "android" {
++		return nil
++	}
++	tunOptions.BuildAndroidRules(nil, l.handler)
+ 	return nil
+ }

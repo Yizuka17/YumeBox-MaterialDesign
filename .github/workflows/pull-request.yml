@@ -1,8 +1,8 @@
-name: Pull Request CI
+name: Pull Request
 
 on:
   pull_request:
-    branches: [ "Yume", "Dev" ]
+    branches: [ "Yume", "Moe", "Dev" ]
     paths-ignore:
       - "**.md"
       - "docs/**"
@@ -16,21 +16,24 @@ permissions:
   contents: read
 
 jobs:
+  # Prebuild Java/Kotlin & module resources in parallel with the native build jobs.
+  prebuild-modules-pr:
+    name: Prebuild Modules (PR)
+    uses: ./.github/workflows/reusable-prebuild-modules.yml
+    with:
+      channel: pr
+      build_type: debug
+    secrets: inherit
+
   build-geo-pr:
+    name: Geo (PR)
     uses: ./.github/workflows/reusable-build-geo.yml
     with:
       channel: pr
     secrets: inherit
 
-  build-native-abi-pr-armeabi-v7a:
-    uses: ./.github/workflows/reusable-build-native-abi.yml
-    with:
-      channel: pr
-      kernel_channel: alpha
-      abi: armeabi-v7a
-    secrets: inherit
-
   build-native-abi-pr-arm64-v8a:
+    name: Native v8a (PR)
     uses: ./.github/workflows/reusable-build-native-abi.yml
     with:
       channel: pr
@@ -38,55 +41,45 @@ jobs:
       abi: arm64-v8a
     secrets: inherit
 
-  build-native-abi-pr-x86:
-    uses: ./.github/workflows/reusable-build-native-abi.yml
-    with:
-      channel: pr
-      kernel_channel: alpha
-      abi: x86
-    secrets: inherit
-
-  build-native-abi-pr-x86_64:
-    uses: ./.github/workflows/reusable-build-native-abi.yml
-    with:
-      channel: pr
-      kernel_channel: alpha
-      abi: x86_64
-    secrets: inherit
-
   bundle-native-pr:
+    name: Bundle (PR)
     needs:
       - build-geo-pr
-      - build-native-abi-pr-armeabi-v7a
       - build-native-abi-pr-arm64-v8a
-      - build-native-abi-pr-x86
-      - build-native-abi-pr-x86_64
     uses: ./.github/workflows/reusable-bundle-native.yml
     with:
       channel: pr
     secrets: inherit
 
+  # PR builds use the same versionCode formula as channel and release builds: epoch
+  # (project.version.code in product.properties) + `git rev-list --count HEAD`, computed
+  # inside reusable-build-apk-only.yml / reusable-prepare-publish.yml (the count covers the
+  # PR merge commit's whole parent chain). The commit hash in versionName (and the PR
+  # number in the release tag) additionally identifies the build.
   build-apk-pr-app:
-    needs: bundle-native-pr
+    name: APK (PR)
+    needs:
+      - bundle-native-pr
+      - prebuild-modules-pr
     uses: ./.github/workflows/reusable-build-apk-only.yml
     with:
       channel: pr
       module: app
-      artifact_prefix: yumebox-pr
       release_tag: pr-${{ github.event.pull_request.number }}
-      meta_asset_name: yumebox-pr-meta.json
+      meta_asset_name: YumeBox-pr-meta.json
       raw_apk_artifact_name: apk-raw-pr-app
+      build_type: debug
+      build_hash: ${{ github.event.pull_request.head.sha }}
+      build_branch: ${{ github.event.pull_request.head.ref }}
     secrets: inherit
 
-  prepare-publish-pr-app:
+  # PR builds validate the APK matrix but intentionally do not publish direct
+  # installer artifacts. Fork-run intermediates simply age out because their
+  # read-only GITHUB_TOKEN cannot delete artifacts.
+  cleanup-artifacts:
+    name: Cleanup
     needs: build-apk-pr-app
-    uses: ./.github/workflows/reusable-prepare-publish.yml
-    with:
-      channel: pr
-      module: app
-      artifact_prefix: yumebox-pr
-      release_tag: pr-${{ github.event.pull_request.number }}
-      meta_asset_name: yumebox-pr-meta.json
-      raw_apk_artifact_name: apk-raw-pr-app
-      publish_artifact_name: publish-pr-app
-    secrets: inherit
+    if: github.event.pull_request.head.repo.full_name == github.repository
+    permissions:
+      actions: write
+    uses: ./.github/workflows/reusable-cleanup-artifacts.yml

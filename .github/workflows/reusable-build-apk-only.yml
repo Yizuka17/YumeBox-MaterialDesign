@@ -1,4 +1,4 @@
-name: Reusable Build APK Only
+name: Build APK
 
 on:
   workflow_call:
@@ -7,9 +7,6 @@ on:
         required: true
         type: string
       module:
-        required: true
-        type: string
-      artifact_prefix:
         required: true
         type: string
       release_tag:
@@ -21,105 +18,255 @@ on:
       raw_apk_artifact_name:
         required: true
         type: string
+      build_type:
+        description: "Toolchain build type (release or debug); defaults to release."
+        required: false
+        type: string
+        default: "release"
+      build_hash:
+        description: "Commit sha of the build; first 8 chars go into versionName (<base>[.<branch>].<hash8>)."
+        required: false
+        type: string
+        default: ""
+      build_branch:
+        description: "Branch name; normalized (lowercase, [^a-z0-9] runs -> '-') into the versionName branch segment."
+        required: false
+        type: string
+        default: ""
+    outputs:
+      apk_name_tail:
+        description: "Tail used in Toolchain-published APK file names; channel and PR builds use one Asia/Shanghai packaging date, stable builds use the clean version name."
+        value: ${{ jobs.prepare-build.outputs.apk_name_tail }}
 
 permissions:
   contents: read
 
 jobs:
-  build:
-    runs-on: ubuntu-latest
-    env:
-      FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
+  prepare-build:
+    name: Prepare Build Meta
+    runs-on: macos-26
+    outputs:
+      build_number: ${{ steps.build_number.outputs.value }}
+      apk_name_tail: ${{ steps.apk_name.outputs.tail }}
+      channel_segment: ${{ steps.apk_name.outputs.channel_segment }}
     steps:
       - name: Checkout
-        uses: actions/checkout@v6
+        uses: actions/checkout@v7.0.1
+        with:
+          fetch-depth: 0
+
+      - name: Compute build number
+        id: build_number
+        shell: bash
+        run: echo "value=$(git rev-list --count HEAD)" >> "$GITHUB_OUTPUT"
+
+      - name: Compute APK output name
+        id: apk_name
+        shell: bash
+        env:
+          BUILD_HASH: ${{ inputs.build_hash }}
+        run: |
+          set -eu
+          if [ -n "${BUILD_HASH}" ]; then
+            tail="$(TZ=Asia/Shanghai date +%y.%m.%d)"
+          else
+            tail="$(grep '^project.version.name=' product.properties | cut -d= -f2-)"
+          fi
+          case "${{ inputs.channel }}" in
+            pr) channel_segment="${{ inputs.channel }}" ;;
+            pre|stable) channel_segment="" ;;
+            *) echo "Unsupported APK output channel: ${{ inputs.channel }}" >&2; exit 1 ;;
+          esac
+          echo "tail=${tail}" >> "$GITHUB_OUTPUT"
+          echo "channel_segment=${channel_segment}" >> "$GITHUB_OUTPUT"
+
+  build-variant:
+    name: APK (${{ matrix.variant }})
+    needs: prepare-build
+    runs-on: macos-26
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - variant: builtin
+            geo_bundle: "true"
+          - variant: external
+            geo_bundle: "false"
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v7.0.1
         with:
           submodules: recursive
           fetch-depth: 0
 
       - name: Setup Java
-        uses: actions/setup-java@v5
+        uses: actions/setup-java@v6.1.0
         with:
-          distribution: temurin
+          distribution: zulu
           java-version: "25"
 
-      - name: Setup Kotlin
-        uses: fwilhe2/setup-kotlin@main
+      - name: Cache Kotlin Toolchain
+        uses: actions/cache@v6.1.0
+        with:
+          path: |
+            ~/Library/Caches/JetBrains/Kotlin
+            .kotlin/yumebox/maven
+            .kotlin/yumebox/gradle-*
+          key: ${{ runner.os }}-toolchain-${{ hashFiles('kotlin', '*module-template.yaml', '**/module.yaml', 'gradle/libs.versions.toml') }}
+          restore-keys: |
+            ${{ runner.os }}-toolchain-
 
-      - name: Setup Gradle
-        uses: gradle/actions/setup-gradle@v5
+      - name: Download prebuilt Toolchain artifacts
+        uses: actions/download-artifact@v8.0.2
+        with:
+          name: toolchain-build-cache-${{ inputs.channel }}
+          path: build
 
       - name: Setup Android SDK
-        uses: android-actions/setup-android@v4
+        uses: android-actions/setup-android@v4.0.4 # v4.0.4
         with:
-          packages: ""
-
-      - name: Cache NDK
-        id: cache-ndk
-        uses: actions/cache@v5
-        with:
-          path: ${{ env.ANDROID_SDK_ROOT }}/ndk/29.0.14206865
-          key: ${{ runner.os }}-ndk-29.0.14206865-v2
-          restore-keys: |
-            ${{ runner.os }}-ndk-29.0.14206865-v2-
-
-      - name: Install NDK
-        if: steps.cache-ndk.outputs.cache-hit != 'true'
-        run: sdkmanager "ndk;29.0.14206865"
+          packages: "platform-tools platforms;android-37.0 build-tools;37.0.0"
 
       - name: Configure local.properties
         run: |
           echo "sdk.dir=${ANDROID_SDK_ROOT}" > local.properties
-          echo "ndk.dir=${ANDROID_SDK_ROOT}/ndk/29.0.14206865" >> local.properties
 
       - name: Download native artifact
-        uses: actions/download-artifact@v8
+        uses: actions/download-artifact@v8.0.2
         with:
           name: native-${{ inputs.channel }}
-          path: .
 
       - name: Verify native and geo inputs
         shell: bash
         run: |
           set -eu
-          test -f "jniLibs/arm64-v8a/libclash.so"
-          test -f "jniLibs/arm64-v8a/liboverride.so"
-          test -f "jniLibs/arm64-v8a/libbridge.so"
-          test -f "build/generated/assets/geo/geoip.metadb.xz"
-          test -f "build/generated/assets/geo/geosite.dat.xz"
-          test -f "build/generated/assets/geo/ASN.mmdb.xz"
+          for abi in arm64-v8a; do
+            test -f "jniLibs/${abi}/libmihomo.so"
+            test -f "jniLibs/${abi}/libpreview.so"
+            test -f "jniLibs/${abi}/libmihomocore.so"
+            test -f "jniLibs/${abi}/liboverride.so"
+            test -f "jniLibs/${abi}/libcompat.so"
+            test -f "jniLibs/${abi}/libloader.so"
+          done
+          # Core branch/hash stamp from the native job (About / BuildConfig.CORE_*).
+          test -f "jniLibs/arm64-v8a/core-version.properties" || test -f "build/generated/core-version.properties"
+          if [ "${{ matrix.geo_bundle }}" = "true" ]; then
+            test -f "build/generated/assets/geo/geoip.metadb.xz"
+            test -f "build/generated/assets/geo/geosite.dat.xz"
+            test -f "build/generated/assets/geo/ASN.mmdb.xz"
+            test ! -e "build/generated/assets/geo/BundleMRS.7z"
+          fi
+
+      - name: Restore signing keystore
+        if: inputs.build_type == 'release'
+        env:
+          SIGNING_KEYSTORE_BASE64: ${{ secrets.SIGNING_KEYSTORE_BASE64 }}
+        run: |
+          if [ -n "${SIGNING_KEYSTORE_BASE64}" ]; then
+            printf '%s' "${SIGNING_KEYSTORE_BASE64}" | base64 -D > release.keystore
+          fi
 
       - name: Write signing config
+        if: inputs.build_type == 'release'
+        env:
+          SIGNING_STORE_PASSWORD: ${{ secrets.SIGNING_STORE_PASSWORD }}
+          SIGNING_KEY_ALIAS: ${{ secrets.SIGNING_KEY_ALIAS }}
+          SIGNING_KEY_PASSWORD: ${{ secrets.SIGNING_KEY_PASSWORD }}
         run: |
-          if [ -n "${{ secrets.SIGNING_STORE_PASSWORD }}" ]; then
-            echo "keystore.password=${{ secrets.SIGNING_STORE_PASSWORD }}" > signing.properties
-            echo "key.alias=${{ secrets.SIGNING_KEY_ALIAS }}" >> signing.properties
-            echo "key.password=${{ secrets.SIGNING_KEY_PASSWORD }}" >> signing.properties
+          if [ -n "${SIGNING_STORE_PASSWORD}" ]; then
+            printf 'keystore.password=%s\n' "${SIGNING_STORE_PASSWORD}" > signing.properties
+            printf 'key.alias=%s\n' "${SIGNING_KEY_ALIAS}" >> signing.properties
+            printf 'key.password=%s\n' "${SIGNING_KEY_PASSWORD}" >> signing.properties
             echo "keystore.path=release.keystore" >> signing.properties
           fi
 
-      - name: Generate locale sources
+      - name: Package and verify APK with Kotlin Toolchain
+        shell: bash
+        env:
+          BUILD_NUMBER: ${{ needs.prepare-build.outputs.build_number }}
+          BUILD_HASH: ${{ inputs.build_hash }}
+          BUILD_BRANCH: ${{ inputs.build_branch }}
+        run: |
+          set -eu
+          build_type="${{ inputs.build_type }}"
+
+          common_args=(
+            -Pupdate.channel="${{ inputs.channel }}"
+            -Pupdate.tag="${{ inputs.release_tag }}"
+            -Pupdate.metaAssetName="${{ inputs.meta_asset_name }}"
+            -Pbuild.number="${BUILD_NUMBER}"
+            -Pbuild.hash="${BUILD_HASH:0:8}"
+            -Pbuild.branch="${BUILD_BRANCH}"
+            -Papk.output.tail="${{ needs.prepare-build.outputs.apk_name_tail }}"
+            -Papk.output.channel="${{ needs.prepare-build.outputs.channel_segment }}"
+            -Pgeo.bundle="${{ matrix.geo_bundle }}"
+          )
+
+          apk_output_dir="output_apk/${build_type}"
+          shopt -s nullglob
+          mkdir -p apk-stage
+          rm -f apk-stage/*.apk "${apk_output_dir}"/*.apk
+
+          sh kotlin run --module=packaging -- --module="${{ inputs.module }}" --build-type="${build_type}" "${common_args[@]}"
+
+          variant_name="${{ matrix.variant }}"
+          built_apks=("${apk_output_dir}"/*-${variant_name}-*.apk)
+          test "${#built_apks[@]}" -eq 1
+          cp "${built_apks[0]}" apk-stage/
+
+      - name: Upload variant APK artifact
+        uses: actions/upload-artifact@v7.0.2
+        with:
+          name: ${{ inputs.raw_apk_artifact_name }}-${{ matrix.variant }}
+          path: apk-stage/*.apk
+          if-no-files-found: error
+          compression-level: 0
+
+  aggregate-raw-apks:
+    name: Aggregate Raw APKs
+    needs:
+      - prepare-build
+      - build-variant
+    runs-on: macos-26
+    steps:
+      - name: Download builtin APK
+        uses: actions/download-artifact@v8.0.2
+        with:
+          name: ${{ inputs.raw_apk_artifact_name }}-builtin
+          path: apk-stage
+
+      - name: Download external APK
+        uses: actions/download-artifact@v8.0.2
+        with:
+          name: ${{ inputs.raw_apk_artifact_name }}-external
+          path: apk-stage
+
+      - name: Verify staged APK matrix
         shell: bash
         run: |
           set -eu
-          kotlin scripts/generate-locale.main.kts .
-          test -f "locale/build/generated/fytxt/kotlin/commonMain/kotlin/fytxt.kt"
+          tail="${{ needs.prepare-build.outputs.apk_name_tail }}"
+          channel_segment="${{ needs.prepare-build.outputs.channel_segment }}"
+          channel_suffix="${channel_segment:+-${channel_segment}}"
+          ls "apk-stage/YumeBox-external${channel_suffix}-${tail}.apk"
+          ls "apk-stage/YumeBox-builtin${channel_suffix}-${tail}.apk"
 
-      - name: Build arm64-v8a Release APK
+      - name: Write APK guide summary
         shell: bash
         run: |
-          set -eu
-          chmod +x gradlew
-          ./gradlew --no-daemon \
-            -Pandroid.injected.build.abi=arm64-v8a \
-            -Pupdate.channel="${{ inputs.channel }}" \
-            -Pupdate.tag="${{ inputs.release_tag }}" \
-            -Pupdate.metaAssetName="${{ inputs.meta_asset_name }}" \
-            :${{ inputs.module }}:assembleRelease
+          cat >> "$GITHUB_STEP_SUMMARY" <<'EOF'
+          ## Choosing an APK variant
 
-      - name: Upload raw APK artifact
-        uses: actions/upload-artifact@v7
+          - `builtin`: Bundles GeoIP, GeoSite, and ASN data and works immediately after installation.
+          - `external`: Omits Geo data for a smaller APK, but requires a network download on first use.
+          - First-time users should choose `builtin` with bundled Geo data; both variants provide the same application features and core code.
+          EOF
+
+      - name: Upload aggregated raw APK artifact
+        uses: actions/upload-artifact@v7.0.2
         with:
           name: ${{ inputs.raw_apk_artifact_name }}
-          path: ${{ inputs.module }}/build/outputs/apk/release/*arm64-v8a*release*.apk
+          path: apk-stage/*.apk
           if-no-files-found: error
+          # APKs are already zip-compressed; store them uncompressed in the artifact zip.
+          compression-level: 0

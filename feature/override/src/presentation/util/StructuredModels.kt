@@ -237,7 +237,6 @@ val OverrideProxyGroupTypePresets = listOf(
     "url-test",
     "fallback",
     "load-balance",
-    "relay",
 )
 
 private val RuleExtraSupportedTypes = setOf(

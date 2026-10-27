@@ -14,11 +14,9 @@
  * You should have received a copy of the GNU Affero General Public License
  * along with this program. If not, see <https://www.gnu.org/licenses/>.
  *
- * Copyright (c)  YumeLira 2025 - Present
+ * Copyright (c)  YumeYucca 2025 - Present
  *
  */
-
-
 
 @file:UseSerializers(DateSerializer::class)
 
@@ -43,19 +41,14 @@ data class LogMessage(
     enum class Level {
         @SerialName("debug")
         Debug,
-
         @SerialName("info")
         Info,
-
         @SerialName("warning")
         Warning,
-
         @SerialName("error")
         Error,
-
         @SerialName("silent")
         Silent,
-
         @SerialName("unknown")
         Unknown,
     }
@@ -64,20 +57,16 @@ data class LogMessage(
         Parcelizer.encodeToParcel(serializer(), parcel, this)
     }
 
-    override fun describeContents(): Int {
-        return 0
-    }
+    override fun describeContents(): Int = 0
 
     companion object {
         @JvmField
-        val CREATOR = object : Parcelable.Creator<LogMessage> {
-            override fun createFromParcel(parcel: Parcel): LogMessage {
-                return Parcelizer.decodeFromParcel(serializer(), parcel)
-            }
+        val CREATOR =
+            object : Parcelable.Creator<LogMessage> {
+                override fun createFromParcel(parcel: Parcel): LogMessage =
+                    Parcelizer.decodeFromParcel(serializer(), parcel)
 
-            override fun newArray(size: Int): Array<LogMessage?> {
-                return arrayOfNulls(size)
+                override fun newArray(size: Int): Array<LogMessage?> = arrayOfNulls(size)
             }
-        }
     }
 }

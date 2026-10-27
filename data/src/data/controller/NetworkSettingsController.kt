@@ -14,77 +14,72 @@
  * You should have received a copy of the GNU Affero General Public License
  * along with this program. If not, see <https://www.gnu.org/licenses/>.
  *
- * Copyright (c)  YumeLira 2025 - Present
+ * Copyright (c)  YumeYucca 2025 - Present
  *
  */
 
+@file:Suppress("UnusedSymbol")
+
 package com.github.yumelira.yumebox.data.controller
 
-import com.github.yumelira.yumebox.core.util.PollingTimerSpecs
-import com.github.yumelira.yumebox.core.util.PollingTimers
-import com.github.yumelira.yumebox.data.model.ProxyMode
+
+import com.github.yumelira.yumebox.core.model.RunMode
 import com.github.yumelira.yumebox.data.store.NetworkSettingsStore
 import com.github.yumelira.yumebox.data.store.Preference
-import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.Job
-import kotlinx.coroutines.SupervisorJob
-import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 
 class NetworkSettingsController(
     private val store: NetworkSettingsStore,
     private val isRunning: () -> Boolean,
-    private val restartProxy: suspend (ProxyMode) -> Unit,
-    private val beforeRestart: suspend (ProxyMode) -> Unit = {},
+    private val restartProxy: suspend (RunMode) -> Unit,
+    private val beforeRestart: suspend (RunMode) -> Unit = {},
 ) {
-    private val scope = CoroutineScope(SupervisorJob() + Dispatchers.Main.immediate)
-    private var restartJob: Job? = null
+    private val restarter =
+        DebouncedProxyRestarter(
+            timerName = "network_settings_restart_debounce",
+            debounceMillis = RESTART_DEBOUNCE_DELAY_MS,
+            isRunning = isRunning,
+        )
 
-    fun setProxyMode(mode: ProxyMode) {
-        store.proxyMode.set(mode)
+    fun setRunMode(mode: RunMode) {
+        if (store.runMode.value == mode) return
+        store.runMode.set(mode)
+        // A mode change is a live runtime operation. The RuntimeSession owns the actual
+        // stop-old-owner/start-new-owner transaction, so this controller only schedules the same
+        // debounced restart used by the other network settings.
+        if (isRunning()) {
+            scheduleRestart()
+        }
     }
 
-    fun <T> setAndRestartIfNeeded(
-        preference: Preference<T>,
-        value: T,
-    ) {
+    fun <T> setAndRestartIfNeeded(preference: Preference<T>, value: T) {
         if (preference.value == value) return
         preference.set(value)
         scheduleRestart()
     }
 
-    fun <T> commitDraftAndRestart(
-        preference: Preference<T>,
-        value: T,
-    ) {
-        setAndRestartIfNeeded(preference, value)
-    }
-
-    suspend fun startService(mode: ProxyMode): Result<Unit> = runCatching {
-        store.proxyMode.set(mode)
-        beforeRestart(mode)
-        withContext(Dispatchers.IO) {
-            restartProxy(mode)
+    suspend fun startService(mode: RunMode): Result<Unit> =
+        try {
+            store.runMode.set(mode)
+            beforeRestart(mode)
+            withContext(Dispatchers.IO) { restartProxy(mode) }
+            Result.success(Unit)
+        } catch (error: Throwable) {
+            if (error is CancellationException) throw error
+            // eBPF is an explicit user-selected mode. An attach failure must remain visible;
+            // silently changing the persisted mode would make the UI claim a different datapath.
+            Result.failure(error)
         }
-    }
 
     fun requestRestartIfRunning() {
         scheduleRestart()
     }
 
     private fun scheduleRestart() {
-        restartJob?.cancel()
-        restartJob = scope.launch {
-            PollingTimers.awaitTick(
-                PollingTimerSpecs.dynamic(
-                    name = "network_settings_restart_debounce",
-                    intervalMillis = RESTART_DEBOUNCE_DELAY_MS,
-                    initialDelayMillis = RESTART_DEBOUNCE_DELAY_MS,
-                ),
-            )
-            if (!isRunning()) return@launch
-            val targetMode = store.proxyMode.value
+        restarter.schedule {
+            val targetMode = store.runMode.value
             beforeRestart(targetMode)
             startService(targetMode)
         }
