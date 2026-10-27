@@ -23,7 +23,7 @@ class LogRecordServiceGateway : LogRecordGateway {
         private set
     @Volatile override var currentLogFileName: String? = null
         private set
-    override val logPrefix = "log_"
+    override val logPrefix = ""
     override val logSuffix = ".log"
     override val stopWaitSpec = PollingTimerSpec("log_record_stop", 50L, 0L)
     override fun getLogDir(application: Application) = File(application.filesDir, "logs").apply { mkdirs() }

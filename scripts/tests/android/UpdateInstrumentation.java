@@ -113,6 +113,7 @@ public final class UpdateInstrumentation extends Instrumentation {
             verifyLegacyStatisticsMigration();
             verifySettingsBackup();
             verifyGeoValidation();
+            verifyLegacyLogVisibility();
             result.putString("stream", report + "PASS: " + passed + " updater device checks\n");
         } catch (Throwable error) {
             resultCode = Activity.RESULT_CANCELED;
@@ -130,6 +131,23 @@ public final class UpdateInstrumentation extends Instrumentation {
             editor.commit();
         }
         finish(resultCode, result);
+    }
+
+    private void verifyLegacyLogVisibility() throws Throwable {
+        File directory = new File(target.getCacheDir(), "validation-logs-" + UUID.randomUUID());
+        File logs = new File(directory, "logs"); check(logs.mkdirs(), "isolated log fixture directory created");
+        java.nio.file.Files.write(new File(logs, "20260101_000000.log").toPath(), "[12:00:00] [Info] legacy\n".getBytes("UTF-8"));
+        java.nio.file.Files.write(new File(logs, "log_123.log").toPath(), "[12:00:01] [Info] current\n".getBytes("UTF-8"));
+        java.nio.file.Files.write(new File(logs, "unrelated.txt").toPath(), new byte[0]);
+        android.app.Application application = new android.app.Application() {
+            @Override public File getFilesDir() { return directory; }
+        };
+        Object gateway = loader.loadClass("com.github.yumelira.yumebox.service.LogRecordServiceGateway").getConstructor().newInstance();
+        Object store = loader.loadClass("com.github.yumelira.yumebox.data.store.LogStore").getConstructors()[0].newInstance(application, gateway);
+        List<?> entries = (List<?>)invoke(store, "listLogFiles");
+        check(entries.size() == 2 && entries.stream().anyMatch(item -> {
+            try { return invoke(item, "getName").equals("20260101_000000.log"); } catch (Exception error) { throw new RuntimeException(error); }
+        }), "existing timestamp-named log recordings remain visible after upgrade");
     }
 
     private void verifyGeoValidation() throws Throwable {
