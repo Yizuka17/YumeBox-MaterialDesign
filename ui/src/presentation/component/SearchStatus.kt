@@ -18,12 +18,12 @@
  *
  */
 
-package com.github.yumeyucca.yumebox.presentation.component
+package com.github.yumelira.yumebox.presentation.component
 
 
 import androidx.compose.runtime.Stable
 import androidx.compose.ui.unit.Dp
-import com.github.yumeyucca.yumebox.presentation.theme.UiDp
+import com.github.yumelira.yumebox.presentation.theme.UiDp
 
 @Stable
 data class SearchStatus(

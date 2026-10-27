@@ -20,7 +20,7 @@
 
 @file:Suppress("FunctionName")
 
-package com.github.yumeyucca.yumebox.feature.meta.presentation.component
+package com.github.yumelira.yumebox.feature.meta.presentation.component
 
 
 import androidx.compose.foundation.background
@@ -37,14 +37,14 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import com.github.yumeyucca.yumebox.common.util.formatBytes
-import com.github.yumeyucca.yumebox.core.model.ConnectionInfo
-import com.github.yumeyucca.yumebox.presentation.component.AppCard
-import com.github.yumeyucca.yumebox.presentation.component.Title
-import com.github.yumeyucca.yumebox.presentation.theme.AppTheme
+import com.github.yumelira.yumebox.common.util.formatBytes
+import com.github.yumelira.yumebox.core.model.ConnectionInfo
+import com.github.yumelira.yumebox.presentation.component.AppCard
+import com.github.yumelira.yumebox.presentation.component.Title
+import com.github.yumelira.yumebox.presentation.theme.AppTheme
 import kotlinx.serialization.json.JsonObject
 import kotlinx.serialization.json.jsonPrimitive
-import com.github.yumeyucca.yumebox.core.locale.YumeTxt
+import com.github.yumelira.yumebox.core.locale.YumeTxt
 import top.yukonga.miuix.kmp.basic.BasicComponent
 import top.yukonga.miuix.kmp.basic.Button
 import top.yukonga.miuix.kmp.basic.ButtonDefaults

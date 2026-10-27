@@ -20,10 +20,10 @@
 
 @file:Suppress("UnusedSymbol")
 
-package com.github.yumeyucca.yumebox.data.network
+package com.github.yumelira.yumebox.data.network
 
 
-import com.github.yumeyucca.yumebox.core.util.NetworkInterfaces
+import com.github.yumelira.yumebox.core.util.NetworkInterfaces
 import io.ktor.client.*
 import io.ktor.client.engine.okhttp.OkHttp
 import io.ktor.client.plugins.*

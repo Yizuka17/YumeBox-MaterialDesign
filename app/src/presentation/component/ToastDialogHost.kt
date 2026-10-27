@@ -20,7 +20,7 @@
 
 @file:Suppress("FunctionName", "UsePropertyAccessSyntax")
 
-package com.github.yumeyucca.yumebox.presentation.component
+package com.github.yumelira.yumebox.presentation.component
 
 import android.content.ClipData
 import android.content.ClipboardManager
@@ -35,10 +35,10 @@ import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
-import com.github.yumeyucca.yumebox.common.util.ToastDialogBridge
-import com.github.yumeyucca.yumebox.common.util.ToastDialogEvent
-import com.github.yumeyucca.yumebox.presentation.theme.AppTheme
-import com.github.yumeyucca.yumebox.core.locale.YumeTxt
+import com.github.yumelira.yumebox.common.util.ToastDialogBridge
+import com.github.yumelira.yumebox.common.util.ToastDialogEvent
+import com.github.yumelira.yumebox.presentation.theme.AppTheme
+import com.github.yumelira.yumebox.core.locale.YumeTxt
 import top.yukonga.miuix.kmp.basic.Text
 import top.yukonga.miuix.kmp.layout.DialogDefaults
 import top.yukonga.miuix.kmp.theme.MiuixTheme

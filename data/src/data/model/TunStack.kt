@@ -18,7 +18,7 @@
  *
  */
 
-package com.github.yumeyucca.yumebox.data.model
+package com.github.yumelira.yumebox.data.model
 
 enum class TunStack {
     System,

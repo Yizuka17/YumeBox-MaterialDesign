@@ -1,4 +1,4 @@
-package com.github.yumeyucca.yumebox.core.locale
+package com.github.yumelira.yumebox.core.locale
 
 internal val ZhHansYumeStrings_Connection: YumeStrings_Connection = YumeStrings_Connection(
     Title = "连接",

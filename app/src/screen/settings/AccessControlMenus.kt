@@ -17,7 +17,7 @@
  * Copyright (c)  YumeYucca 2025 - Present
  */
 
-package com.github.yumeyucca.yumebox.screen.settings
+package com.github.yumelira.yumebox.screen.settings
 
 import android.content.ClipData
 import android.content.ClipboardManager
@@ -25,8 +25,8 @@ import android.content.Context
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.remember
 import androidx.compose.ui.platform.LocalContext
-import com.github.yumeyucca.yumebox.data.model.AccessControlSortMode
-import com.github.yumeyucca.yumebox.core.locale.YumeTxt
+import com.github.yumelira.yumebox.data.model.AccessControlSortMode
+import com.github.yumelira.yumebox.core.locale.YumeTxt
 import top.yukonga.miuix.kmp.basic.DropdownEntry
 import top.yukonga.miuix.kmp.basic.DropdownItem
 import top.yukonga.miuix.kmp.overlay.OverlayCascadingListPopup

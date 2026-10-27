@@ -18,9 +18,9 @@
  *
  */
 
-package com.github.yumeyucca.yumebox.runtime.service.util
+package com.github.yumelira.yumebox.runtime.service.util
 
-import com.github.yumeyucca.yumebox.runtime.service.R
+import com.github.yumelira.yumebox.runtime.service.R
 
 object ServiceLogoIcons {
     fun resId(): Int = R.drawable.ic_logo_service

@@ -20,7 +20,7 @@
 
 @file:Suppress("DuplicatedCode", "FunctionName", "UsePropertyAccessSyntax")
 
-package com.github.yumeyucca.yumebox.screen.log
+package com.github.yumelira.yumebox.screen.log
 
 import android.content.ClipData
 import android.content.ClipboardManager
@@ -44,18 +44,18 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.unit.sp
-import com.github.yumeyucca.yumebox.common.util.toast
-import com.github.yumeyucca.yumebox.core.model.LogMessage
-import com.github.yumeyucca.yumebox.presentation.component.*
-import com.github.yumeyucca.yumebox.presentation.component.AppCard
-import com.github.yumeyucca.yumebox.presentation.icon.Yume
-import com.github.yumeyucca.yumebox.presentation.icon.yume.Share
-import com.github.yumeyucca.yumebox.presentation.theme.AppTheme
+import com.github.yumelira.yumebox.common.util.toast
+import com.github.yumelira.yumebox.core.model.LogMessage
+import com.github.yumelira.yumebox.presentation.component.*
+import com.github.yumelira.yumebox.presentation.component.AppCard
+import com.github.yumelira.yumebox.presentation.icon.Yume
+import com.github.yumelira.yumebox.presentation.icon.yume.Share
+import com.github.yumelira.yumebox.presentation.theme.AppTheme
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.launch
 import org.koin.androidx.compose.koinViewModel
-import com.github.yumeyucca.yumebox.core.locale.YumeTxt
+import com.github.yumelira.yumebox.core.locale.YumeTxt
 import top.yukonga.miuix.kmp.basic.DropdownImpl
 import top.yukonga.miuix.kmp.basic.Icon
 import top.yukonga.miuix.kmp.basic.IconButton

@@ -5,7 +5,7 @@ apply:
   - //android.module-template.yaml
 settings:
   android:
-    namespace: com.github.yumeyucca.yumebox.runtime.client
+    namespace: com.github.yumelira.yumebox.runtime.client
 dependencies:
   - //core
   - //data

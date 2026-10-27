@@ -18,7 +18,7 @@
  *
  */
 
-package com.github.yumeyucca.yumebox.presentation.util
+package com.github.yumelira.yumebox.presentation.util
 
 private val nodeKeywords =
     listOf(

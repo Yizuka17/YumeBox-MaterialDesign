@@ -1,4 +1,4 @@
-package com.github.yumeyucca.yumebox.core.locale
+package com.github.yumelira.yumebox.core.locale
 
 internal val ZhHansYumeStrings_Util: YumeStrings_Util = YumeStrings_Util(
     Error = YumeStrings_Util_Error(

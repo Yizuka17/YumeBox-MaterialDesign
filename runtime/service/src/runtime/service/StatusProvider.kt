@@ -18,7 +18,7 @@
  *
  */
 
-package com.github.yumeyucca.yumebox.runtime.service
+package com.github.yumelira.yumebox.runtime.service
 
 import android.app.Application
 import android.content.ContentProvider
@@ -26,8 +26,8 @@ import android.content.ContentValues
 import android.database.Cursor
 import android.net.Uri
 import android.os.Bundle
-import com.github.yumeyucca.yumebox.runtime.api.RuntimePhase
-import com.github.yumeyucca.yumebox.runtime.api.initializeServiceGlobal
+import com.github.yumelira.yumebox.runtime.api.RuntimePhase
+import com.github.yumelira.yumebox.runtime.api.initializeServiceGlobal
 import com.tencent.mmkv.MMKV
 
 /**

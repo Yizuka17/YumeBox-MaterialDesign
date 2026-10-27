@@ -18,14 +18,14 @@
  *
  */
 
-package com.github.yumeyucca.yumebox.screen.settings
+package com.github.yumelira.yumebox.screen.settings
 
 import android.content.Context
 import android.content.pm.ComponentInfo
 import android.content.pm.PackageManager
 import android.os.Build
 import com.android.tools.smali.dexlib2.dexbacked.DexBackedDexFile
-import com.github.yumeyucca.yumebox.screen.settings.ChinaAppDetector.Companion.MAX_SCANNABLE_DEX_BYTES
+import com.github.yumelira.yumebox.screen.settings.ChinaAppDetector.Companion.MAX_SCANNABLE_DEX_BYTES
 import com.tencent.mmkv.MMKV
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.async

@@ -1,4 +1,4 @@
-package com.github.yumeyucca.yumebox.core.locale
+package com.github.yumelira.yumebox.core.locale
 
 internal val ZhHansYumeStrings_ProfilesPage: YumeStrings_ProfilesPage = YumeStrings_ProfilesPage(
     Title = "配置",

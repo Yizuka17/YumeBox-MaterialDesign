@@ -1,4 +1,4 @@
-package com.github.yumeyucca.yumebox.core.locale
+package com.github.yumelira.yumebox.core.locale
 
 internal val ZhHansYumeStrings_Feature: YumeStrings_Feature = YumeStrings_Feature(
     Title = "功能管理",

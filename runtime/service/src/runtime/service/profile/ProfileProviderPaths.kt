@@ -18,17 +18,17 @@
  *
  */
 
-package com.github.yumeyucca.yumebox.runtime.service.profile
+package com.github.yumelira.yumebox.runtime.service.profile
 
 import android.content.Context
-import com.github.yumeyucca.yumebox.core.bridge.Compiler
-import com.github.yumeyucca.yumebox.core.model.CompileRequest
-import com.github.yumeyucca.yumebox.core.model.CompileResult
-import com.github.yumeyucca.yumebox.core.util.PROXY_PROVIDER_SCOPE
-import com.github.yumeyucca.yumebox.core.util.RULE_PROVIDER_SCOPE
-import com.github.yumeyucca.yumebox.core.util.YamlCodec
-import com.github.yumeyucca.yumebox.core.util.profileProviderScopeDir
-import com.github.yumeyucca.yumebox.runtime.service.session.CompiledConfigPipeline
+import com.github.yumelira.yumebox.core.bridge.Compiler
+import com.github.yumelira.yumebox.core.model.CompileRequest
+import com.github.yumelira.yumebox.core.model.CompileResult
+import com.github.yumelira.yumebox.core.util.PROXY_PROVIDER_SCOPE
+import com.github.yumelira.yumebox.core.util.RULE_PROVIDER_SCOPE
+import com.github.yumelira.yumebox.core.util.YamlCodec
+import com.github.yumelira.yumebox.core.util.profileProviderScopeDir
+import com.github.yumelira.yumebox.runtime.service.session.CompiledConfigPipeline
 import kotlinx.serialization.json.Json
 import timber.log.Timber
 import java.io.File

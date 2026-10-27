@@ -17,11 +17,11 @@
  * Copyright (c) YumeYucca 2025 - Present
  */
 
-package com.github.yumeyucca.yumebox.substore.engine
+package com.github.yumelira.yumebox.substore.engine
 
 import android.annotation.SuppressLint
 import android.content.Context
-import com.github.yumeyucca.yumebox.feature.substore.BuildInfo
+import com.github.yumelira.yumebox.feature.substore.BuildInfo
 import org.tukaani.xz.XZInputStream
 import timber.log.Timber
 import java.io.File

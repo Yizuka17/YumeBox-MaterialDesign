@@ -20,12 +20,12 @@
 
 @file:Suppress("UnusedSymbol", "CanBeParameter")
 
-package com.github.yumeyucca.yumebox.presentation.viewmodel
+package com.github.yumelira.yumebox.presentation.viewmodel
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.github.yumeyucca.yumebox.data.store.FeatureStore
-import com.github.yumeyucca.yumebox.substore.SubStoreServiceController
+import com.github.yumelira.yumebox.data.store.FeatureStore
+import com.github.yumelira.yumebox.substore.SubStoreServiceController
 import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.SharedFlow
 import kotlinx.coroutines.flow.asSharedFlow

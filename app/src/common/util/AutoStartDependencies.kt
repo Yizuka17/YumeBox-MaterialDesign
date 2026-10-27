@@ -18,13 +18,13 @@
  *
  */
 
-package com.github.yumeyucca.yumebox.common.util
+package com.github.yumelira.yumebox.common.util
 
-import com.github.yumeyucca.yumebox.data.store.AppSettingsStore
-import com.github.yumeyucca.yumebox.data.store.FeatureStore
-import com.github.yumeyucca.yumebox.data.store.NetworkSettingsStore
-import com.github.yumeyucca.yumebox.runtime.client.ProfilesRepository
-import com.github.yumeyucca.yumebox.runtime.client.ProxyFacade
+import com.github.yumelira.yumebox.data.store.AppSettingsStore
+import com.github.yumelira.yumebox.data.store.FeatureStore
+import com.github.yumelira.yumebox.data.store.NetworkSettingsStore
+import com.github.yumelira.yumebox.runtime.client.ProfilesRepository
+import com.github.yumelira.yumebox.runtime.client.ProxyFacade
 import com.tencent.mmkv.MMKV
 
 /**

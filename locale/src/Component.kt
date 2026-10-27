@@ -1,4 +1,4 @@
-package com.github.yumeyucca.yumebox.core.locale
+package com.github.yumelira.yumebox.core.locale
 
 internal val ZhHansYumeStrings_Component: YumeStrings_Component = YumeStrings_Component(
     ProfileCard = YumeStrings_Component_ProfileCard(

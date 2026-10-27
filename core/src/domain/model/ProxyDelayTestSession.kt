@@ -18,9 +18,9 @@
  *
  */
 
-package com.github.yumeyucca.yumebox.domain.model
+package com.github.yumelira.yumebox.domain.model
 
-import com.github.yumeyucca.yumebox.core.model.Proxy
+import com.github.yumelira.yumebox.core.model.Proxy
 import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.async
 import kotlinx.coroutines.awaitAll

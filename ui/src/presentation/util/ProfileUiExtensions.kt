@@ -20,11 +20,11 @@
 
 @file:Suppress("UnusedReceiverParameter")
 
-package com.github.yumeyucca.yumebox.presentation.util
+package com.github.yumelira.yumebox.presentation.util
 
-import com.github.yumeyucca.yumebox.common.util.ByteFormatter
-import com.github.yumeyucca.yumebox.runtime.api.Profile
-import com.github.yumeyucca.yumebox.core.locale.YumeTxt
+import com.github.yumelira.yumebox.common.util.ByteFormatter
+import com.github.yumelira.yumebox.runtime.api.Profile
+import com.github.yumelira.yumebox.core.locale.YumeTxt
 import java.io.File
 
 val Profile.enabled: Boolean

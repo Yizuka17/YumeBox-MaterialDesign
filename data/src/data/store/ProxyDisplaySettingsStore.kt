@@ -18,12 +18,12 @@
  *
  */
 
-package com.github.yumeyucca.yumebox.data.store
+package com.github.yumelira.yumebox.data.store
 
-import com.github.yumeyucca.yumebox.core.model.TunnelState
-import com.github.yumeyucca.yumebox.data.model.PROXY_SHEET_HEIGHT_FRACTION_DEFAULT
-import com.github.yumeyucca.yumebox.data.model.ProxyDisplayMode
-import com.github.yumeyucca.yumebox.data.model.ProxySortMode
+import com.github.yumelira.yumebox.core.model.TunnelState
+import com.github.yumelira.yumebox.data.model.PROXY_SHEET_HEIGHT_FRACTION_DEFAULT
+import com.github.yumelira.yumebox.data.model.ProxyDisplayMode
+import com.github.yumelira.yumebox.data.model.ProxySortMode
 import com.tencent.mmkv.MMKV
 
 class ProxyDisplaySettingsStore(externalMmkv: MMKV) : MMKVPreference(externalMmkv = externalMmkv) {

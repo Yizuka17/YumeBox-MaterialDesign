@@ -18,9 +18,9 @@
  *
  */
 
-package com.github.yumeyucca.yumebox.feature.meta.presentation.util
+package com.github.yumelira.yumebox.feature.meta.presentation.util
 
-import com.github.yumeyucca.yumebox.core.util.YamlCodec
+import com.github.yumelira.yumebox.core.util.YamlCodec
 
 fun analyzePresetTemplateContent(content: String?): OverridePresetTemplateContentAnalysis {
     if (content.isNullOrBlank()) {

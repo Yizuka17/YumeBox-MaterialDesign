@@ -1,4 +1,4 @@
-package com.github.yumeyucca.yumebox.core.locale
+package com.github.yumelira.yumebox.core.locale
 
 internal val ZhHansYumeStrings_Override: YumeStrings_Override = YumeStrings_Override(
     Title = "覆写配置",

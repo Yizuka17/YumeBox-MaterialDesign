@@ -9,7 +9,7 @@
 
 @file:Suppress("UnusedSymbol", "FunctionName")
 
-package com.github.yumeyucca.yumebox.presentation.component
+package com.github.yumelira.yumebox.presentation.component
 
 
 import androidx.compose.foundation.layout.Box
@@ -18,7 +18,7 @@ import androidx.compose.foundation.layout.widthIn
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.Dp
-import com.github.yumeyucca.yumebox.presentation.theme.UiDp
+import com.github.yumelira.yumebox.presentation.theme.UiDp
 
 /**
  * Shared pane width tokens.

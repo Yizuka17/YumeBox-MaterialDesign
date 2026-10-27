@@ -20,20 +20,20 @@
 
 @file:Suppress("UnusedSymbol", "DestructuringDeclaration")
 
-package com.github.yumeyucca.yumebox.presentation.viewmodel
+package com.github.yumelira.yumebox.presentation.viewmodel
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.github.yumeyucca.yumebox.core.model.OverrideInternalConstants
-import com.github.yumeyucca.yumebox.data.controller.ActiveProfileOverrideReloader
-import com.github.yumeyucca.yumebox.data.controller.OverrideResolver
-import com.github.yumeyucca.yumebox.data.model.OverrideConfig
-import com.github.yumeyucca.yumebox.data.model.OverrideContentType
-import com.github.yumeyucca.yumebox.data.model.OverrideMetadata
-import com.github.yumeyucca.yumebox.data.store.OverrideConfigStore
-import com.github.yumeyucca.yumebox.data.store.ProfileBindingProvider
-import com.github.yumeyucca.yumebox.runtime.api.Profile
-import com.github.yumeyucca.yumebox.runtime.client.ProfilesRepository
+import com.github.yumelira.yumebox.core.model.OverrideInternalConstants
+import com.github.yumelira.yumebox.data.controller.ActiveProfileOverrideReloader
+import com.github.yumelira.yumebox.data.controller.OverrideResolver
+import com.github.yumelira.yumebox.data.model.OverrideConfig
+import com.github.yumelira.yumebox.data.model.OverrideContentType
+import com.github.yumelira.yumebox.data.model.OverrideMetadata
+import com.github.yumelira.yumebox.data.store.OverrideConfigStore
+import com.github.yumelira.yumebox.data.store.ProfileBindingProvider
+import com.github.yumelira.yumebox.runtime.api.Profile
+import com.github.yumelira.yumebox.runtime.client.ProfilesRepository
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
@@ -43,7 +43,7 @@ import kotlinx.coroutines.launch
 import kotlinx.coroutines.sync.Mutex
 import kotlinx.coroutines.sync.withLock
 import kotlinx.coroutines.withContext
-import com.github.yumeyucca.yumebox.core.locale.YumeTxt
+import com.github.yumelira.yumebox.core.locale.YumeTxt
 import timber.log.Timber
 import java.io.ByteArrayOutputStream
 import java.io.InputStream

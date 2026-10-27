@@ -1,4 +1,4 @@
-package com.github.yumeyucca.yumebox.core.locale
+package com.github.yumelira.yumebox.core.locale
 
 internal val ZhHansYumeStrings_AppSettings: YumeStrings_AppSettings = YumeStrings_AppSettings(
     Title = "应用设置",

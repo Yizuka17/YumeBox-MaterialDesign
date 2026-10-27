@@ -18,12 +18,12 @@
  *
  */
 
-package com.github.yumeyucca.yumebox.runtime.service.profile
+package com.github.yumelira.yumebox.runtime.service.profile
 
 import android.annotation.SuppressLint
 import android.content.Context
-import com.github.yumeyucca.yumebox.core.util.runtimeHomeDir
-import com.github.yumeyucca.yumebox.runtime.service.core.CoreArtifacts
+import com.github.yumelira.yumebox.core.util.runtimeHomeDir
+import com.github.yumelira.yumebox.runtime.service.core.CoreArtifacts
 import timber.log.Timber
 import java.io.File
 import java.util.concurrent.TimeUnit

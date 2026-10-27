@@ -20,7 +20,7 @@
 
 @file:Suppress("UnusedSymbol")
 
-package com.github.yumeyucca.yumebox.core.bridge
+package com.github.yumelira.yumebox.core.bridge
 
 
 import android.os.ParcelFileDescriptor

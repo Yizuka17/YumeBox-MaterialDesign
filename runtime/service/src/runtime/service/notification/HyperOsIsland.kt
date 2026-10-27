@@ -18,7 +18,7 @@
  *
  */
 
-package com.github.yumeyucca.yumebox.runtime.service.notification
+package com.github.yumelira.yumebox.runtime.service.notification
 
 import android.app.Notification
 import android.app.Service

@@ -18,10 +18,10 @@
  *
  */
 
-package com.github.yumeyucca.yumebox.data.controller
+package com.github.yumelira.yumebox.data.controller
 
-import com.github.yumeyucca.yumebox.core.model.ConnectionSnapshot
-import com.github.yumeyucca.yumebox.domain.model.TrafficData
+import com.github.yumelira.yumebox.core.model.ConnectionSnapshot
+import com.github.yumelira.yumebox.domain.model.TrafficData
 import kotlinx.coroutines.flow.Flow
 
 /**

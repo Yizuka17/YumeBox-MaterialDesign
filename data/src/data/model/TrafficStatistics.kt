@@ -20,7 +20,7 @@
 
 @file:Suppress("UnusedSymbol")
 
-package com.github.yumeyucca.yumebox.data.model
+package com.github.yumelira.yumebox.data.model
 
 
 import kotlinx.serialization.Serializable
@@ -120,7 +120,7 @@ enum class StatisticsTimeRange(val days: Int) {
     val label: String
         get() =
             when (this) {
-                TODAY -> com.github.yumeyucca.yumebox.core.locale.YumeTxt.TrafficStatistics.TimeRange.Today
-                WEEK -> com.github.yumeyucca.yumebox.core.locale.YumeTxt.TrafficStatistics.TimeRange.Week
+                TODAY -> com.github.yumelira.yumebox.core.locale.YumeTxt.TrafficStatistics.TimeRange.Today
+                WEEK -> com.github.yumelira.yumebox.core.locale.YumeTxt.TrafficStatistics.TimeRange.Week
             }
 }

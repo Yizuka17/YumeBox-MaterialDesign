@@ -18,12 +18,12 @@
  *
  */
 
-package com.github.yumeyucca.yumebox.runtime.service.log
+package com.github.yumelira.yumebox.runtime.service.log
 
 import android.content.Context
-import com.github.yumeyucca.yumebox.core.model.RunMode
-import com.github.yumeyucca.yumebox.runtime.api.appContextOrSelf
-import com.github.yumeyucca.yumebox.runtime.service.log.RuntimeLog.lock
+import com.github.yumelira.yumebox.core.model.RunMode
+import com.github.yumelira.yumebox.runtime.api.appContextOrSelf
+import com.github.yumelira.yumebox.runtime.service.log.RuntimeLog.lock
 import java.io.File
 import java.nio.charset.StandardCharsets
 import java.time.Instant

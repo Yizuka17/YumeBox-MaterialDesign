@@ -20,7 +20,7 @@
 
 @file:Suppress("UnusedSymbol", "FunctionName")
 
-package com.github.yumeyucca.yumebox.presentation.component
+package com.github.yumelira.yumebox.presentation.component
 
 
 import androidx.compose.animation.core.*
@@ -36,7 +36,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.unit.Dp
-import com.github.yumeyucca.yumebox.presentation.theme.UiDp
+import com.github.yumelira.yumebox.presentation.theme.UiDp
 
 @Composable
 fun LoadingDotsWave(

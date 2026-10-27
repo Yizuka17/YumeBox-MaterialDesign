@@ -9,7 +9,7 @@
 
 @file:Suppress("FunctionName")
 
-package com.github.yumeyucca.yumebox.screen.settings
+package com.github.yumelira.yumebox.screen.settings
 
 import android.Manifest
 import android.app.Activity
@@ -42,17 +42,17 @@ import androidx.core.location.LocationManagerCompat
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.LifecycleEventObserver
 import androidx.lifecycle.compose.LocalLifecycleOwner
-import com.github.yumeyucca.yumebox.data.model.WifiAutomationAction
-import com.github.yumeyucca.yumebox.data.model.WifiAutomationFallbackAction
-import com.github.yumeyucca.yumebox.data.model.WifiAutomationRule
-import com.github.yumeyucca.yumebox.presentation.component.*
-import com.github.yumeyucca.yumebox.presentation.icon.Yume
-import com.github.yumeyucca.yumebox.presentation.icon.yume.Wifi
-import com.github.yumeyucca.yumebox.presentation.theme.AppTheme
-import com.github.yumeyucca.yumebox.presentation.theme.UiDp
-import com.github.yumeyucca.yumebox.runtime.api.Profile
+import com.github.yumelira.yumebox.data.model.WifiAutomationAction
+import com.github.yumelira.yumebox.data.model.WifiAutomationFallbackAction
+import com.github.yumelira.yumebox.data.model.WifiAutomationRule
+import com.github.yumelira.yumebox.presentation.component.*
+import com.github.yumelira.yumebox.presentation.icon.Yume
+import com.github.yumelira.yumebox.presentation.icon.yume.Wifi
+import com.github.yumelira.yumebox.presentation.theme.AppTheme
+import com.github.yumelira.yumebox.presentation.theme.UiDp
+import com.github.yumelira.yumebox.runtime.api.Profile
 import org.koin.androidx.compose.koinViewModel
-import com.github.yumeyucca.yumebox.core.locale.YumeTxt
+import com.github.yumelira.yumebox.core.locale.YumeTxt
 import top.yukonga.miuix.kmp.basic.BasicComponent
 import top.yukonga.miuix.kmp.basic.ButtonDefaults
 import top.yukonga.miuix.kmp.basic.InfiniteProgressIndicator
@@ -345,7 +345,7 @@ fun WifiAutomationSettingsSection() {
 @Composable
 private fun WifiScanSheet(
     show: Boolean,
-    scannedNetworks: List<com.github.yumeyucca.yumebox.runtime.service.session.WifiSsidNetwork>,
+    scannedNetworks: List<com.github.yumelira.yumebox.runtime.service.session.WifiSsidNetwork>,
     profiles: List<Profile>,
     isScanning: Boolean,
     scanCompleted: Boolean,

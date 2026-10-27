@@ -20,12 +20,12 @@
 
 @file:Suppress("FunctionName")
 
-package com.github.yumeyucca.yumebox.feature.editor.editor
+package com.github.yumelira.yumebox.feature.editor.editor
 
 
 import android.content.Context
 import android.graphics.Typeface
-import com.github.yumeyucca.yumebox.feature.editor.R
+import com.github.yumelira.yumebox.feature.editor.R
 import timber.log.Timber
 
 object EditorFontManager {

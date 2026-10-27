@@ -18,12 +18,12 @@
  *
  */
 
-package com.github.yumeyucca.yumebox.runtime.service.session
+package com.github.yumelira.yumebox.runtime.service.session
 
-import com.github.yumeyucca.yumebox.core.model.OverrideSpec
-import com.github.yumeyucca.yumebox.core.model.TunConfig
-import com.github.yumeyucca.yumebox.core.model.TunDnsMode
-import com.github.yumeyucca.yumebox.core.util.YamlCodec
+import com.github.yumelira.yumebox.core.model.OverrideSpec
+import com.github.yumelira.yumebox.core.model.TunConfig
+import com.github.yumelira.yumebox.core.model.TunDnsMode
+import com.github.yumelira.yumebox.core.util.YamlCodec
 import java.io.File
 
 /**

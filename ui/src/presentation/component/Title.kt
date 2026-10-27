@@ -20,12 +20,12 @@
 
 @file:Suppress("FunctionName")
 
-package com.github.yumeyucca.yumebox.presentation.component
+package com.github.yumelira.yumebox.presentation.component
 
 
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
-import com.github.yumeyucca.yumebox.presentation.theme.topPadding
+import com.github.yumelira.yumebox.presentation.theme.topPadding
 import top.yukonga.miuix.kmp.basic.SmallTitle
 
 /**

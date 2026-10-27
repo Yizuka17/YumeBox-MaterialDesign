@@ -20,7 +20,7 @@
 
 @file:Suppress("FunctionName")
 
-package com.github.yumeyucca.yumebox.presentation.component
+package com.github.yumelira.yumebox.presentation.component
 
 
 import androidx.compose.animation.*
@@ -31,8 +31,8 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.vector.ImageVector
-import com.github.yumeyucca.yumebox.presentation.theme.AnimationSpecs
-import com.github.yumeyucca.yumebox.presentation.theme.UiDp
+import com.github.yumelira.yumebox.presentation.theme.AnimationSpecs
+import com.github.yumelira.yumebox.presentation.theme.UiDp
 import top.yukonga.miuix.kmp.basic.FloatingActionButton
 import top.yukonga.miuix.kmp.basic.Icon
 import top.yukonga.miuix.kmp.theme.MiuixTheme

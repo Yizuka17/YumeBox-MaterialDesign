@@ -18,17 +18,17 @@
  *
  */
 
-package com.github.yumeyucca.yumebox.runtime.client.session
+package com.github.yumelira.yumebox.runtime.client.session
 
-import com.github.yumeyucca.yumebox.core.model.Proxy
-import com.github.yumeyucca.yumebox.core.model.ProxyGroup
-import com.github.yumeyucca.yumebox.domain.model.ProxyDelayStore
-import com.github.yumeyucca.yumebox.domain.model.ProxyGroupInfo
-import com.github.yumeyucca.yumebox.domain.model.ProxyGroupOverlay
-import com.github.yumeyucca.yumebox.domain.model.membersByGroup
-import com.github.yumeyucca.yumebox.domain.model.resolvePrimaryNode
-import com.github.yumeyucca.yumebox.domain.model.toInfo
-import com.github.yumeyucca.yumebox.domain.model.withDelays
+import com.github.yumelira.yumebox.core.model.Proxy
+import com.github.yumelira.yumebox.core.model.ProxyGroup
+import com.github.yumelira.yumebox.domain.model.ProxyDelayStore
+import com.github.yumelira.yumebox.domain.model.ProxyGroupInfo
+import com.github.yumelira.yumebox.domain.model.ProxyGroupOverlay
+import com.github.yumelira.yumebox.domain.model.membersByGroup
+import com.github.yumelira.yumebox.domain.model.resolvePrimaryNode
+import com.github.yumelira.yumebox.domain.model.toInfo
+import com.github.yumelira.yumebox.domain.model.withDelays
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow

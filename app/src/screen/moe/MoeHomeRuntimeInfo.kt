@@ -11,7 +11,7 @@
 
 @file:Suppress("FunctionName")
 
-package com.github.yumeyucca.yumebox.screen.moe
+package com.github.yumelira.yumebox.screen.moe
 
 
 import androidx.compose.foundation.layout.*
@@ -24,11 +24,11 @@ import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.sp
-import com.github.yumeyucca.yumebox.common.util.formatBytesForDisplay
-import com.github.yumeyucca.yumebox.presentation.component.CountryFlagCircle
-import com.github.yumeyucca.yumebox.presentation.theme.AppTheme
-import com.github.yumeyucca.yumebox.presentation.util.extractFlaggedName
-import com.github.yumeyucca.yumebox.core.locale.YumeTxt
+import com.github.yumelira.yumebox.common.util.formatBytesForDisplay
+import com.github.yumelira.yumebox.presentation.component.CountryFlagCircle
+import com.github.yumelira.yumebox.presentation.theme.AppTheme
+import com.github.yumelira.yumebox.presentation.util.extractFlaggedName
+import com.github.yumelira.yumebox.core.locale.YumeTxt
 import top.yukonga.miuix.kmp.basic.Text
 import top.yukonga.miuix.kmp.theme.MiuixTheme
 

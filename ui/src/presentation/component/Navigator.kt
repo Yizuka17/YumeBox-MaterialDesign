@@ -18,7 +18,7 @@
  *
  */
 
-package com.github.yumeyucca.yumebox.presentation.component
+package com.github.yumelira.yumebox.presentation.component
 
 import androidx.compose.runtime.Stable
 import androidx.compose.runtime.mutableStateListOf

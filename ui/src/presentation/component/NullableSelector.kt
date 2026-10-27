@@ -20,11 +20,11 @@
 
 @file:Suppress("UnusedSymbol", "FunctionName")
 
-package com.github.yumeyucca.yumebox.presentation.component
+package com.github.yumelira.yumebox.presentation.component
 
 
 import androidx.compose.runtime.Composable
-import com.github.yumeyucca.yumebox.core.locale.YumeTxt
+import com.github.yumelira.yumebox.core.locale.YumeTxt
 import top.yukonga.miuix.kmp.preference.WindowDropdownPreference
 
 @Composable

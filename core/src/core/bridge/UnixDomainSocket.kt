@@ -18,7 +18,7 @@
  *
  */
 
-package com.github.yumeyucca.yumebox.core.bridge
+package com.github.yumelira.yumebox.core.bridge
 
 import android.system.ErrnoException
 import android.system.Os

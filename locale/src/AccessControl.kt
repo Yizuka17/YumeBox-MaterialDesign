@@ -1,4 +1,4 @@
-package com.github.yumeyucca.yumebox.core.locale
+package com.github.yumelira.yumebox.core.locale
 
 internal val ZhHansYumeStrings_AccessControl: YumeStrings_AccessControl = YumeStrings_AccessControl(
     Title = "访问控制",

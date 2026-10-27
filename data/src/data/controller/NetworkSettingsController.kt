@@ -20,12 +20,12 @@
 
 @file:Suppress("UnusedSymbol")
 
-package com.github.yumeyucca.yumebox.data.controller
+package com.github.yumelira.yumebox.data.controller
 
 
-import com.github.yumeyucca.yumebox.core.model.RunMode
-import com.github.yumeyucca.yumebox.data.store.NetworkSettingsStore
-import com.github.yumeyucca.yumebox.data.store.Preference
+import com.github.yumelira.yumebox.core.model.RunMode
+import com.github.yumelira.yumebox.data.store.NetworkSettingsStore
+import com.github.yumelira.yumebox.data.store.Preference
 import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext

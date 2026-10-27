@@ -20,7 +20,7 @@
 
 @file:Suppress("UnusedSymbol", "FunctionName")
 
-package com.github.yumeyucca.yumebox.presentation.component
+package com.github.yumelira.yumebox.presentation.component
 
 
 import androidx.compose.animation.core.animateFloatAsState
@@ -39,8 +39,8 @@ import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.semantics.role
 import androidx.compose.ui.semantics.semantics
 import androidx.lifecycle.compose.dropUnlessResumed
-import com.github.yumeyucca.yumebox.presentation.theme.AnimationSpecs
-import com.github.yumeyucca.yumebox.presentation.theme.AppTheme.spacing
+import com.github.yumelira.yumebox.presentation.theme.AnimationSpecs
+import com.github.yumelira.yumebox.presentation.theme.AppTheme.spacing
 import top.yukonga.miuix.kmp.basic.Icon
 import top.yukonga.miuix.kmp.icon.MiuixIcons
 import top.yukonga.miuix.kmp.icon.extended.Back

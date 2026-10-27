@@ -18,11 +18,11 @@
  *
  */
 
-package com.github.yumeyucca.yumebox.runtime.service.controller
+package com.github.yumelira.yumebox.runtime.service.controller
 
-import com.github.yumeyucca.yumebox.core.model.LogMessage
-import com.github.yumeyucca.yumebox.runtime.api.LogObserver
-import com.github.yumeyucca.yumebox.runtime.api.LogSubscription
+import com.github.yumelira.yumebox.core.model.LogMessage
+import com.github.yumelira.yumebox.runtime.api.LogObserver
+import com.github.yumelira.yumebox.runtime.api.LogSubscription
 import io.ktor.client.*
 import io.ktor.client.plugins.*
 import io.ktor.client.request.*

@@ -7,7 +7,7 @@
  * License.
  */
 
-package com.github.yumeyucca.yumebox.runtime.service.shizuku
+package com.github.yumelira.yumebox.runtime.service.shizuku
 
 import android.os.Binder
 import android.os.IBinder
@@ -45,7 +45,7 @@ interface IPrivilegedService : IInterface {
 
         companion object {
             private const val DESCRIPTOR =
-                "com.github.yumeyucca.yumebox.runtime.service.shizuku.IPrivilegedService"
+                "com.github.yumelira.yumebox.runtime.service.shizuku.IPrivilegedService"
             private const val TRANSACTION_SET_PACKAGE_NETWORKING_ENABLED = FIRST_CALL_TRANSACTION
 
             fun asInterface(binder: IBinder?): IPrivilegedService? {

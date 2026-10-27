@@ -18,10 +18,10 @@
  *
  */
 
-package com.github.yumeyucca.yumebox.data.model
+package com.github.yumelira.yumebox.data.model
 
 /**
  * [RunMode] was hoisted to `:core` so `:runtime:api` (which cannot depend on `:data`) can use it.
  * This alias keeps existing `data.model.RunMode` references working.
  */
-typealias RunMode = com.github.yumeyucca.yumebox.core.model.RunMode
+typealias RunMode = com.github.yumelira.yumebox.core.model.RunMode

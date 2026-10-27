@@ -18,7 +18,7 @@
  *
  */
 
-package com.github.yumeyucca.yumebox.runtime.service.core
+package com.github.yumelira.yumebox.runtime.service.core
 
 import android.content.Context
 import java.io.File
@@ -56,7 +56,7 @@ internal object CoreArtifacts {
         // to app-private storage; remote kernels use the same directory but always take priority.
         return runCatching {
                 val bridge =
-                    Class.forName("com.github.yumeyucca.yumebox.loader.PayloadRuntime", false, context.classLoader)
+                    Class.forName("com.github.yumelira.yumebox.loader.PayloadRuntime", false, context.classLoader)
                 bridge
                     .getMethod("findNativeLibrary", String::class.java)
                     .invoke(null, LIBRARY_NAME) as? String

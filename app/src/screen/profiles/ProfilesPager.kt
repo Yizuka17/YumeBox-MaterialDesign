@@ -20,24 +20,24 @@
 
 @file:Suppress("FunctionName")
 
-package com.github.yumeyucca.yumebox.screen.profiles
+package com.github.yumelira.yumebox.screen.profiles
 
 
 import android.annotation.SuppressLint
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.runtime.*
-import com.github.yumeyucca.yumebox.MainActivity
-import com.github.yumeyucca.yumebox.presentation.component.WindowLayoutMode
-import com.github.yumeyucca.yumebox.presentation.viewmodel.OverrideConfigViewModel
-import com.github.yumeyucca.yumebox.screen.home.HomeViewModel
+import com.github.yumelira.yumebox.MainActivity
+import com.github.yumelira.yumebox.presentation.component.WindowLayoutMode
+import com.github.yumelira.yumebox.presentation.viewmodel.OverrideConfigViewModel
+import com.github.yumelira.yumebox.screen.home.HomeViewModel
 import org.koin.androidx.compose.koinViewModel
 
 @SuppressLint("UseKtx")
 private data class ProfilesPagerUi(
-    val profiles: List<com.github.yumeyucca.yumebox.runtime.api.Profile>,
+    val profiles: List<com.github.yumelira.yumebox.runtime.api.Profile>,
     val isRunning: Boolean,
-    val builtInConfigs: List<com.github.yumeyucca.yumebox.data.model.OverrideConfig>,
-    val userConfigs: List<com.github.yumeyucca.yumebox.data.model.OverrideConfig>,
+    val builtInConfigs: List<com.github.yumelira.yumebox.data.model.OverrideConfig>,
+    val userConfigs: List<com.github.yumelira.yumebox.data.model.OverrideConfig>,
 )
 
 @Composable

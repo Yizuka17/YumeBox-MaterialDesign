@@ -20,7 +20,7 @@
 
 @file:Suppress("FunctionName")
 
-package com.github.yumeyucca.yumebox.screen.profiles
+package com.github.yumelira.yumebox.screen.profiles
 
 
 import android.content.Context
@@ -28,15 +28,15 @@ import android.content.Intent
 import androidx.compose.runtime.*
 import androidx.compose.ui.platform.LocalContext
 import androidx.core.content.FileProvider
-import com.github.yumeyucca.yumebox.App
-import com.github.yumeyucca.yumebox.common.util.toast
-import com.github.yumeyucca.yumebox.feature.editor.language.LanguageScope
-import com.github.yumeyucca.yumebox.presentation.component.BottomBarDestination
-import com.github.yumeyucca.yumebox.presentation.component.LocalNavigator
-import com.github.yumeyucca.yumebox.presentation.navigation.Route
-import com.github.yumeyucca.yumebox.presentation.util.OverrideEditorStore
-import com.github.yumeyucca.yumebox.runtime.api.Profile
-import com.github.yumeyucca.yumebox.core.locale.YumeTxt
+import com.github.yumelira.yumebox.App
+import com.github.yumelira.yumebox.common.util.toast
+import com.github.yumelira.yumebox.feature.editor.language.LanguageScope
+import com.github.yumelira.yumebox.presentation.component.BottomBarDestination
+import com.github.yumelira.yumebox.presentation.component.LocalNavigator
+import com.github.yumelira.yumebox.presentation.navigation.Route
+import com.github.yumelira.yumebox.presentation.util.OverrideEditorStore
+import com.github.yumelira.yumebox.runtime.api.Profile
+import com.github.yumelira.yumebox.core.locale.YumeTxt
 
 @Composable
 internal fun ProfileShareDialog(

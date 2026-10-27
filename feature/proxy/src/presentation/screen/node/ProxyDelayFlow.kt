@@ -18,13 +18,13 @@
  *
  */
 
-package com.github.yumeyucca.yumebox.presentation.screen.node
+package com.github.yumelira.yumebox.presentation.screen.node
 
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.staticCompositionLocalOf
-import com.github.yumeyucca.yumebox.presentation.viewmodel.ProxyViewModel
+import com.github.yumelira.yumebox.presentation.viewmodel.ProxyViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 

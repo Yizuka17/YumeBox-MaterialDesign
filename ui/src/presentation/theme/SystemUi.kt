@@ -20,7 +20,7 @@
 
 @file:Suppress("FunctionName")
 
-package com.github.yumeyucca.yumebox.presentation.theme
+package com.github.yumelira.yumebox.presentation.theme
 
 
 import android.app.Activity

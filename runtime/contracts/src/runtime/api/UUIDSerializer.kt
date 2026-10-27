@@ -18,7 +18,7 @@
  *
  */
 
-package com.github.yumeyucca.yumebox.runtime.api
+package com.github.yumelira.yumebox.runtime.api
 
 import kotlinx.serialization.KSerializer
 import kotlinx.serialization.descriptors.PrimitiveKind

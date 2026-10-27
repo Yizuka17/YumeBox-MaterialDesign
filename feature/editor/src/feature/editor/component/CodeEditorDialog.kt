@@ -20,18 +20,18 @@
 
 @file:Suppress("UnusedSymbol", "FunctionName", "KotlinConstantConditions")
 
-package com.github.yumeyucca.yumebox.feature.editor.component
+package com.github.yumelira.yumebox.feature.editor.component
 
 import androidx.compose.foundation.layout.*
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
-import com.github.yumeyucca.yumebox.feature.editor.editor.CodeEditor
-import com.github.yumeyucca.yumebox.feature.editor.editor.rememberConfiguredCodeEditorState
-import com.github.yumeyucca.yumebox.feature.editor.language.LanguageScope
-import com.github.yumeyucca.yumebox.presentation.component.AppDialog
-import com.github.yumeyucca.yumebox.presentation.component.DialogButtonRow
-import com.github.yumeyucca.yumebox.presentation.theme.UiDp
-import com.github.yumeyucca.yumebox.core.locale.YumeTxt
+import com.github.yumelira.yumebox.feature.editor.editor.CodeEditor
+import com.github.yumelira.yumebox.feature.editor.editor.rememberConfiguredCodeEditorState
+import com.github.yumelira.yumebox.feature.editor.language.LanguageScope
+import com.github.yumelira.yumebox.presentation.component.AppDialog
+import com.github.yumelira.yumebox.presentation.component.DialogButtonRow
+import com.github.yumelira.yumebox.presentation.theme.UiDp
+import com.github.yumelira.yumebox.core.locale.YumeTxt
 import top.yukonga.miuix.kmp.basic.Text
 import top.yukonga.miuix.kmp.theme.MiuixTheme
 

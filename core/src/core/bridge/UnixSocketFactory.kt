@@ -18,7 +18,7 @@
  *
  */
 
-package com.github.yumeyucca.yumebox.core.bridge
+package com.github.yumelira.yumebox.core.bridge
 
 import java.net.InetAddress
 import java.net.Socket

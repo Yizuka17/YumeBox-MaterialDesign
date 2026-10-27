@@ -17,15 +17,15 @@
  * Copyright (c)  YumeYucca 2025 - Present
  */
 
-package com.github.yumeyucca.yumebox.screen.home
+package com.github.yumelira.yumebox.screen.home
 
-import com.github.yumeyucca.yumebox.core.model.RunMode
-import com.github.yumeyucca.yumebox.core.model.Traffic
-import com.github.yumeyucca.yumebox.core.presentation.LoadableState
-import com.github.yumeyucca.yumebox.data.network.IpMonitoringState
-import com.github.yumeyucca.yumebox.runtime.api.Profile
-import com.github.yumeyucca.yumebox.runtime.api.RuntimeOwner
-import com.github.yumeyucca.yumebox.runtime.api.RuntimePhase
+import com.github.yumelira.yumebox.core.model.RunMode
+import com.github.yumelira.yumebox.core.model.Traffic
+import com.github.yumelira.yumebox.core.presentation.LoadableState
+import com.github.yumelira.yumebox.data.network.IpMonitoringState
+import com.github.yumelira.yumebox.runtime.api.Profile
+import com.github.yumelira.yumebox.runtime.api.RuntimeOwner
+import com.github.yumelira.yumebox.runtime.api.RuntimePhase
 
 enum class HomeProxyControlState {
     Idle,

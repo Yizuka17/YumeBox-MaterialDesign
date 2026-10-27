@@ -1,4 +1,4 @@
--keep class com.github.yumeyucca.yumebox.App { *; }
+-keep class com.github.yumelira.yumebox.App { *; }
 -include ../core/consumer-rules.pro
 -keep class androidx.core.app.CoreComponentFactory { *; }
 
@@ -11,6 +11,6 @@
 -keep class moe.shizuku.** { *; }
 -keep class rikka.shizuku.** { *; }
 -keep class rikka.sui.** { *; }
--keep class com.github.yumeyucca.yumebox.runtime.service.shizuku.** { *; }
+-keep class com.github.yumelira.yumebox.runtime.service.shizuku.** { *; }
 -dontwarn rikka.shizuku.**
 -dontwarn rikka.sui.**

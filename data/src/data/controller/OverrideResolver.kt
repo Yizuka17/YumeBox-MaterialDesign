@@ -20,13 +20,13 @@
 
 @file:Suppress("UnusedSymbol", "RedundantSuspendModifier")
 
-package com.github.yumeyucca.yumebox.data.controller
+package com.github.yumelira.yumebox.data.controller
 
-import com.github.yumeyucca.yumebox.core.model.OverrideSpec
-import com.github.yumeyucca.yumebox.data.model.OverrideMetadata
-import com.github.yumeyucca.yumebox.data.model.ProfileBinding
-import com.github.yumeyucca.yumebox.data.store.OverrideConfigStore
-import com.github.yumeyucca.yumebox.data.store.ProfileBindingProvider
+import com.github.yumelira.yumebox.core.model.OverrideSpec
+import com.github.yumelira.yumebox.data.model.OverrideMetadata
+import com.github.yumelira.yumebox.data.model.ProfileBinding
+import com.github.yumelira.yumebox.data.store.OverrideConfigStore
+import com.github.yumelira.yumebox.data.store.ProfileBindingProvider
 import java.util.*
 
 class OverrideResolver(

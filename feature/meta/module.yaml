@@ -5,7 +5,7 @@ apply:
   - //compose.module-template.yaml
 settings:
   android:
-    namespace: com.github.yumeyucca.yumebox.feature.meta
+    namespace: com.github.yumelira.yumebox.feature.meta
 dependencies:
   - //core
   - //common

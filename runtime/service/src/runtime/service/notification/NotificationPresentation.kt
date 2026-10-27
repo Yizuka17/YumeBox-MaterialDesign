@@ -18,14 +18,14 @@
  *
  */
 
-package com.github.yumeyucca.yumebox.runtime.service.notification
+package com.github.yumelira.yumebox.runtime.service.notification
 
-import com.github.yumeyucca.yumebox.common.util.formatBytes
-import com.github.yumeyucca.yumebox.common.util.formatSpeed
-import com.github.yumeyucca.yumebox.runtime.service.profile.Imported
+import com.github.yumelira.yumebox.common.util.formatBytes
+import com.github.yumelira.yumebox.common.util.formatSpeed
+import com.github.yumelira.yumebox.runtime.service.profile.Imported
 import java.time.Instant
 import java.time.ZoneId
-import com.github.yumeyucca.yumebox.core.locale.YumeTxt
+import com.github.yumelira.yumebox.core.locale.YumeTxt
 
 /** What the ongoing notification renders. */
 internal sealed class NotificationPresentation {

@@ -18,14 +18,14 @@
  *
  */
 
-package com.github.yumeyucca.yumebox.substore
+package com.github.yumelira.yumebox.substore
 
 import android.app.Service
 import android.content.Intent
 import android.os.Handler
 import android.os.IBinder
 import android.os.Looper
-import com.github.yumeyucca.yumebox.substore.engine.NativeLibraryManager
+import com.github.yumelira.yumebox.substore.engine.NativeLibraryManager
 import timber.log.Timber
 
 class SubStoreService : Service() {

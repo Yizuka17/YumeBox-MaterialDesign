@@ -18,9 +18,9 @@
  *
  */
 
-package com.github.yumeyucca.yumebox.runtime.api
+package com.github.yumelira.yumebox.runtime.api
 
-import com.github.yumeyucca.yumebox.core.model.LogMessage
+import com.github.yumelira.yumebox.core.model.LogMessage
 
 interface LogObserver {
     fun onConnected() = Unit

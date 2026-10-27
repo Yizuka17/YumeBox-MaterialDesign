@@ -4,14 +4,14 @@
  * Copyright (c) YumeYucca 2025 - Present
  */
 
-package com.github.yumeyucca.yumebox.runtime.service.core
+package com.github.yumelira.yumebox.runtime.service.core
 
 import android.content.Context
 import android.os.SystemClock
-import com.github.yumeyucca.yumebox.core.bridge.Channel
-import com.github.yumeyucca.yumebox.core.bridge.NativeProcess
-import com.github.yumeyucca.yumebox.core.util.runtimeHomeDir
-import com.github.yumeyucca.yumebox.runtime.service.controller.CoreController
+import com.github.yumelira.yumebox.core.bridge.Channel
+import com.github.yumelira.yumebox.core.bridge.NativeProcess
+import com.github.yumelira.yumebox.core.util.runtimeHomeDir
+import com.github.yumelira.yumebox.runtime.service.controller.CoreController
 import java.io.File
 import java.util.UUID
 import timber.log.Timber

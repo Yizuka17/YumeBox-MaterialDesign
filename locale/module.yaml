@@ -5,7 +5,7 @@ apply:
   - //compose.module-template.yaml
 settings:
   android:
-    namespace: com.github.yumeyucca.yumebox.core.locale
+    namespace: com.github.yumelira.yumebox.core.locale
   kotlin:
     ksp:
       processors:

@@ -20,7 +20,7 @@
 
 @file:Suppress("FunctionName")
 
-package com.github.yumeyucca.yumebox.screen.navigation
+package com.github.yumelira.yumebox.screen.navigation
 
 import android.os.Build
 import androidx.activity.compose.rememberLauncherForActivityResult
@@ -28,17 +28,17 @@ import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.runtime.*
 import androidx.compose.ui.platform.LocalContext
 import androidx.core.content.ContextCompat
-import com.github.yumeyucca.yumebox.WebViewActivity
-import com.github.yumeyucca.yumebox.common.util.DashboardShortcutHelper
-import com.github.yumeyucca.yumebox.common.util.buildRemotePanelUrl
-import com.github.yumeyucca.yumebox.common.util.requiresLocalNetworkPermission
-import com.github.yumeyucca.yumebox.data.model.RemoteBackend
-import com.github.yumeyucca.yumebox.data.store.RemoteControllerStore
-import com.github.yumeyucca.yumebox.presentation.component.Navigator
-import com.github.yumeyucca.yumebox.presentation.screen.FeatureContent
-import com.github.yumeyucca.yumebox.screen.feature.PanelShortcutDialog
-import com.github.yumeyucca.yumebox.screen.feature.RemoteControllerSection
-import com.github.yumeyucca.yumebox.screen.settings.backup.BackupRestoreSection
+import com.github.yumelira.yumebox.WebViewActivity
+import com.github.yumelira.yumebox.common.util.DashboardShortcutHelper
+import com.github.yumelira.yumebox.common.util.buildRemotePanelUrl
+import com.github.yumelira.yumebox.common.util.requiresLocalNetworkPermission
+import com.github.yumelira.yumebox.data.model.RemoteBackend
+import com.github.yumelira.yumebox.data.store.RemoteControllerStore
+import com.github.yumelira.yumebox.presentation.component.Navigator
+import com.github.yumelira.yumebox.presentation.screen.FeatureContent
+import com.github.yumelira.yumebox.screen.feature.PanelShortcutDialog
+import com.github.yumelira.yumebox.screen.feature.RemoteControllerSection
+import com.github.yumelira.yumebox.screen.settings.backup.BackupRestoreSection
 import kotlinx.coroutines.launch
 import org.koin.compose.koinInject
 

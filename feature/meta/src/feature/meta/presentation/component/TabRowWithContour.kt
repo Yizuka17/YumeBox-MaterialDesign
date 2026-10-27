@@ -20,7 +20,7 @@
 
 @file:Suppress("FunctionName")
 
-package com.github.yumeyucca.yumebox.feature.meta.presentation.component
+package com.github.yumelira.yumebox.feature.meta.presentation.component
 
 
 import androidx.compose.animation.animateColorAsState

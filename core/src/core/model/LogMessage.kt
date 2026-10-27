@@ -20,12 +20,12 @@
 
 @file:UseSerializers(DateSerializer::class)
 
-package com.github.yumeyucca.yumebox.core.model
+package com.github.yumelira.yumebox.core.model
 
 import android.os.Parcel
 import android.os.Parcelable
-import com.github.yumeyucca.yumebox.core.util.DateSerializer
-import com.github.yumeyucca.yumebox.core.util.Parcelizer
+import com.github.yumelira.yumebox.core.util.DateSerializer
+import com.github.yumelira.yumebox.core.util.Parcelizer
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.UseSerializers

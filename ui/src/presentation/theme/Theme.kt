@@ -20,7 +20,7 @@
 
 @file:Suppress("FunctionName")
 
-package com.github.yumeyucca.yumebox.presentation.theme
+package com.github.yumelira.yumebox.presentation.theme
 
 
 import androidx.compose.foundation.isSystemInDarkTheme
@@ -28,8 +28,8 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.compositionLocalOf
 import androidx.compose.runtime.remember
-import com.github.yumeyucca.yumebox.data.model.ThemeMode
-import com.github.yumeyucca.yumebox.core.locale.ProvideYumeStrings
+import com.github.yumelira.yumebox.data.model.ThemeMode
+import com.github.yumelira.yumebox.core.locale.ProvideYumeStrings
 import top.yukonga.miuix.kmp.theme.MiuixTheme
 
 internal val LocalPlatformSystemUiEffect = compositionLocalOf<@Composable () -> Unit> { {} }

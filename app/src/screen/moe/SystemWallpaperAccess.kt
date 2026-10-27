@@ -5,7 +5,7 @@
  * it under the terms of the GNU Affero General Public License.
  */
 
-package com.github.yumeyucca.yumebox.screen.moe
+package com.github.yumelira.yumebox.screen.moe
 
 import android.Manifest
 import android.content.Context

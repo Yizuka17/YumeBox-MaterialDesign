@@ -17,7 +17,7 @@
  * Copyright (c)  YumeYucca 2025 - Present
  */
 
-package com.github.yumeyucca.yumebox.screen.settings
+package com.github.yumelira.yumebox.screen.settings
 
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.layout.*
@@ -35,9 +35,9 @@ import androidx.compose.ui.state.ToggleableState
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.core.graphics.drawable.toBitmap
-import com.github.yumeyucca.yumebox.presentation.component.AppCard
-import com.github.yumeyucca.yumebox.presentation.theme.AppTheme
-import com.github.yumeyucca.yumebox.presentation.theme.AppTheme.spacing
+import com.github.yumelira.yumebox.presentation.component.AppCard
+import com.github.yumelira.yumebox.presentation.theme.AppTheme
+import com.github.yumelira.yumebox.presentation.theme.AppTheme.spacing
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import top.yukonga.miuix.kmp.basic.BasicComponent

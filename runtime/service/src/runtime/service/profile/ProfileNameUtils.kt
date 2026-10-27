@@ -18,7 +18,7 @@
  *
  */
 
-package com.github.yumeyucca.yumebox.runtime.service.profile
+package com.github.yumelira.yumebox.runtime.service.profile
 
 import java.net.URLDecoder
 import java.nio.charset.StandardCharsets

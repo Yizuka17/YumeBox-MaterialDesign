@@ -12,10 +12,10 @@
  * GNU Affero General Public License for more details.
  */
 
-package com.github.yumeyucca.yumebox.runtime.service.session
+package com.github.yumelira.yumebox.runtime.service.session
 
-import com.github.yumeyucca.yumebox.core.model.OverrideSpec
-import com.github.yumeyucca.yumebox.core.util.YamlCodec
+import com.github.yumelira.yumebox.core.model.OverrideSpec
+import com.github.yumelira.yumebox.core.util.YamlCodec
 import java.io.File
 
 /** Adds the optional CN provider and native eBPF listener required for CN bypass. */

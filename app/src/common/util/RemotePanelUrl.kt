@@ -18,10 +18,10 @@
  *
  */
 
-package com.github.yumeyucca.yumebox.common.util
+package com.github.yumelira.yumebox.common.util
 
 import android.net.Uri
-import com.github.yumeyucca.yumebox.data.model.RemoteBackend
+import com.github.yumelira.yumebox.data.model.RemoteBackend
 
 /** Builds a dashboard URL that opens its controller setup with the selected backend. */
 fun buildRemotePanelUrl(

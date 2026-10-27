@@ -1,4 +1,4 @@
-package com.github.yumeyucca.yumebox.screen.moe
+package com.github.yumelira.yumebox.screen.moe
 
 import android.Manifest
 import android.os.Build
@@ -10,8 +10,8 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.LifecycleEventObserver
 import androidx.lifecycle.compose.LocalLifecycleOwner
-import com.github.yumeyucca.yumebox.presentation.component.PreferenceSwitchItem
-import com.github.yumeyucca.yumebox.core.locale.YumeTxt
+import com.github.yumelira.yumebox.presentation.component.PreferenceSwitchItem
+import com.github.yumelira.yumebox.core.locale.YumeTxt
 
 @Composable
 internal fun SystemWallpaperPreferenceItem(

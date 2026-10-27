@@ -20,16 +20,16 @@
 
 @file:Suppress("UnusedSymbol", "FunctionName")
 
-package com.github.yumeyucca.yumebox.feature.meta.presentation.viewmodel
+package com.github.yumelira.yumebox.feature.meta.presentation.viewmodel
 
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.github.yumeyucca.yumebox.core.model.OverrideInternalConstants
-import com.github.yumeyucca.yumebox.core.util.YamlCodec
-import com.github.yumeyucca.yumebox.data.controller.ActiveProfileOverrideReloader
-import com.github.yumeyucca.yumebox.data.store.OverrideConfigStore
-import com.github.yumeyucca.yumebox.feature.meta.presentation.util.*
+import com.github.yumelira.yumebox.core.model.OverrideInternalConstants
+import com.github.yumelira.yumebox.core.util.YamlCodec
+import com.github.yumelira.yumebox.data.controller.ActiveProfileOverrideReloader
+import com.github.yumelira.yumebox.data.store.OverrideConfigStore
+import com.github.yumelira.yumebox.feature.meta.presentation.util.*
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow

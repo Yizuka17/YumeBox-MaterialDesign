@@ -20,11 +20,11 @@
 
 @file:Suppress("FunctionName")
 
-package com.github.yumeyucca.yumebox.feature.meta.presentation.util
+package com.github.yumelira.yumebox.feature.meta.presentation.util
 
 
-import com.github.yumeyucca.yumebox.core.model.OverrideInternalConstants
-import com.github.yumeyucca.yumebox.data.store.OverrideConfigStore
+import com.github.yumelira.yumebox.core.model.OverrideInternalConstants
+import com.github.yumelira.yumebox.data.store.OverrideConfigStore
 
 class CustomRoutingBootstrapper(private val overrideConfigRepository: OverrideConfigStore) {
     suspend fun ensureDefaultContent(): String {

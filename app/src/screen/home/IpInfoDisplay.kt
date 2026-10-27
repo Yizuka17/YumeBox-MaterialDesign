@@ -20,7 +20,7 @@
 
 @file:Suppress("UnusedSymbol", "FunctionName", "IntroduceWhenSubject")
 
-package com.github.yumeyucca.yumebox.screen.home
+package com.github.yumelira.yumebox.screen.home
 
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
@@ -38,10 +38,10 @@ import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.sp
-import com.github.yumeyucca.yumebox.data.network.IpMonitoringState
-import com.github.yumeyucca.yumebox.presentation.component.CountryFlagCircle
-import com.github.yumeyucca.yumebox.presentation.theme.UiDp
-import com.github.yumeyucca.yumebox.core.locale.YumeTxt
+import com.github.yumelira.yumebox.data.network.IpMonitoringState
+import com.github.yumelira.yumebox.presentation.component.CountryFlagCircle
+import com.github.yumelira.yumebox.presentation.theme.UiDp
+import com.github.yumelira.yumebox.core.locale.YumeTxt
 import top.yukonga.miuix.kmp.basic.Text
 import top.yukonga.miuix.kmp.theme.MiuixTheme
 

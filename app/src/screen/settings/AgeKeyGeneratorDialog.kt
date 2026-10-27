@@ -20,7 +20,7 @@
 
 @file:Suppress("FunctionName")
 
-package com.github.yumeyucca.yumebox.screen.settings
+package com.github.yumelira.yumebox.screen.settings
 
 
 import androidx.compose.foundation.layout.Arrangement
@@ -29,14 +29,14 @@ import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
-import com.github.yumeyucca.yumebox.core.bridge.Compiler
-import com.github.yumeyucca.yumebox.presentation.component.AppDialog
-import com.github.yumeyucca.yumebox.presentation.component.OemTextField
-import com.github.yumeyucca.yumebox.presentation.theme.AppTheme
+import com.github.yumelira.yumebox.core.bridge.Compiler
+import com.github.yumelira.yumebox.presentation.component.AppDialog
+import com.github.yumelira.yumebox.presentation.component.OemTextField
+import com.github.yumelira.yumebox.presentation.theme.AppTheme
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
-import com.github.yumeyucca.yumebox.core.locale.YumeTxt
+import com.github.yumelira.yumebox.core.locale.YumeTxt
 import top.yukonga.miuix.kmp.basic.ButtonDefaults
 import top.yukonga.miuix.kmp.basic.TextButton
 
@@ -122,7 +122,7 @@ fun AgeKeyGeneratorDialog(
                                     // supported by the compiler crate; falls back to x25519).
                                     runCatching {
                                         kotlinx.serialization.json.Json.decodeFromString(
-                                            com.github.yumeyucca.yumebox.core.model.AgeKeyPair
+                                            com.github.yumelira.yumebox.core.model.AgeKeyPair
                                                 .serializer(),
                                             Compiler.nativeGenAgeKey(),
                                         )

@@ -7,7 +7,7 @@
  * License.
  */
 
-package com.github.yumeyucca.yumebox.runtime.service.core
+package com.github.yumelira.yumebox.runtime.service.core
 
 import android.content.Context
 import io.ktor.client.HttpClient

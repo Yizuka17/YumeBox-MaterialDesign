@@ -18,11 +18,11 @@
  *
  */
 
-package com.github.yumeyucca.yumebox.runtime.service.profile
+package com.github.yumelira.yumebox.runtime.service.profile
 
 import android.content.Context
-import com.github.yumeyucca.yumebox.core.model.FetchStatus
-import com.github.yumeyucca.yumebox.runtime.api.ProviderPrefetchReport
+import com.github.yumelira.yumebox.core.model.FetchStatus
+import com.github.yumelira.yumebox.runtime.api.ProviderPrefetchReport
 import io.ktor.client.*
 import io.ktor.client.engine.okhttp.*
 import io.ktor.client.plugins.*

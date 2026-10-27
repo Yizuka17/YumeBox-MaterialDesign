@@ -18,15 +18,15 @@
  *
  */
 
-package com.github.yumeyucca.yumebox.common.util
+package com.github.yumelira.yumebox.common.util
 
 import android.content.Context
 import android.net.Uri
 import androidx.core.content.pm.ShortcutInfoCompat
 import androidx.core.content.pm.ShortcutManagerCompat
 import androidx.core.graphics.drawable.IconCompat
-import com.github.yumeyucca.yumebox.R
-import com.github.yumeyucca.yumebox.WebViewActivity
+import com.github.yumelira.yumebox.R
+import com.github.yumelira.yumebox.WebViewActivity
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 

@@ -18,10 +18,10 @@
  *
  */
 
-package com.github.yumeyucca.yumebox.data.controller
+package com.github.yumelira.yumebox.data.controller
 
-import com.github.yumeyucca.yumebox.core.util.PollingTimerSpecs
-import com.github.yumeyucca.yumebox.core.util.PollingTimers
+import com.github.yumelira.yumebox.core.util.PollingTimerSpecs
+import com.github.yumelira.yumebox.core.util.PollingTimers
 import kotlinx.coroutines.*
 
 /**

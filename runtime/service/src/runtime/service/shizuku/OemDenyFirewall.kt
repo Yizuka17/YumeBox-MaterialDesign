@@ -18,7 +18,7 @@
  *
  */
 
-package com.github.yumeyucca.yumebox.runtime.service.shizuku
+package com.github.yumelira.yumebox.runtime.service.shizuku
 
 import android.os.IBinder
 import android.util.Log
@@ -27,7 +27,7 @@ import android.util.Log
  * Adds or removes the OEM deny firewall rule of a uid through the hidden connectivity API; the caller
  * brings a connectivity binder obtained in its own process.
  *
- * `com.github.yumeyucca.yumebox.loader.ShizukuUserService` (:pack) keeps its own copy: it has to live in the loader DEX.
+ * `com.github.yumelira.yumebox.loader.ShizukuUserService` (:pack) keeps its own copy: it has to live in the loader DEX.
  */
 internal object OemDenyFirewall {
     private const val TAG = "YumeBoxFirewall"

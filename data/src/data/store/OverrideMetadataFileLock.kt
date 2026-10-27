@@ -18,10 +18,10 @@
  *
  */
 
-package com.github.yumeyucca.yumebox.data.store
+package com.github.yumelira.yumebox.data.store
 
-import com.github.yumeyucca.yumebox.core.util.YamlCodec
-import com.github.yumeyucca.yumebox.data.model.MetadataIndex
+import com.github.yumelira.yumebox.core.util.YamlCodec
+import com.github.yumelira.yumebox.data.model.MetadataIndex
 import timber.log.Timber
 import java.io.File
 import java.io.FileOutputStream

@@ -18,16 +18,16 @@
  *
  */
 
-package com.github.yumeyucca.yumebox.runtime.client.session
+package com.github.yumelira.yumebox.runtime.client.session
 
-import com.github.yumeyucca.yumebox.core.model.RunMode
-import com.github.yumeyucca.yumebox.core.util.PollingTimerSpecs
-import com.github.yumeyucca.yumebox.core.util.PollingTimers
-import com.github.yumeyucca.yumebox.core.util.enumByNameOrNull
-import com.github.yumeyucca.yumebox.data.store.PausedLocalRuntime
-import com.github.yumeyucca.yumebox.runtime.api.RuntimeOwner
-import com.github.yumeyucca.yumebox.runtime.api.RuntimePhase
-import com.github.yumeyucca.yumebox.runtime.api.RuntimeSnapshot
+import com.github.yumelira.yumebox.core.model.RunMode
+import com.github.yumelira.yumebox.core.util.PollingTimerSpecs
+import com.github.yumelira.yumebox.core.util.PollingTimers
+import com.github.yumelira.yumebox.core.util.enumByNameOrNull
+import com.github.yumelira.yumebox.data.store.PausedLocalRuntime
+import com.github.yumelira.yumebox.runtime.api.RuntimeOwner
+import com.github.yumelira.yumebox.runtime.api.RuntimePhase
+import com.github.yumelira.yumebox.runtime.api.RuntimeSnapshot
 import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.flow.conflate

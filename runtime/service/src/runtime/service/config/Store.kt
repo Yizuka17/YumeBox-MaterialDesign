@@ -20,7 +20,7 @@
 
 @file:Suppress("UnusedSymbol")
 
-package com.github.yumeyucca.yumebox.runtime.service.config
+package com.github.yumelira.yumebox.runtime.service.config
 
 
 import kotlin.reflect.KProperty

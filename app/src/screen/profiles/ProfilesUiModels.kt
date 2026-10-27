@@ -18,11 +18,11 @@
  *
  */
 
-package com.github.yumeyucca.yumebox.screen.profiles
+package com.github.yumelira.yumebox.screen.profiles
 
-import com.github.yumeyucca.yumebox.core.model.FetchStatus
-import com.github.yumeyucca.yumebox.core.presentation.LoadableState
-import com.github.yumeyucca.yumebox.core.locale.YumeTxt
+import com.github.yumelira.yumebox.core.model.FetchStatus
+import com.github.yumelira.yumebox.core.presentation.LoadableState
+import com.github.yumelira.yumebox.core.locale.YumeTxt
 
 sealed interface ProfilesUiEffect {
     data class ShowMessage(val message: String) : ProfilesUiEffect

@@ -1,4 +1,4 @@
-package com.github.yumeyucca.yumebox.loader;
+package com.github.yumelira.yumebox.loader;
 
 import java.io.DataInputStream;
 import java.io.IOException;

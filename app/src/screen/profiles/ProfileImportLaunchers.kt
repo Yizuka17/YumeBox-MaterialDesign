@@ -18,7 +18,7 @@
  *
  */
 
-package com.github.yumeyucca.yumebox.screen.profiles
+package com.github.yumelira.yumebox.screen.profiles
 
 import android.content.Context
 import android.content.Intent
@@ -27,11 +27,11 @@ import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.rememberCoroutineScope
-import com.github.yumeyucca.yumebox.common.util.toast
-import com.github.yumeyucca.yumebox.presentation.util.isYamlConfigFileName
-import com.github.yumeyucca.yumebox.presentation.util.readDisplayName
+import com.github.yumelira.yumebox.common.util.toast
+import com.github.yumelira.yumebox.presentation.util.isYamlConfigFileName
+import com.github.yumelira.yumebox.presentation.util.readDisplayName
 import kotlinx.coroutines.launch
-import com.github.yumeyucca.yumebox.core.locale.YumeTxt
+import com.github.yumelira.yumebox.core.locale.YumeTxt
 import timber.log.Timber
 
 internal data class ProfileImportLaunchers(

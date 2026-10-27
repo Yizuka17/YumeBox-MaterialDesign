@@ -18,10 +18,10 @@
  *
  */
 
-package com.github.yumeyucca.yumebox.runtime.client
+package com.github.yumelira.yumebox.runtime.client
 
-import com.github.yumeyucca.yumebox.core.model.RunMode
-import com.github.yumeyucca.yumebox.runtime.api.Profile
+import com.github.yumelira.yumebox.core.model.RunMode
+import com.github.yumelira.yumebox.runtime.api.Profile
 
 data class RuntimeStartRequest(
     val mode: RunMode,

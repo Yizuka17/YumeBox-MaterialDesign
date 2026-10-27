@@ -20,7 +20,7 @@
 
 @file:Suppress("UnusedSymbol", "FunctionName")
 
-package com.github.yumeyucca.yumebox.presentation.screen.node
+package com.github.yumelira.yumebox.presentation.screen.node
 
 
 import android.annotation.SuppressLint
@@ -35,10 +35,10 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.Dp
-import com.github.yumeyucca.yumebox.core.model.Proxy
-import com.github.yumeyucca.yumebox.presentation.theme.UiDp
-import com.github.yumeyucca.yumebox.presentation.theme.rememberRowShown
-import com.github.yumeyucca.yumebox.presentation.theme.rowReveal
+import com.github.yumelira.yumebox.core.model.Proxy
+import com.github.yumelira.yumebox.presentation.theme.UiDp
+import com.github.yumelira.yumebox.presentation.theme.rememberRowShown
+import com.github.yumelira.yumebox.presentation.theme.rowReveal
 import top.yukonga.miuix.kmp.utils.overScrollVertical
 import top.yukonga.miuix.kmp.utils.scrollEndHaptic
 

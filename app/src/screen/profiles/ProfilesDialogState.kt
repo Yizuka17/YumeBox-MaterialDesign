@@ -18,11 +18,11 @@
  *
  */
 
-package com.github.yumeyucca.yumebox.screen.profiles
+package com.github.yumelira.yumebox.screen.profiles
 
 import androidx.compose.runtime.*
-import com.github.yumeyucca.yumebox.data.model.ProfileBinding
-import com.github.yumeyucca.yumebox.runtime.api.Profile
+import com.github.yumelira.yumebox.data.model.ProfileBinding
+import com.github.yumelira.yumebox.runtime.api.Profile
 
 @Stable
 internal class ProfilesDialogState {

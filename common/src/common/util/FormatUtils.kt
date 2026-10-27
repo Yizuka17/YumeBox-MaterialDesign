@@ -18,9 +18,9 @@
  *
  */
 
-package com.github.yumeyucca.yumebox.common.util
+package com.github.yumelira.yumebox.common.util
 
-import com.github.yumeyucca.yumebox.core.util.scaleBytes
+import com.github.yumelira.yumebox.core.util.scaleBytes
 
 object ByteFormatter {
     private val SI_UNITS = arrayOf("B", "KB", "MB", "GB", "TB", "PB")

@@ -18,10 +18,10 @@
  *
  */
 
-package com.github.yumeyucca.yumebox.substore.util
+package com.github.yumelira.yumebox.substore.util
 
-import com.github.yumeyucca.yumebox.core.Global
-import com.github.yumeyucca.yumebox.substore.SubStorePaths
+import com.github.yumelira.yumebox.core.Global
+import com.github.yumelira.yumebox.substore.SubStorePaths
 import java.io.File
 
 object AppUtil {

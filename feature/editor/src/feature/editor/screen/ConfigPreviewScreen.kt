@@ -20,28 +20,28 @@
 
 @file:Suppress("FunctionName")
 
-package com.github.yumeyucca.yumebox.feature.editor.screen
+package com.github.yumelira.yumebox.feature.editor.screen
 
 
 import androidx.compose.foundation.layout.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
-import com.github.yumeyucca.yumebox.common.util.toast
-import com.github.yumeyucca.yumebox.feature.editor.editor.CodeEditor
-import com.github.yumeyucca.yumebox.feature.editor.editor.rememberConfiguredCodeEditorState
-import com.github.yumeyucca.yumebox.feature.editor.format.CodeFormatter
-import com.github.yumeyucca.yumebox.feature.editor.language.LanguageScope
-import com.github.yumeyucca.yumebox.presentation.component.Navigator
-import com.github.yumeyucca.yumebox.presentation.component.SmallTopBar
-import com.github.yumeyucca.yumebox.presentation.icon.Yume
-import com.github.yumeyucca.yumebox.presentation.icon.yume.ArrowLeft
-import com.github.yumeyucca.yumebox.presentation.icon.yume.ArrowRight
-import com.github.yumeyucca.yumebox.presentation.icon.yume.ListCollapse
-import com.github.yumeyucca.yumebox.presentation.icon.yume.Save
-import com.github.yumeyucca.yumebox.presentation.theme.UiDp
+import com.github.yumelira.yumebox.common.util.toast
+import com.github.yumelira.yumebox.feature.editor.editor.CodeEditor
+import com.github.yumelira.yumebox.feature.editor.editor.rememberConfiguredCodeEditorState
+import com.github.yumelira.yumebox.feature.editor.format.CodeFormatter
+import com.github.yumelira.yumebox.feature.editor.language.LanguageScope
+import com.github.yumelira.yumebox.presentation.component.Navigator
+import com.github.yumelira.yumebox.presentation.component.SmallTopBar
+import com.github.yumelira.yumebox.presentation.icon.Yume
+import com.github.yumelira.yumebox.presentation.icon.yume.ArrowLeft
+import com.github.yumelira.yumebox.presentation.icon.yume.ArrowRight
+import com.github.yumelira.yumebox.presentation.icon.yume.ListCollapse
+import com.github.yumelira.yumebox.presentation.icon.yume.Save
+import com.github.yumelira.yumebox.presentation.theme.UiDp
 import kotlinx.coroutines.launch
-import com.github.yumeyucca.yumebox.core.locale.YumeTxt
+import com.github.yumelira.yumebox.core.locale.YumeTxt
 import top.yukonga.miuix.kmp.basic.Icon
 import top.yukonga.miuix.kmp.basic.IconButton
 import top.yukonga.miuix.kmp.basic.MiuixScrollBehavior

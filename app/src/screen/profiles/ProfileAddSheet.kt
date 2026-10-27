@@ -20,7 +20,7 @@
 
 @file:Suppress("FunctionName")
 
-package com.github.yumeyucca.yumebox.screen.profiles
+package com.github.yumelira.yumebox.screen.profiles
 
 
 import android.Manifest
@@ -34,10 +34,10 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalSoftwareKeyboardController
 import androidx.compose.ui.unit.dp
 import androidx.core.content.ContextCompat
-import com.github.yumeyucca.yumebox.common.util.toast
-import com.github.yumeyucca.yumebox.presentation.util.*
-import com.github.yumeyucca.yumebox.runtime.api.Profile
-import com.github.yumeyucca.yumebox.core.locale.YumeTxt
+import com.github.yumelira.yumebox.common.util.toast
+import com.github.yumelira.yumebox.presentation.util.*
+import com.github.yumelira.yumebox.runtime.api.Profile
+import com.github.yumelira.yumebox.core.locale.YumeTxt
 import java.util.*
 import kotlin.math.max
 

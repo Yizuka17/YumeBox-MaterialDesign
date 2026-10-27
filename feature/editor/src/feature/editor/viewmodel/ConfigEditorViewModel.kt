@@ -20,7 +20,7 @@
 
 @file:Suppress("UnusedSymbol", "FunctionName")
 
-package com.github.yumeyucca.yumebox.feature.editor.viewmodel
+package com.github.yumelira.yumebox.feature.editor.viewmodel
 
 
 import androidx.lifecycle.ViewModel

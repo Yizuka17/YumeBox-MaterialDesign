@@ -20,7 +20,7 @@
 
 @file:Suppress("FunctionName")
 
-package com.github.yumeyucca.yumebox.feature.meta.presentation.component
+package com.github.yumelira.yumebox.feature.meta.presentation.component
 
 
 import android.content.Context
@@ -43,9 +43,9 @@ import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.sp
 import androidx.compose.ui.unit.takeOrElse
 import androidx.core.graphics.drawable.toBitmap
-import com.github.yumeyucca.yumebox.data.controller.AppIdentityResolver
-import com.github.yumeyucca.yumebox.presentation.theme.AppColors
-import com.github.yumeyucca.yumebox.presentation.theme.AppTheme
+import com.github.yumelira.yumebox.data.controller.AppIdentityResolver
+import com.github.yumelira.yumebox.presentation.theme.AppColors
+import com.github.yumelira.yumebox.presentation.theme.AppTheme
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import kotlinx.serialization.json.JsonObject

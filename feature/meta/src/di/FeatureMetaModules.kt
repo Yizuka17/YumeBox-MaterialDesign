@@ -20,14 +20,14 @@
 
 @file:Suppress("FunctionName")
 
-package com.github.yumeyucca.yumebox.di
+package com.github.yumelira.yumebox.di
 
 
-import com.github.yumeyucca.yumebox.data.store.TrafficStatisticsStore
-import com.github.yumeyucca.yumebox.feature.meta.presentation.util.CustomRoutingBootstrapper
-import com.github.yumeyucca.yumebox.feature.meta.presentation.viewmodel.ConnectionViewModel
-import com.github.yumeyucca.yumebox.feature.meta.presentation.viewmodel.CustomRoutingViewModel
-import com.github.yumeyucca.yumebox.feature.meta.presentation.viewmodel.TrafficStatisticsViewModel
+import com.github.yumelira.yumebox.data.store.TrafficStatisticsStore
+import com.github.yumelira.yumebox.feature.meta.presentation.util.CustomRoutingBootstrapper
+import com.github.yumelira.yumebox.feature.meta.presentation.viewmodel.ConnectionViewModel
+import com.github.yumelira.yumebox.feature.meta.presentation.viewmodel.CustomRoutingViewModel
+import com.github.yumelira.yumebox.feature.meta.presentation.viewmodel.TrafficStatisticsViewModel
 import org.koin.android.ext.koin.androidContext
 import org.koin.core.module.dsl.viewModel
 import org.koin.dsl.module

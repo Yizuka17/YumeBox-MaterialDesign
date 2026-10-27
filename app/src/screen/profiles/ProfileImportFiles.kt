@@ -18,12 +18,12 @@
  *
  */
 
-package com.github.yumeyucca.yumebox.screen.profiles
+package com.github.yumelira.yumebox.screen.profiles
 
 import android.app.Application
 import android.net.Uri
-import com.github.yumeyucca.yumebox.App
-import com.github.yumeyucca.yumebox.runtime.api.Profile
+import com.github.yumelira.yumebox.App
+import com.github.yumelira.yumebox.runtime.api.Profile
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import timber.log.Timber

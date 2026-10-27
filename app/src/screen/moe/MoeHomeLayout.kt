@@ -11,7 +11,7 @@
 
 @file:Suppress("DuplicatedCode", "FunctionName")
 
-package com.github.yumeyucca.yumebox.screen.moe
+package com.github.yumelira.yumebox.screen.moe
 
 
 import androidx.compose.animation.*
@@ -37,9 +37,9 @@ import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
-import com.github.yumeyucca.yumebox.domain.model.TrafficData
-import com.github.yumeyucca.yumebox.presentation.theme.UiDp
-import com.github.yumeyucca.yumebox.screen.home.HomeProxyControlState
+import com.github.yumelira.yumebox.domain.model.TrafficData
+import com.github.yumelira.yumebox.presentation.theme.UiDp
+import com.github.yumelira.yumebox.screen.home.HomeProxyControlState
 import dev.chrisbanes.haze.hazeSource
 import dev.chrisbanes.haze.rememberHazeState
 import top.yukonga.miuix.kmp.basic.Text

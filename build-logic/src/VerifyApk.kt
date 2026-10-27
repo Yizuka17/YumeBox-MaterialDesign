@@ -14,7 +14,7 @@ fun verifyPackedPayload(apk: File) {
         DataInputStream(zip.getInputStream(metadata)).use { input ->
             check(input.readInt() == PayloadFormat.MAGIC && input.readInt() == PayloadFormat.VERSION) { "Unsupported payload format" }
             check(input.readUTF().length == 64)
-            check(input.readUTF() == "com.github.yumeyucca.yumebox.App")
+            check(input.readUTF() == "com.github.yumelira.yumebox.App")
             check(input.readUTF() == "androidx.core.app.CoreComponentFactory")
             fun verifyEntry(native: Boolean) {
                 if (native) check(input.readUTF() == "arm64-v8a") { "Unexpected native ABI" }

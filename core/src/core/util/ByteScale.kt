@@ -18,7 +18,7 @@
  *
  */
 
-package com.github.yumeyucca.yumebox.core.util
+package com.github.yumelira.yumebox.core.util
 
 /**
  * A byte count scaled down the shared 1024 ladder: [value] in the unit at [rank] (0 = bytes, 1 =

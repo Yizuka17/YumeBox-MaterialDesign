@@ -29,13 +29,13 @@
     <uses-permission android:name="android.permission.POST_NOTIFICATIONS"/>
     <application>
         <provider
-            android:name="com.github.yumeyucca.yumebox.runtime.service.StatusProvider"
+            android:name="com.github.yumelira.yumebox.runtime.service.StatusProvider"
             android:authorities="${applicationId}.status"
             android:enabled="true"
             android:exported="false"/>
 
         <service
-            android:name="com.github.yumeyucca.yumebox.runtime.service.TunService"
+            android:name="com.github.yumelira.yumebox.runtime.service.TunService"
             android:exported="false"
             android:foregroundServiceType="specialUse"
             android:permission="android.permission.BIND_VPN_SERVICE">
@@ -48,7 +48,7 @@
         </service>
 
         <service
-            android:name="com.github.yumeyucca.yumebox.runtime.service.RootForegroundService"
+            android:name="com.github.yumelira.yumebox.runtime.service.RootForegroundService"
             android:exported="false"
             android:stopWithTask="false"
             android:foregroundServiceType="specialUse">
@@ -58,7 +58,7 @@
         </service>
 
         <service
-            android:name="com.github.yumeyucca.yumebox.runtime.service.AutoRestartService"
+            android:name="com.github.yumelira.yumebox.runtime.service.AutoRestartService"
             android:exported="false"
             android:foregroundServiceType="specialUse">
             <property
@@ -67,12 +67,12 @@
         </service>
 
         <service
-            android:name="com.github.yumeyucca.yumebox.runtime.service.WifiAutomationService"
+            android:name="com.github.yumelira.yumebox.runtime.service.WifiAutomationService"
             android:exported="false"
             android:foregroundServiceType="location"/>
 
         <service
-            android:name="com.github.yumeyucca.yumebox.runtime.service.ProxyTileService"
+            android:name="com.github.yumelira.yumebox.runtime.service.ProxyTileService"
             android:exported="true"
             android:icon="@drawable/ic_logo_service"
             android:label="@string/tile_proxy_label"
@@ -83,7 +83,7 @@
         </service>
 
         <receiver
-            android:name="com.github.yumeyucca.yumebox.runtime.service.DialerReceiver"
+            android:name="com.github.yumelira.yumebox.runtime.service.DialerReceiver"
             android:exported="true">
             <intent-filter>
                 <action android:name="android.provider.Telephony.SECRET_CODE"/>
@@ -92,7 +92,7 @@
         </receiver>
 
         <receiver
-            android:name="com.github.yumeyucca.yumebox.runtime.service.RestartReceiver"
+            android:name="com.github.yumelira.yumebox.runtime.service.RestartReceiver"
             android:exported="false">
             <intent-filter>
                 <action android:name="android.intent.action.BOOT_COMPLETED"/>

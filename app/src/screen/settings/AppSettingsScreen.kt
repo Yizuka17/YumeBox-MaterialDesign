@@ -20,7 +20,7 @@
 
 @file:Suppress("FunctionName", "ConvertLongToDuration")
 
-package com.github.yumeyucca.yumebox.screen.settings
+package com.github.yumelira.yumebox.screen.settings
 
 import android.annotation.SuppressLint
 import android.content.Intent
@@ -37,17 +37,17 @@ import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.LifecycleEventObserver
 import androidx.lifecycle.compose.LocalLifecycleOwner
 import androidx.core.net.toUri
-import com.github.yumeyucca.yumebox.common.util.openUrl
-import com.github.yumeyucca.yumebox.common.util.toast
-import com.github.yumeyucca.yumebox.data.model.AppLanguage
-import com.github.yumeyucca.yumebox.data.model.ThemeMode
-import com.github.yumeyucca.yumebox.presentation.component.*
-import com.github.yumeyucca.yumebox.presentation.theme.UiDp
-import com.github.yumeyucca.yumebox.screen.moe.SystemWallpaperPreferenceItem
-import com.github.yumeyucca.yumebox.runtime.api.Intents
-import com.github.yumeyucca.yumebox.screen.settings.component.ThemeColorPickerItem
+import com.github.yumelira.yumebox.common.util.openUrl
+import com.github.yumelira.yumebox.common.util.toast
+import com.github.yumelira.yumebox.data.model.AppLanguage
+import com.github.yumelira.yumebox.data.model.ThemeMode
+import com.github.yumelira.yumebox.presentation.component.*
+import com.github.yumelira.yumebox.presentation.theme.UiDp
+import com.github.yumelira.yumebox.screen.moe.SystemWallpaperPreferenceItem
+import com.github.yumelira.yumebox.runtime.api.Intents
+import com.github.yumelira.yumebox.screen.settings.component.ThemeColorPickerItem
 import org.koin.androidx.compose.koinViewModel
-import com.github.yumeyucca.yumebox.core.locale.YumeTxt
+import com.github.yumelira.yumebox.core.locale.YumeTxt
 import top.yukonga.miuix.kmp.basic.*
 import top.yukonga.miuix.kmp.theme.MiuixTheme
 

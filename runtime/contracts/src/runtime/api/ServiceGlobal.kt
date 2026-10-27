@@ -18,10 +18,10 @@
  *
  */
 
-package com.github.yumeyucca.yumebox.runtime.api
+package com.github.yumelira.yumebox.runtime.api
 
 import android.content.Context
-import com.github.yumeyucca.yumebox.core.Global
+import com.github.yumelira.yumebox.core.Global
 
 // Backed by the single process-wide core.Global; every new process entry point
 // (root service, content provider) must call this before touching packageName.

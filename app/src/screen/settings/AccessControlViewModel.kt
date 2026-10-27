@@ -20,7 +20,7 @@
 
 @file:Suppress("UnusedSymbol")
 
-package com.github.yumeyucca.yumebox.screen.settings
+package com.github.yumelira.yumebox.screen.settings
 
 
 import android.app.Application
@@ -28,14 +28,14 @@ import android.content.pm.ApplicationInfo
 import android.content.pm.PackageManager
 import androidx.core.content.ContextCompat
 import androidx.lifecycle.viewModelScope
-import com.github.yumeyucca.yumebox.common.util.stateInWhileSubscribed
-import com.github.yumeyucca.yumebox.core.presentation.AndroidContractStateViewModel
-import com.github.yumeyucca.yumebox.core.presentation.LoadableState
-import com.github.yumeyucca.yumebox.data.controller.AccessControlController
-import com.github.yumeyucca.yumebox.data.model.AccessControlMode
-import com.github.yumeyucca.yumebox.data.model.AccessControlSortMode
-import com.github.yumeyucca.yumebox.data.store.NetworkSettingsStore
-import com.github.yumeyucca.yumebox.runtime.service.root.RootPackageShell
+import com.github.yumelira.yumebox.common.util.stateInWhileSubscribed
+import com.github.yumelira.yumebox.core.presentation.AndroidContractStateViewModel
+import com.github.yumelira.yumebox.core.presentation.LoadableState
+import com.github.yumelira.yumebox.data.controller.AccessControlController
+import com.github.yumelira.yumebox.data.model.AccessControlMode
+import com.github.yumelira.yumebox.data.model.AccessControlSortMode
+import com.github.yumelira.yumebox.data.store.NetworkSettingsStore
+import com.github.yumelira.yumebox.runtime.service.root.RootPackageShell
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.map

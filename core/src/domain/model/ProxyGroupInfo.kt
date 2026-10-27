@@ -20,13 +20,13 @@
 
 @file:Suppress("UnusedSymbol")
 
-package com.github.yumeyucca.yumebox.domain.model
+package com.github.yumelira.yumebox.domain.model
 
 
-import com.github.yumeyucca.yumebox.core.model.Proxy
-import com.github.yumeyucca.yumebox.core.model.ProxyGroup
-import com.github.yumeyucca.yumebox.core.model.isManuallySelectable
-import com.github.yumeyucca.yumebox.core.model.isProxyGroup
+import com.github.yumelira.yumebox.core.model.Proxy
+import com.github.yumelira.yumebox.core.model.ProxyGroup
+import com.github.yumelira.yumebox.core.model.isManuallySelectable
+import com.github.yumelira.yumebox.core.model.isProxyGroup
 import kotlinx.serialization.Serializable
 
 @Serializable

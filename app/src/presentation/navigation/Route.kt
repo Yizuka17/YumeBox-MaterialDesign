@@ -18,7 +18,7 @@
  *
  */
 
-package com.github.yumeyucca.yumebox.presentation.navigation
+package com.github.yumelira.yumebox.presentation.navigation
 
 import kotlinx.serialization.Serializable
 

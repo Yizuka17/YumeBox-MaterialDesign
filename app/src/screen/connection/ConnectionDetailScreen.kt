@@ -20,7 +20,7 @@
 
 @file:Suppress("FunctionName")
 
-package com.github.yumeyucca.yumebox.screen.connection
+package com.github.yumelira.yumebox.screen.connection
 
 
 import androidx.compose.foundation.layout.Box
@@ -30,17 +30,17 @@ import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
-import com.github.yumeyucca.yumebox.core.model.ConnectionInfo
-import com.github.yumeyucca.yumebox.core.util.PollingTimerSpecs
-import com.github.yumeyucca.yumebox.core.util.PollingTimers
-import com.github.yumeyucca.yumebox.feature.meta.presentation.component.ConnectionDetailContent
-import com.github.yumeyucca.yumebox.presentation.component.*
-import com.github.yumeyucca.yumebox.presentation.theme.AppTheme
-import com.github.yumeyucca.yumebox.runtime.client.access.RuntimeAccess
+import com.github.yumelira.yumebox.core.model.ConnectionInfo
+import com.github.yumelira.yumebox.core.util.PollingTimerSpecs
+import com.github.yumelira.yumebox.core.util.PollingTimers
+import com.github.yumelira.yumebox.feature.meta.presentation.component.ConnectionDetailContent
+import com.github.yumelira.yumebox.presentation.component.*
+import com.github.yumelira.yumebox.presentation.theme.AppTheme
+import com.github.yumelira.yumebox.runtime.client.access.RuntimeAccess
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
-import com.github.yumeyucca.yumebox.core.locale.YumeTxt
+import com.github.yumelira.yumebox.core.locale.YumeTxt
 import top.yukonga.miuix.kmp.basic.MiuixScrollBehavior
 import top.yukonga.miuix.kmp.basic.Scaffold
 import top.yukonga.miuix.kmp.basic.Text

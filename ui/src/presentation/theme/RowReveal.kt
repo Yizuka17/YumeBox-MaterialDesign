@@ -18,7 +18,7 @@
  *
  */
 
-package com.github.yumeyucca.yumebox.presentation.theme
+package com.github.yumelira.yumebox.presentation.theme
 
 import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.animation.core.tween

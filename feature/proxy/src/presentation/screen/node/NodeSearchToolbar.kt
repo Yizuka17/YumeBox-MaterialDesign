@@ -17,7 +17,7 @@
  * Copyright (c) YumeYucca 2025 - Present
  *
  */
-package com.github.yumeyucca.yumebox.presentation.screen.node
+package com.github.yumelira.yumebox.presentation.screen.node
 
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.core.tween
@@ -53,13 +53,13 @@ import androidx.compose.ui.platform.LocalFocusManager
 import androidx.compose.ui.platform.LocalSoftwareKeyboardController
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.IntSize
-import com.github.yumeyucca.yumebox.data.model.ProxySortMode
-import com.github.yumeyucca.yumebox.presentation.icon.Yume
-import com.github.yumeyucca.yumebox.presentation.icon.yume.ListChevronsUpDown
-import com.github.yumeyucca.yumebox.presentation.icon.yume.Speed
-import com.github.yumeyucca.yumebox.presentation.theme.AnimationSpecs
-import com.github.yumeyucca.yumebox.presentation.theme.UiDp
-import com.github.yumeyucca.yumebox.core.locale.YumeTxt
+import com.github.yumelira.yumebox.data.model.ProxySortMode
+import com.github.yumelira.yumebox.presentation.icon.Yume
+import com.github.yumelira.yumebox.presentation.icon.yume.ListChevronsUpDown
+import com.github.yumelira.yumebox.presentation.icon.yume.Speed
+import com.github.yumelira.yumebox.presentation.theme.AnimationSpecs
+import com.github.yumelira.yumebox.presentation.theme.UiDp
+import com.github.yumelira.yumebox.core.locale.YumeTxt
 import top.yukonga.miuix.kmp.basic.Icon
 import top.yukonga.miuix.kmp.basic.IconButton
 import top.yukonga.miuix.kmp.basic.InputField

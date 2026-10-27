@@ -18,7 +18,7 @@
  *
  */
 
-package com.github.yumeyucca.yumebox.core.util
+package com.github.yumelira.yumebox.core.util
 
 import kotlinx.serialization.KSerializer
 import kotlinx.serialization.json.*

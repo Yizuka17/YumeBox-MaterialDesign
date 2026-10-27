@@ -18,12 +18,12 @@
  *
  */
 
-package com.github.yumeyucca.yumebox.runtime.client
+package com.github.yumelira.yumebox.runtime.client
 
-import com.github.yumeyucca.yumebox.core.model.RunMode
-import com.github.yumeyucca.yumebox.runtime.api.RuntimeOwner
-import com.github.yumeyucca.yumebox.runtime.api.RuntimePhase
-import com.github.yumeyucca.yumebox.runtime.api.RuntimeSnapshot
+import com.github.yumelira.yumebox.core.model.RunMode
+import com.github.yumelira.yumebox.runtime.api.RuntimeOwner
+import com.github.yumelira.yumebox.runtime.api.RuntimePhase
+import com.github.yumelira.yumebox.runtime.api.RuntimeSnapshot
 
 object RuntimeStateMapper {
     fun isRunningOrStarting(snapshot: RuntimeSnapshot): Boolean =

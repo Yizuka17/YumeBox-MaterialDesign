@@ -20,9 +20,9 @@
 
 @file:Suppress("FunctionName", "SimplifiableCallChain")
 
-package com.github.yumeyucca.yumebox.feature.editor.format
+package com.github.yumelira.yumebox.feature.editor.format
 
-import com.github.yumeyucca.yumebox.feature.editor.language.LanguageScope
+import com.github.yumelira.yumebox.feature.editor.language.LanguageScope
 import org.json.JSONArray
 import org.json.JSONException
 import org.json.JSONObject

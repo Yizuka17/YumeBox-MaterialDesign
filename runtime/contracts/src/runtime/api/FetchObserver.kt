@@ -18,9 +18,9 @@
  *
  */
 
-package com.github.yumeyucca.yumebox.runtime.api
+package com.github.yumelira.yumebox.runtime.api
 
-import com.github.yumeyucca.yumebox.core.model.FetchStatus
+import com.github.yumelira.yumebox.core.model.FetchStatus
 
 fun interface FetchObserver {
     fun updateStatus(status: FetchStatus)

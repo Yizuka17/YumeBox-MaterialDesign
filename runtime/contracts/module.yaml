@@ -5,7 +5,7 @@ apply:
   - //android.module-template.yaml
 settings:
   android:
-    namespace: com.github.yumeyucca.yumebox.runtime.api
+    namespace: com.github.yumelira.yumebox.runtime.api
 dependencies:
   - //core
   - $libs.kotlinx.coroutines.android

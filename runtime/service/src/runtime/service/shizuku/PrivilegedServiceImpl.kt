@@ -18,7 +18,7 @@
  *
  */
 
-package com.github.yumeyucca.yumebox.runtime.service.shizuku
+package com.github.yumelira.yumebox.runtime.service.shizuku
 
 import android.os.IBinder
 import android.util.Log

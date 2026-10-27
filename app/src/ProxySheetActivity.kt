@@ -18,17 +18,17 @@
  *
  */
 
-package com.github.yumeyucca.yumebox
+package com.github.yumelira.yumebox
 
 import android.content.Context
 import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.compose.runtime.collectAsState
-import com.github.yumeyucca.yumebox.common.util.AppLanguageManager
-import com.github.yumeyucca.yumebox.presentation.theme.ProvideAndroidPlatformTheme
-import com.github.yumeyucca.yumebox.presentation.theme.YumeTheme
-import com.github.yumeyucca.yumebox.screen.settings.AppSettingsViewModel
+import com.github.yumelira.yumebox.common.util.AppLanguageManager
+import com.github.yumelira.yumebox.presentation.theme.ProvideAndroidPlatformTheme
+import com.github.yumelira.yumebox.presentation.theme.YumeTheme
+import com.github.yumelira.yumebox.screen.settings.AppSettingsViewModel
 import org.koin.androidx.compose.koinViewModel
 
 class ProxySheetActivity : ComponentActivity() {

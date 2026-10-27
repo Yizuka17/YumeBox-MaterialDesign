@@ -18,7 +18,7 @@
  *
  */
 
-package com.github.yumeyucca.yumebox.data.store.room
+package com.github.yumelira.yumebox.data.store.room
 
 import androidx.room.ColumnInfo
 import androidx.room.Entity

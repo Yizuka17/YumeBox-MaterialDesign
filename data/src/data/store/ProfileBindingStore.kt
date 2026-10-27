@@ -20,12 +20,12 @@
 
 @file:Suppress("UnusedSymbol", "IfThenToElvis")
 
-package com.github.yumeyucca.yumebox.data.store
+package com.github.yumelira.yumebox.data.store
 
 import android.content.Context
-import com.github.yumeyucca.yumebox.data.model.MetadataIndex
-import com.github.yumeyucca.yumebox.data.model.OverrideMetadata
-import com.github.yumeyucca.yumebox.data.model.ProfileBinding
+import com.github.yumelira.yumebox.data.model.MetadataIndex
+import com.github.yumelira.yumebox.data.model.OverrideMetadata
+import com.github.yumelira.yumebox.data.model.ProfileBinding
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow

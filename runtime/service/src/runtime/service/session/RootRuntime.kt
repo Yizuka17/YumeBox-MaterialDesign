@@ -18,18 +18,18 @@
  *
  */
 
-package com.github.yumeyucca.yumebox.runtime.service.session
+package com.github.yumelira.yumebox.runtime.service.session
 
 import android.content.Context
 import android.os.SystemClock
-import com.github.yumeyucca.yumebox.core.model.RunMode
-import com.github.yumeyucca.yumebox.core.util.StartupTaskCoordinator
-import com.github.yumeyucca.yumebox.runtime.service.core.CoreProcess
-import com.github.yumeyucca.yumebox.runtime.service.core.KernelManager
-import com.github.yumeyucca.yumebox.runtime.service.core.RootDaemonProbe
-import com.github.yumeyucca.yumebox.runtime.service.core.RootDaemonState
-import com.github.yumeyucca.yumebox.runtime.service.log.RuntimeLog
-import com.github.yumeyucca.yumebox.runtime.service.root.RootAccessSupport
+import com.github.yumelira.yumebox.core.model.RunMode
+import com.github.yumelira.yumebox.core.util.StartupTaskCoordinator
+import com.github.yumelira.yumebox.runtime.service.core.CoreProcess
+import com.github.yumelira.yumebox.runtime.service.core.KernelManager
+import com.github.yumelira.yumebox.runtime.service.core.RootDaemonProbe
+import com.github.yumelira.yumebox.runtime.service.core.RootDaemonState
+import com.github.yumelira.yumebox.runtime.service.log.RuntimeLog
+import com.github.yumelira.yumebox.runtime.service.root.RootAccessSupport
 import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.NonCancellable

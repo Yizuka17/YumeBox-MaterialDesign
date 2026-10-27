@@ -18,7 +18,7 @@
  *
  */
 
-package com.github.yumeyucca.yumebox.runtime.service.profile
+package com.github.yumelira.yumebox.runtime.service.profile
 
 import android.content.Context
 import android.net.Uri

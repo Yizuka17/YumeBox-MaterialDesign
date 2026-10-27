@@ -20,11 +20,11 @@
 
 @file:Suppress("UnusedSymbol")
 
-package com.github.yumeyucca.yumebox.substore.util
+package com.github.yumelira.yumebox.substore.util
 
 
 import android.content.Context
-import com.github.yumeyucca.yumebox.substore.SubStorePaths
+import com.github.yumelira.yumebox.substore.SubStorePaths
 import java.io.File
 
 object SubStoreWebAssets {

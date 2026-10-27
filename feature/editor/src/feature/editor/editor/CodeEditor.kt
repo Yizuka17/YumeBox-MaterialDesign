@@ -20,7 +20,7 @@
 
 @file:Suppress("FunctionName")
 
-package com.github.yumeyucca.yumebox.feature.editor.editor
+package com.github.yumelira.yumebox.feature.editor.editor
 
 
 import android.util.TypedValue
@@ -30,8 +30,8 @@ import androidx.compose.ui.viewinterop.AndroidView
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.LifecycleEventObserver
 import androidx.lifecycle.compose.LocalLifecycleOwner
-import com.github.yumeyucca.yumebox.feature.editor.language.TextMateInitializer
-import com.github.yumeyucca.yumebox.feature.editor.theme.EditorThemeManager
+import com.github.yumelira.yumebox.feature.editor.language.TextMateInitializer
+import com.github.yumelira.yumebox.feature.editor.theme.EditorThemeManager
 import io.github.rosemoe.sora.event.ContentChangeEvent
 import io.github.rosemoe.sora.widget.CodeEditor
 import io.github.rosemoe.sora.widget.subscribeAlways

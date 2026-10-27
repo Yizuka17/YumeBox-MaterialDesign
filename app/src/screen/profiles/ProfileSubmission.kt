@@ -17,13 +17,13 @@
  * Copyright (c)  YumeYucca 2025 - Present
  */
 
-package com.github.yumeyucca.yumebox.screen.profiles
+package com.github.yumelira.yumebox.screen.profiles
 
 import android.net.Uri
 import androidx.core.net.toUri
-import com.github.yumeyucca.yumebox.presentation.util.ProfileImportType
-import com.github.yumeyucca.yumebox.runtime.api.Profile
-import com.github.yumeyucca.yumebox.core.locale.YumeTxt
+import com.github.yumelira.yumebox.presentation.util.ProfileImportType
+import com.github.yumelira.yumebox.runtime.api.Profile
+import com.github.yumelira.yumebox.core.locale.YumeTxt
 import java.util.*
 
 internal typealias AddProfile = (String, String, Profile.Type, Long, Uri?, String) -> Unit

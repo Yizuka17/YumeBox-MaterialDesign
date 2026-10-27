@@ -20,25 +20,25 @@
 
 @file:Suppress("FunctionName")
 
-package com.github.yumeyucca.yumebox.screen.profiles
+package com.github.yumelira.yumebox.screen.profiles
 
 
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.platform.LocalContext
-import com.github.yumeyucca.yumebox.common.util.toast
-import com.github.yumeyucca.yumebox.core.model.OverrideInternalConstants
-import com.github.yumeyucca.yumebox.data.controller.OverrideService
-import com.github.yumeyucca.yumebox.data.model.OverrideConfig
-import com.github.yumeyucca.yumebox.data.model.ProfileBinding
-import com.github.yumeyucca.yumebox.data.store.ProfileBindingProvider
-import com.github.yumeyucca.yumebox.feature.meta.presentation.util.CustomRoutingBootstrapper
-import com.github.yumeyucca.yumebox.runtime.api.Profile
-import com.github.yumeyucca.yumebox.runtime.client.ProfilePatch
-import com.github.yumeyucca.yumebox.screen.home.HomeViewModel
+import com.github.yumelira.yumebox.common.util.toast
+import com.github.yumelira.yumebox.core.model.OverrideInternalConstants
+import com.github.yumelira.yumebox.data.controller.OverrideService
+import com.github.yumelira.yumebox.data.model.OverrideConfig
+import com.github.yumelira.yumebox.data.model.ProfileBinding
+import com.github.yumelira.yumebox.data.store.ProfileBindingProvider
+import com.github.yumelira.yumebox.feature.meta.presentation.util.CustomRoutingBootstrapper
+import com.github.yumelira.yumebox.runtime.api.Profile
+import com.github.yumelira.yumebox.runtime.client.ProfilePatch
+import com.github.yumelira.yumebox.screen.home.HomeViewModel
 import kotlinx.coroutines.launch
 import org.koin.compose.koinInject
-import com.github.yumeyucca.yumebox.core.locale.YumeTxt
+import com.github.yumelira.yumebox.core.locale.YumeTxt
 import timber.log.Timber
 
 @Composable

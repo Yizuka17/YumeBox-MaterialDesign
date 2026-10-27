@@ -20,7 +20,7 @@
 
 @file:Suppress("DuplicatedCode", "FunctionName")
 
-package com.github.yumeyucca.yumebox.screen.settings
+package com.github.yumelira.yumebox.screen.settings
 
 import android.net.Uri
 
@@ -38,18 +38,18 @@ import androidx.compose.ui.state.ToggleableState
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.TextFieldValue
 import androidx.compose.ui.unit.dp
-import com.github.yumeyucca.yumebox.data.model.AccessControlMode
-import com.github.yumeyucca.yumebox.data.model.RunMode
-import com.github.yumeyucca.yumebox.presentation.component.*
-import com.github.yumeyucca.yumebox.presentation.icon.Yume
-import com.github.yumeyucca.yumebox.presentation.icon.yume.CPU
-import com.github.yumeyucca.yumebox.presentation.icon.yume.PlaneTakeoff
-import com.github.yumeyucca.yumebox.presentation.icon.yume.Tun
-import com.github.yumeyucca.yumebox.presentation.navigation.Route
-import com.github.yumeyucca.yumebox.presentation.theme.AppTheme
-import com.github.yumeyucca.yumebox.runtime.service.core.KernelManager
+import com.github.yumelira.yumebox.data.model.AccessControlMode
+import com.github.yumelira.yumebox.data.model.RunMode
+import com.github.yumelira.yumebox.presentation.component.*
+import com.github.yumelira.yumebox.presentation.icon.Yume
+import com.github.yumelira.yumebox.presentation.icon.yume.CPU
+import com.github.yumelira.yumebox.presentation.icon.yume.PlaneTakeoff
+import com.github.yumelira.yumebox.presentation.icon.yume.Tun
+import com.github.yumelira.yumebox.presentation.navigation.Route
+import com.github.yumelira.yumebox.presentation.theme.AppTheme
+import com.github.yumelira.yumebox.runtime.service.core.KernelManager
 import org.koin.androidx.compose.koinViewModel
-import com.github.yumeyucca.yumebox.core.locale.YumeTxt
+import com.github.yumelira.yumebox.core.locale.YumeTxt
 import top.yukonga.miuix.kmp.basic.*
 import top.yukonga.miuix.kmp.preference.WindowDropdownPreference
 

@@ -18,7 +18,7 @@
  *
  */
 
-package com.github.yumeyucca.yumebox.presentation.navigation
+package com.github.yumelira.yumebox.presentation.navigation
 
 import androidx.activity.compose.BackHandler
 import androidx.compose.animation.core.tween
@@ -34,10 +34,10 @@ import com.arkivanov.decompose.extensions.compose.stack.animation.predictiveback
 import com.arkivanov.decompose.extensions.compose.subscribeAsState
 import com.arkivanov.decompose.router.stack.childStack
 import com.arkivanov.essenty.backhandler.BackHandler
-import com.github.yumeyucca.yumebox.MainScreen
-import com.github.yumeyucca.yumebox.presentation.component.LocalNavigator
-import com.github.yumeyucca.yumebox.presentation.component.Navigator
-import com.github.yumeyucca.yumebox.screen.settings.MoeWallpaperCropScreen
+import com.github.yumelira.yumebox.MainScreen
+import com.github.yumelira.yumebox.presentation.component.LocalNavigator
+import com.github.yumelira.yumebox.presentation.component.Navigator
+import com.github.yumelira.yumebox.screen.settings.MoeWallpaperCropScreen
 import kotlinx.coroutines.launch
 
 internal fun <C : Any, T : Any> yumeStackAnimation(): StackAnimation<C, T> =

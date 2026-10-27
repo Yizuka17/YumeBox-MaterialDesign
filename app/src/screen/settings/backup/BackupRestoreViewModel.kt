@@ -18,7 +18,7 @@
  *
  */
 
-package com.github.yumeyucca.yumebox.screen.settings.backup
+package com.github.yumelira.yumebox.screen.settings.backup
 
 import android.app.Application
 import android.net.Uri
@@ -28,7 +28,7 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.*
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
-import com.github.yumeyucca.yumebox.core.locale.YumeTxt
+import com.github.yumelira.yumebox.core.locale.YumeTxt
 
 data class BackupRestoreUiState(val isBusy: Boolean = false)
 

@@ -20,12 +20,12 @@
 
 @file:Suppress("JavaDefaultMethodsNotOverriddenByDelegation", "UnusedSymbol", "RedundantIf")
 
-package com.github.yumeyucca.yumebox.core.model
+package com.github.yumelira.yumebox.core.model
 
 import android.os.Parcel
 import android.os.Parcelable
-import com.github.yumeyucca.yumebox.core.util.createListFromParcelSlice
-import com.github.yumeyucca.yumebox.core.util.writeToParcelSlice
+import com.github.yumelira.yumebox.core.util.createListFromParcelSlice
+import com.github.yumelira.yumebox.core.util.writeToParcelSlice
 import kotlinx.serialization.Serializable
 
 @Serializable

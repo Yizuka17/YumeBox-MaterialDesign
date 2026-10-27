@@ -20,14 +20,14 @@
 
 @file:Suppress("UnusedSymbol", "FunctionName")
 
-package com.github.yumeyucca.yumebox.feature.editor.editor
+package com.github.yumelira.yumebox.feature.editor.editor
 
 
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
-import com.github.yumeyucca.yumebox.feature.editor.format.CodeFormatter
-import com.github.yumeyucca.yumebox.feature.editor.language.LanguageScope
+import com.github.yumelira.yumebox.feature.editor.format.CodeFormatter
+import com.github.yumelira.yumebox.feature.editor.language.LanguageScope
 import io.github.rosemoe.sora.widget.CodeEditor
 
 class CodeEditorState(

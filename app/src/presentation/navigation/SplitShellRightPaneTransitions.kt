@@ -18,10 +18,10 @@
  *
  */
 
-package com.github.yumeyucca.yumebox.presentation.navigation
+package com.github.yumelira.yumebox.presentation.navigation
 
 import androidx.compose.animation.ContentTransform
-import com.github.yumeyucca.yumebox.presentation.theme.verticalBounceContentTransform
+import com.github.yumelira.yumebox.presentation.theme.verticalBounceContentTransform
 
 internal fun splitShellRightPaneTransform(forward: Boolean): ContentTransform =
     verticalBounceContentTransform(forward)

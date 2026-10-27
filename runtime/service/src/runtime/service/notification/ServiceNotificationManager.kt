@@ -18,7 +18,7 @@
  *
  */
 
-package com.github.yumeyucca.yumebox.runtime.service.notification
+package com.github.yumelira.yumebox.runtime.service.notification
 
 import android.app.Notification
 import android.app.PendingIntent
@@ -28,21 +28,21 @@ import android.os.SystemClock
 import androidx.core.app.NotificationChannelCompat
 import androidx.core.app.NotificationCompat
 import androidx.core.app.NotificationManagerCompat
-import com.github.yumeyucca.yumebox.core.util.PollingTimerSpecs
-import com.github.yumeyucca.yumebox.core.util.PollingTimers
-import com.github.yumeyucca.yumebox.data.store.AppSettingsStore
-import com.github.yumeyucca.yumebox.data.store.RemoteControllerStore
-import com.github.yumeyucca.yumebox.domain.model.resolvePrimaryNode
-import com.github.yumeyucca.yumebox.domain.model.toInfo
-import com.github.yumeyucca.yumebox.runtime.api.Components
-import com.github.yumeyucca.yumebox.runtime.api.CoreApi
-import com.github.yumeyucca.yumebox.runtime.service.R
-import com.github.yumeyucca.yumebox.runtime.service.config.ServiceStore
-import com.github.yumeyucca.yumebox.runtime.service.core.CoreProcess
-import com.github.yumeyucca.yumebox.runtime.service.profile.Imported
-import com.github.yumeyucca.yumebox.runtime.service.profile.ImportedDao
-import com.github.yumeyucca.yumebox.runtime.service.shizuku.ShizukuManager
-import com.github.yumeyucca.yumebox.runtime.service.util.ServiceLogoIcons
+import com.github.yumelira.yumebox.core.util.PollingTimerSpecs
+import com.github.yumelira.yumebox.core.util.PollingTimers
+import com.github.yumelira.yumebox.data.store.AppSettingsStore
+import com.github.yumelira.yumebox.data.store.RemoteControllerStore
+import com.github.yumelira.yumebox.domain.model.resolvePrimaryNode
+import com.github.yumelira.yumebox.domain.model.toInfo
+import com.github.yumelira.yumebox.runtime.api.Components
+import com.github.yumelira.yumebox.runtime.api.CoreApi
+import com.github.yumelira.yumebox.runtime.service.R
+import com.github.yumelira.yumebox.runtime.service.config.ServiceStore
+import com.github.yumelira.yumebox.runtime.service.core.CoreProcess
+import com.github.yumelira.yumebox.runtime.service.profile.Imported
+import com.github.yumelira.yumebox.runtime.service.profile.ImportedDao
+import com.github.yumelira.yumebox.runtime.service.shizuku.ShizukuManager
+import com.github.yumelira.yumebox.runtime.service.util.ServiceLogoIcons
 import com.tencent.mmkv.MMKV
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
@@ -51,7 +51,7 @@ import kotlinx.coroutines.NonCancellable
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
-import com.github.yumeyucca.yumebox.core.locale.YumeTxt
+import com.github.yumelira.yumebox.core.locale.YumeTxt
 
 class ServiceNotificationManager(
     private val service: Service,

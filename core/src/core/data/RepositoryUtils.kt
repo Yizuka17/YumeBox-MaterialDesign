@@ -20,7 +20,7 @@
 
 @file:Suppress("UnusedSymbol")
 
-package com.github.yumeyucca.yumebox.core.data
+package com.github.yumelira.yumebox.core.data
 
 
 import kotlinx.coroutines.CancellationException

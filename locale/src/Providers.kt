@@ -1,4 +1,4 @@
-package com.github.yumeyucca.yumebox.core.locale
+package com.github.yumelira.yumebox.core.locale
 
 internal val ZhHansYumeStrings_Providers: YumeStrings_Providers = YumeStrings_Providers(
     Title = "外部资源",

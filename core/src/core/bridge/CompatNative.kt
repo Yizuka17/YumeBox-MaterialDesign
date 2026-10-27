@@ -18,7 +18,7 @@
  *
  */
 
-package com.github.yumeyucca.yumebox.core.bridge
+package com.github.yumelira.yumebox.core.bridge
 
 /**
  * Loads `libcompat.so`, the out-of-process core bridge (fork+exec, socketpair channel with

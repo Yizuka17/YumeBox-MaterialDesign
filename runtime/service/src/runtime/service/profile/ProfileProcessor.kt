@@ -18,16 +18,16 @@
  *
  */
 
-package com.github.yumeyucca.yumebox.runtime.service.profile
+package com.github.yumelira.yumebox.runtime.service.profile
 
 import android.content.Context
-import com.github.yumeyucca.yumebox.runtime.api.FetchObserver
-import com.github.yumeyucca.yumebox.runtime.api.Profile
-import com.github.yumeyucca.yumebox.runtime.api.ProfileUpdateReport
-import com.github.yumeyucca.yumebox.runtime.api.ProviderPrefetchReport
-import com.github.yumeyucca.yumebox.runtime.service.config.ServiceStore
-import com.github.yumeyucca.yumebox.runtime.service.util.importedDir
-import com.github.yumeyucca.yumebox.runtime.service.util.sendProfileChanged
+import com.github.yumelira.yumebox.runtime.api.FetchObserver
+import com.github.yumelira.yumebox.runtime.api.Profile
+import com.github.yumelira.yumebox.runtime.api.ProfileUpdateReport
+import com.github.yumelira.yumebox.runtime.api.ProviderPrefetchReport
+import com.github.yumelira.yumebox.runtime.service.config.ServiceStore
+import com.github.yumelira.yumebox.runtime.service.util.importedDir
+import com.github.yumelira.yumebox.runtime.service.util.sendProfileChanged
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.NonCancellable
 import kotlinx.coroutines.sync.Mutex

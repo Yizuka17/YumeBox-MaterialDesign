@@ -18,10 +18,10 @@
  *
  */
 
-package com.github.yumeyucca.yumebox.data.controller
+package com.github.yumelira.yumebox.data.controller
 
-import com.github.yumeyucca.yumebox.data.store.ProfileBindingProvider
-import com.github.yumeyucca.yumebox.runtime.api.Profile
+import com.github.yumelira.yumebox.data.store.ProfileBindingProvider
+import com.github.yumelira.yumebox.runtime.api.Profile
 import timber.log.Timber
 
 class ActiveProfileOverrideReloader(

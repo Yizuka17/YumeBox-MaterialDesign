@@ -17,10 +17,10 @@
  * Copyright (c) YumeYucca 2025 - Present
  */
 
-package com.github.yumeyucca.yumebox.data.store
+package com.github.yumelira.yumebox.data.store
 
 import android.content.Context
-import com.github.yumeyucca.yumebox.data.model.BuiltInOverrideCatalog
+import com.github.yumelira.yumebox.data.model.BuiltInOverrideCatalog
 import timber.log.Timber
 import java.io.File
 import java.nio.charset.StandardCharsets

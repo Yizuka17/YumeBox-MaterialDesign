@@ -20,7 +20,7 @@
 
 @file:Suppress("DuplicatedCode", "FunctionName")
 
-package com.github.yumeyucca.yumebox.screen.connection
+package com.github.yumelira.yumebox.screen.connection
 
 
 import androidx.compose.foundation.gestures.detectTapGestures
@@ -37,17 +37,17 @@ import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.layout.onGloballyPositioned
 import androidx.compose.ui.layout.positionInWindow
 import androidx.compose.ui.platform.LocalDensity
-import com.github.yumeyucca.yumebox.core.model.ConnectionInfo
-import com.github.yumeyucca.yumebox.feature.meta.presentation.component.ConnectionCard
-import com.github.yumeyucca.yumebox.feature.meta.presentation.component.TabRowWithContour
-import com.github.yumeyucca.yumebox.feature.meta.presentation.viewmodel.ConnectionSort
-import com.github.yumeyucca.yumebox.feature.meta.presentation.viewmodel.ConnectionTab
-import com.github.yumeyucca.yumebox.feature.meta.presentation.viewmodel.ConnectionViewModel
-import com.github.yumeyucca.yumebox.presentation.component.*
-import com.github.yumeyucca.yumebox.presentation.navigation.Route
-import com.github.yumeyucca.yumebox.presentation.theme.AppTheme
+import com.github.yumelira.yumebox.core.model.ConnectionInfo
+import com.github.yumelira.yumebox.feature.meta.presentation.component.ConnectionCard
+import com.github.yumelira.yumebox.feature.meta.presentation.component.TabRowWithContour
+import com.github.yumelira.yumebox.feature.meta.presentation.viewmodel.ConnectionSort
+import com.github.yumelira.yumebox.feature.meta.presentation.viewmodel.ConnectionTab
+import com.github.yumelira.yumebox.feature.meta.presentation.viewmodel.ConnectionViewModel
+import com.github.yumelira.yumebox.presentation.component.*
+import com.github.yumelira.yumebox.presentation.navigation.Route
+import com.github.yumelira.yumebox.presentation.theme.AppTheme
 import org.koin.androidx.compose.koinViewModel
-import com.github.yumeyucca.yumebox.core.locale.YumeTxt
+import com.github.yumelira.yumebox.core.locale.YumeTxt
 import top.yukonga.miuix.kmp.basic.*
 import top.yukonga.miuix.kmp.icon.MiuixIcons
 import top.yukonga.miuix.kmp.icon.extended.Sort

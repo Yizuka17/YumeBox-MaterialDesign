@@ -20,10 +20,10 @@
 
 @file:Suppress("UnusedSymbol", "FunctionName")
 
-package com.github.yumeyucca.yumebox.feature.editor.di
+package com.github.yumelira.yumebox.feature.editor.di
 
 
-import com.github.yumeyucca.yumebox.feature.editor.viewmodel.ConfigEditorViewModel
+import com.github.yumelira.yumebox.feature.editor.viewmodel.ConfigEditorViewModel
 import org.koin.core.module.dsl.viewModel
 import org.koin.dsl.module
 

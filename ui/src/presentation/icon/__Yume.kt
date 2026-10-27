@@ -20,11 +20,11 @@
 
 @file:Suppress("UnusedSymbol")
 
-package com.github.yumeyucca.yumebox.presentation.icon
+package com.github.yumelira.yumebox.presentation.icon
 
 
 import androidx.compose.ui.graphics.vector.ImageVector
-import com.github.yumeyucca.yumebox.presentation.icon.yume.Github
+import com.github.yumelira.yumebox.presentation.icon.yume.Github
 import kotlin.collections.List as ____KtList
 import kotlin.collections.Map as ____KtMap
 

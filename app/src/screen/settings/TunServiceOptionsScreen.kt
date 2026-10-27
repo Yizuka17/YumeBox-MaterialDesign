@@ -20,7 +20,7 @@
 
 @file:Suppress("FunctionName")
 
-package com.github.yumeyucca.yumebox.screen.settings
+package com.github.yumelira.yumebox.screen.settings
 
 
 import androidx.compose.foundation.text.KeyboardOptions
@@ -29,11 +29,11 @@ import androidx.compose.ui.platform.LocalFocusManager
 import androidx.compose.ui.text.TextRange
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.input.TextFieldValue
-import com.github.yumeyucca.yumebox.core.model.TunDnsMode
-import com.github.yumeyucca.yumebox.data.model.TunStack
-import com.github.yumeyucca.yumebox.presentation.component.*
+import com.github.yumelira.yumebox.core.model.TunDnsMode
+import com.github.yumelira.yumebox.data.model.TunStack
+import com.github.yumelira.yumebox.presentation.component.*
 import org.koin.androidx.compose.koinViewModel
-import com.github.yumeyucca.yumebox.core.locale.YumeTxt
+import com.github.yumelira.yumebox.core.locale.YumeTxt
 import top.yukonga.miuix.kmp.basic.MiuixScrollBehavior
 import top.yukonga.miuix.kmp.basic.Scaffold
 

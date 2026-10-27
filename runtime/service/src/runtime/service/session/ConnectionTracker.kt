@@ -18,14 +18,14 @@
  *
  */
 
-package com.github.yumeyucca.yumebox.runtime.service.session
+package com.github.yumelira.yumebox.runtime.service.session
 
 import android.content.Context
-import com.github.yumeyucca.yumebox.core.domain.ConnectionHistoryManager
-import com.github.yumeyucca.yumebox.core.util.AppVisibilityTracker
-import com.github.yumeyucca.yumebox.core.util.PollingTimerSpecs
-import com.github.yumeyucca.yumebox.core.util.PollingTimers
-import com.github.yumeyucca.yumebox.runtime.service.core.CoreProcess
+import com.github.yumelira.yumebox.core.domain.ConnectionHistoryManager
+import com.github.yumelira.yumebox.core.util.AppVisibilityTracker
+import com.github.yumelira.yumebox.core.util.PollingTimerSpecs
+import com.github.yumelira.yumebox.core.util.PollingTimers
+import com.github.yumelira.yumebox.runtime.service.core.CoreProcess
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job

@@ -18,7 +18,7 @@
  *
  */
 
-package com.github.yumeyucca.yumebox
+package com.github.yumelira.yumebox
 
 import android.app.ActivityManager
 import android.content.Context
@@ -37,27 +37,27 @@ import androidx.core.splashscreen.SplashScreen.Companion.installSplashScreen
 import androidx.fragment.app.FragmentActivity
 import androidx.lifecycle.lifecycleScope
 import com.arkivanov.decompose.retainedComponent
-import com.github.yumeyucca.yumebox.common.util.AppLanguageManager
-import com.github.yumeyucca.yumebox.common.util.AutoStartDependencies
-import com.github.yumeyucca.yumebox.common.util.IntentController
-import com.github.yumeyucca.yumebox.common.util.ProxyAutoStartHelper
-import com.github.yumeyucca.yumebox.core.util.AutoStartSessionGate
-import com.github.yumeyucca.yumebox.core.util.StartupTaskCoordinator
-import com.github.yumeyucca.yumebox.data.store.AppSettingsStore
-import com.github.yumeyucca.yumebox.data.store.FeatureStore
-import com.github.yumeyucca.yumebox.di.APPLICATION_SCOPE_NAME
-import com.github.yumeyucca.yumebox.presentation.component.LocalTopBarHazeState
-import com.github.yumeyucca.yumebox.presentation.component.LocalTopBarHazeStyle
-import com.github.yumeyucca.yumebox.presentation.component.ToastDialogHost
-import com.github.yumeyucca.yumebox.presentation.navigation.AppNavContainer
-import com.github.yumeyucca.yumebox.presentation.navigation.AppNavigationComponent
-import com.github.yumeyucca.yumebox.presentation.theme.ProvideAndroidPlatformTheme
-import com.github.yumeyucca.yumebox.presentation.theme.YumeHaze
-import com.github.yumeyucca.yumebox.presentation.theme.YumeTheme
-import com.github.yumeyucca.yumebox.runtime.service.WifiAutomationService
-import com.github.yumeyucca.yumebox.screen.moe.HomePreviewGuideDialog
-import com.github.yumeyucca.yumebox.screen.moe.SystemWallpaperAccess
-import com.github.yumeyucca.yumebox.screen.settings.AppSettingsViewModel
+import com.github.yumelira.yumebox.common.util.AppLanguageManager
+import com.github.yumelira.yumebox.common.util.AutoStartDependencies
+import com.github.yumelira.yumebox.common.util.IntentController
+import com.github.yumelira.yumebox.common.util.ProxyAutoStartHelper
+import com.github.yumelira.yumebox.core.util.AutoStartSessionGate
+import com.github.yumelira.yumebox.core.util.StartupTaskCoordinator
+import com.github.yumelira.yumebox.data.store.AppSettingsStore
+import com.github.yumelira.yumebox.data.store.FeatureStore
+import com.github.yumelira.yumebox.di.APPLICATION_SCOPE_NAME
+import com.github.yumelira.yumebox.presentation.component.LocalTopBarHazeState
+import com.github.yumelira.yumebox.presentation.component.LocalTopBarHazeStyle
+import com.github.yumelira.yumebox.presentation.component.ToastDialogHost
+import com.github.yumelira.yumebox.presentation.navigation.AppNavContainer
+import com.github.yumelira.yumebox.presentation.navigation.AppNavigationComponent
+import com.github.yumelira.yumebox.presentation.theme.ProvideAndroidPlatformTheme
+import com.github.yumelira.yumebox.presentation.theme.YumeHaze
+import com.github.yumelira.yumebox.presentation.theme.YumeTheme
+import com.github.yumelira.yumebox.runtime.service.WifiAutomationService
+import com.github.yumelira.yumebox.screen.moe.HomePreviewGuideDialog
+import com.github.yumelira.yumebox.screen.moe.SystemWallpaperAccess
+import com.github.yumelira.yumebox.screen.settings.AppSettingsViewModel
 import com.tencent.mmkv.MMKV
 import dev.chrisbanes.haze.HazeState
 import kotlinx.coroutines.CoroutineScope
@@ -102,15 +102,15 @@ class MainActivity : FragmentActivity() {
         }
     }
 
-    private val appSettingsStorage: com.github.yumeyucca.yumebox.data.store.AppSettingsStore by
+    private val appSettingsStorage: com.github.yumelira.yumebox.data.store.AppSettingsStore by
         inject()
     private val featureStore: FeatureStore by inject()
     private val networkSettingsStorage:
-        com.github.yumeyucca.yumebox.data.store.NetworkSettingsStore by
+        com.github.yumelira.yumebox.data.store.NetworkSettingsStore by
         inject()
-    private val profilesRepository: com.github.yumeyucca.yumebox.runtime.client.ProfilesRepository by
+    private val profilesRepository: com.github.yumelira.yumebox.runtime.client.ProfilesRepository by
         inject()
-    private val proxyFacade: com.github.yumeyucca.yumebox.runtime.client.ProxyFacade by inject()
+    private val proxyFacade: com.github.yumelira.yumebox.runtime.client.ProxyFacade by inject()
     private val serviceCache: MMKV by inject(qualifier = named("service_cache"))
     private val applicationScope: CoroutineScope by
         inject(qualifier = named(APPLICATION_SCOPE_NAME))

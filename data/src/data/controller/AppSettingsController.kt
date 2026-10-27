@@ -18,10 +18,10 @@
  *
  */
 
-package com.github.yumeyucca.yumebox.data.controller
+package com.github.yumelira.yumebox.data.controller
 
-import com.github.yumeyucca.yumebox.data.model.AppLanguage
-import com.github.yumeyucca.yumebox.data.store.AppSettingsStore
+import com.github.yumelira.yumebox.data.model.AppLanguage
+import com.github.yumelira.yumebox.data.store.AppSettingsStore
 
 class AppSettingsController(
     private val store: AppSettingsStore,

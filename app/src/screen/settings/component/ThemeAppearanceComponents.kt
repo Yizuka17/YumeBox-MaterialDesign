@@ -20,7 +20,7 @@
 
 @file:Suppress("UnusedSymbol", "FunctionName")
 
-package com.github.yumeyucca.yumebox.screen.settings.component
+package com.github.yumelira.yumebox.screen.settings.component
 
 
 import androidx.compose.foundation.layout.*
@@ -31,18 +31,18 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.TextRange
 import androidx.compose.ui.text.input.TextFieldValue
-import com.github.yumeyucca.yumebox.data.model.ThemeMode
-import com.github.yumeyucca.yumebox.presentation.component.AppActionBottomSheet
-import com.github.yumeyucca.yumebox.presentation.component.AppBottomSheetCloseAction
-import com.github.yumeyucca.yumebox.presentation.component.AppBottomSheetConfirmAction
-import com.github.yumeyucca.yumebox.presentation.component.EnumSelector
-import com.github.yumeyucca.yumebox.presentation.component.OemTextField
-import com.github.yumeyucca.yumebox.presentation.icon.Yume
-import com.github.yumeyucca.yumebox.presentation.icon.yume.Palette
-import com.github.yumeyucca.yumebox.presentation.theme.UiDp
-import com.github.yumeyucca.yumebox.presentation.theme.colorFromArgb
-import com.github.yumeyucca.yumebox.presentation.theme.colorToArgbLong
-import com.github.yumeyucca.yumebox.core.locale.YumeTxt
+import com.github.yumelira.yumebox.data.model.ThemeMode
+import com.github.yumelira.yumebox.presentation.component.AppActionBottomSheet
+import com.github.yumelira.yumebox.presentation.component.AppBottomSheetCloseAction
+import com.github.yumelira.yumebox.presentation.component.AppBottomSheetConfirmAction
+import com.github.yumelira.yumebox.presentation.component.EnumSelector
+import com.github.yumelira.yumebox.presentation.component.OemTextField
+import com.github.yumelira.yumebox.presentation.icon.Yume
+import com.github.yumelira.yumebox.presentation.icon.yume.Palette
+import com.github.yumelira.yumebox.presentation.theme.UiDp
+import com.github.yumelira.yumebox.presentation.theme.colorFromArgb
+import com.github.yumelira.yumebox.presentation.theme.colorToArgbLong
+import com.github.yumelira.yumebox.core.locale.YumeTxt
 import top.yukonga.miuix.kmp.basic.BasicComponent
 import top.yukonga.miuix.kmp.basic.ColorPicker
 import top.yukonga.miuix.kmp.basic.Icon

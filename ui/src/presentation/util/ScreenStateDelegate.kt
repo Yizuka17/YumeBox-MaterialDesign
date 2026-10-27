@@ -20,7 +20,7 @@
 
 @file:Suppress("UnusedSymbol")
 
-package com.github.yumeyucca.yumebox.presentation.util
+package com.github.yumelira.yumebox.presentation.util
 
 
 import androidx.compose.runtime.Composable

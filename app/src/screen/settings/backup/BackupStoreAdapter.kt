@@ -17,12 +17,12 @@
  * Copyright (c)  YumeYucca 2025 - Present
  */
 
-package com.github.yumeyucca.yumebox.screen.settings.backup
+package com.github.yumelira.yumebox.screen.settings.backup
 
-import com.github.yumeyucca.yumebox.data.store.*
-import com.github.yumeyucca.yumebox.runtime.client.ProxyFacade
-import com.github.yumeyucca.yumebox.runtime.service.config.ServiceStore
-import com.github.yumeyucca.yumebox.runtime.service.profile.ProfileStore
+import com.github.yumelira.yumebox.data.store.*
+import com.github.yumelira.yumebox.runtime.client.ProxyFacade
+import com.github.yumelira.yumebox.runtime.service.config.ServiceStore
+import com.github.yumelira.yumebox.runtime.service.profile.ProfileStore
 import java.util.*
 
 internal class BackupStoreAdapter(

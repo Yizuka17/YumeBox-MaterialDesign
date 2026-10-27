@@ -18,9 +18,9 @@
  *
  */
 
-package com.github.yumeyucca.yumebox.runtime.service.profile
+package com.github.yumelira.yumebox.runtime.service.profile
 
-import com.github.yumeyucca.yumebox.common.util.SubscriptionUserAgentDefaults
+import com.github.yumelira.yumebox.common.util.SubscriptionUserAgentDefaults
 import com.tencent.mmkv.MMKV
 
 /** Resolves the app-configured subscription User-Agent (settings store). */

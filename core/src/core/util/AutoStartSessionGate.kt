@@ -20,7 +20,7 @@
 
 @file:Suppress("RedundantIf")
 
-package com.github.yumeyucca.yumebox.core.util
+package com.github.yumelira.yumebox.core.util
 
 import java.util.concurrent.atomic.AtomicBoolean
 

@@ -18,9 +18,9 @@
  *
  */
 
-package com.github.yumeyucca.yumebox.runtime.service.core
+package com.github.yumelira.yumebox.runtime.service.core
 
-import com.github.yumeyucca.yumebox.data.store.MMKVProvider
+import com.github.yumelira.yumebox.data.store.MMKVProvider
 
 /**
  * Persisted handle to the decoupled root core daemon. Unlike the tracked VPN child core, the root

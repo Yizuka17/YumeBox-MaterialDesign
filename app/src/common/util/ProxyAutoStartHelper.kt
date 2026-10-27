@@ -20,15 +20,15 @@
 
 @file:Suppress("SortModifiers")
 
-package com.github.yumeyucca.yumebox.common.util
+package com.github.yumelira.yumebox.common.util
 
 import android.content.Context
 import android.net.VpnService
-import com.github.yumeyucca.yumebox.core.model.RunMode
-import com.github.yumeyucca.yumebox.core.util.AutoStartSessionGate
-import com.github.yumeyucca.yumebox.runtime.api.Profile
-import com.github.yumeyucca.yumebox.runtime.service.RuntimeCoordinator
-import com.github.yumeyucca.yumebox.runtime.service.util.AutoStartExecutionGate
+import com.github.yumelira.yumebox.core.model.RunMode
+import com.github.yumelira.yumebox.core.util.AutoStartSessionGate
+import com.github.yumelira.yumebox.runtime.api.Profile
+import com.github.yumelira.yumebox.runtime.service.RuntimeCoordinator
+import com.github.yumelira.yumebox.runtime.service.util.AutoStartExecutionGate
 import kotlinx.coroutines.CancellationException
 import timber.log.Timber
 

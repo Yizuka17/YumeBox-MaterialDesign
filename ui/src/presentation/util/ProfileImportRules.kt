@@ -18,13 +18,13 @@
  *
  */
 
-package com.github.yumeyucca.yumebox.presentation.util
+package com.github.yumelira.yumebox.presentation.util
 
 import android.content.ClipboardManager
 import android.content.Context
 import android.net.Uri
 import android.provider.OpenableColumns
-import com.github.yumeyucca.yumebox.runtime.api.Profile
+import com.github.yumelira.yumebox.runtime.api.Profile
 import java.io.File
 
 enum class ProfileImportType {

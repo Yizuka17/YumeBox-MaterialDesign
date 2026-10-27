@@ -29,7 +29,7 @@
 
 @file:Suppress("ReplaceRangeToWithRangeUntil")
 
-package com.github.yumeyucca.yumebox.presentation.util
+package com.github.yumelira.yumebox.presentation.util
 
 data class FlaggedName(val countryCode: String?, val displayName: String)
 

@@ -20,10 +20,10 @@
 
 @file:Suppress("UnusedSymbol")
 
-package com.github.yumeyucca.yumebox.data.store
+package com.github.yumelira.yumebox.data.store
 
 
-import com.github.yumeyucca.yumebox.core.util.enumByNameOrNull
+import com.github.yumelira.yumebox.core.util.enumByNameOrNull
 import com.tencent.mmkv.MMKV
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow

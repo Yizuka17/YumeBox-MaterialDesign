@@ -18,15 +18,15 @@
  *
  */
 
-package com.github.yumeyucca.yumebox.runtime.client.session
+package com.github.yumelira.yumebox.runtime.client.session
 
 import android.content.BroadcastReceiver
 import android.content.Context
 import android.content.Intent
 import android.content.IntentFilter
 import androidx.core.content.ContextCompat
-import com.github.yumeyucca.yumebox.runtime.api.Intents
-import com.github.yumeyucca.yumebox.runtime.api.appContextOrSelf
+import com.github.yumelira.yumebox.runtime.api.Intents
+import com.github.yumelira.yumebox.runtime.api.appContextOrSelf
 import timber.log.Timber
 
 /**

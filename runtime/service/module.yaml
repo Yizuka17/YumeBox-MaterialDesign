@@ -5,7 +5,7 @@ apply:
   - //android.module-template.yaml
 settings:
   android:
-    namespace: com.github.yumeyucca.yumebox.runtime.service
+    namespace: com.github.yumelira.yumebox.runtime.service
 dependencies:
   - //resource-symbols: compile-only
   - //core

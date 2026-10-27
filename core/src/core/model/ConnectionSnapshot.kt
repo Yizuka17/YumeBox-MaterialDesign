@@ -18,7 +18,7 @@
  *
  */
 
-package com.github.yumeyucca.yumebox.core.model
+package com.github.yumelira.yumebox.core.model
 
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable

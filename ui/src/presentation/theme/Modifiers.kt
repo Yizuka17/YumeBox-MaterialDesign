@@ -20,7 +20,7 @@
 
 @file:Suppress("UnusedSymbol")
 
-package com.github.yumeyucca.yumebox.presentation.theme
+package com.github.yumelira.yumebox.presentation.theme
 
 
 import android.annotation.SuppressLint

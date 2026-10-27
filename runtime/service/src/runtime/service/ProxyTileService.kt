@@ -18,7 +18,7 @@
  *
  */
 
-package com.github.yumeyucca.yumebox.runtime.service
+package com.github.yumelira.yumebox.runtime.service
 
 import android.annotation.SuppressLint
 import android.app.PendingIntent
@@ -27,17 +27,17 @@ import android.graphics.drawable.Icon
 import android.os.Build
 import android.service.quicksettings.Tile
 import android.service.quicksettings.TileService
-import com.github.yumeyucca.yumebox.core.util.AutoStartSessionGate
-import com.github.yumeyucca.yumebox.data.store.MMKVProvider
-import com.github.yumeyucca.yumebox.data.store.NetworkSettingsStore
-import com.github.yumeyucca.yumebox.data.store.RemoteControllerStore
-import com.github.yumeyucca.yumebox.runtime.api.Components
-import com.github.yumeyucca.yumebox.runtime.api.RuntimePhase
-import com.github.yumeyucca.yumebox.runtime.api.RuntimeStartSource
-import com.github.yumeyucca.yumebox.runtime.api.RuntimeState
-import com.github.yumeyucca.yumebox.runtime.api.VpnPermissionRequired
-import com.github.yumeyucca.yumebox.runtime.service.profile.ProfileService
-import com.github.yumeyucca.yumebox.runtime.service.util.ServiceLogoIcons
+import com.github.yumelira.yumebox.core.util.AutoStartSessionGate
+import com.github.yumelira.yumebox.data.store.MMKVProvider
+import com.github.yumelira.yumebox.data.store.NetworkSettingsStore
+import com.github.yumelira.yumebox.data.store.RemoteControllerStore
+import com.github.yumelira.yumebox.runtime.api.Components
+import com.github.yumelira.yumebox.runtime.api.RuntimePhase
+import com.github.yumelira.yumebox.runtime.api.RuntimeStartSource
+import com.github.yumelira.yumebox.runtime.api.RuntimeState
+import com.github.yumelira.yumebox.runtime.api.VpnPermissionRequired
+import com.github.yumelira.yumebox.runtime.service.profile.ProfileService
+import com.github.yumelira.yumebox.runtime.service.util.ServiceLogoIcons
 import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
@@ -45,7 +45,7 @@ import kotlinx.coroutines.Job
 import kotlinx.coroutines.cancel
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
-import com.github.yumeyucca.yumebox.core.locale.YumeTxt
+import com.github.yumelira.yumebox.core.locale.YumeTxt
 import timber.log.Timber
 
 @SuppressLint("NewApi")

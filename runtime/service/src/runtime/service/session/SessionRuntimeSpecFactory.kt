@@ -18,20 +18,20 @@
  *
  */
 
-package com.github.yumeyucca.yumebox.runtime.service.session
+package com.github.yumelira.yumebox.runtime.service.session
 
 import android.content.Context
-import com.github.yumeyucca.yumebox.core.model.RunMode
-import com.github.yumeyucca.yumebox.core.model.TunConfig
-import com.github.yumeyucca.yumebox.data.store.MMKVProvider
-import com.github.yumeyucca.yumebox.data.store.NetworkSettingsStore
-import com.github.yumeyucca.yumebox.runtime.api.appContextOrSelf
-import com.github.yumeyucca.yumebox.runtime.service.config.AccessControlMode
-import com.github.yumeyucca.yumebox.runtime.service.config.ServiceStore
-import com.github.yumeyucca.yumebox.runtime.service.profile.Imported
-import com.github.yumeyucca.yumebox.runtime.service.profile.ImportedDao
-import com.github.yumeyucca.yumebox.runtime.service.root.RootPackageShell
-import com.github.yumeyucca.yumebox.runtime.service.util.importedDir
+import com.github.yumelira.yumebox.core.model.RunMode
+import com.github.yumelira.yumebox.core.model.TunConfig
+import com.github.yumelira.yumebox.data.store.MMKVProvider
+import com.github.yumelira.yumebox.data.store.NetworkSettingsStore
+import com.github.yumelira.yumebox.runtime.api.appContextOrSelf
+import com.github.yumelira.yumebox.runtime.service.config.AccessControlMode
+import com.github.yumelira.yumebox.runtime.service.config.ServiceStore
+import com.github.yumelira.yumebox.runtime.service.profile.Imported
+import com.github.yumelira.yumebox.runtime.service.profile.ImportedDao
+import com.github.yumelira.yumebox.runtime.service.root.RootPackageShell
+import com.github.yumelira.yumebox.runtime.service.util.importedDir
 
 class SessionRuntimeSpecFactory(
     context: Context,

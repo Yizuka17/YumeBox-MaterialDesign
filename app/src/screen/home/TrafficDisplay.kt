@@ -20,7 +20,7 @@
 
 @file:Suppress("FunctionName", "UnusedVariable")
 
-package com.github.yumeyucca.yumebox.screen.home
+package com.github.yumelira.yumebox.screen.home
 
 import androidx.compose.animation.*
 import androidx.compose.animation.core.tween
@@ -38,15 +38,15 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.sp
-import com.github.yumeyucca.yumebox.common.util.formatBytesForDisplay
-import com.github.yumeyucca.yumebox.core.model.RunMode
-import com.github.yumeyucca.yumebox.core.model.TunnelState
-import com.github.yumeyucca.yumebox.domain.model.TrafficData
-import com.github.yumeyucca.yumebox.presentation.icon.Yume
-import com.github.yumeyucca.yumebox.presentation.icon.yume.*
-import com.github.yumeyucca.yumebox.presentation.theme.AnimationSpecs
-import com.github.yumeyucca.yumebox.presentation.theme.AppTheme
-import com.github.yumeyucca.yumebox.core.locale.YumeTxt
+import com.github.yumelira.yumebox.common.util.formatBytesForDisplay
+import com.github.yumelira.yumebox.core.model.RunMode
+import com.github.yumelira.yumebox.core.model.TunnelState
+import com.github.yumelira.yumebox.domain.model.TrafficData
+import com.github.yumelira.yumebox.presentation.icon.Yume
+import com.github.yumelira.yumebox.presentation.icon.yume.*
+import com.github.yumelira.yumebox.presentation.theme.AnimationSpecs
+import com.github.yumelira.yumebox.presentation.theme.AppTheme
+import com.github.yumelira.yumebox.core.locale.YumeTxt
 import top.yukonga.miuix.kmp.basic.Icon
 import top.yukonga.miuix.kmp.basic.Surface
 import top.yukonga.miuix.kmp.basic.Text

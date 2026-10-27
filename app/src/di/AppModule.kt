@@ -18,20 +18,20 @@
  *
  */
 
-package com.github.yumeyucca.yumebox.di
+package com.github.yumelira.yumebox.di
 
-import com.github.yumeyucca.yumebox.screen.home.HomeViewModel
-import com.github.yumeyucca.yumebox.screen.log.LogViewModel
-import com.github.yumeyucca.yumebox.screen.profiles.ProfilesViewModel
-import com.github.yumeyucca.yumebox.screen.rules.RulesViewModel
-import com.github.yumeyucca.yumebox.screen.settings.AccessControlViewModel
-import com.github.yumeyucca.yumebox.screen.settings.AppSettingsViewModel
-import com.github.yumeyucca.yumebox.screen.settings.NetworkSettingsViewModel
-import com.github.yumeyucca.yumebox.screen.settings.RemoteControllerViewModel
-import com.github.yumeyucca.yumebox.screen.settings.WifiAutomationViewModel
-import com.github.yumeyucca.yumebox.screen.settings.backup.BackupRepository
-import com.github.yumeyucca.yumebox.screen.settings.backup.BackupRestoreViewModel
-import com.github.yumeyucca.yumebox.screen.settings.backup.BackupStoreAdapter
+import com.github.yumelira.yumebox.screen.home.HomeViewModel
+import com.github.yumelira.yumebox.screen.log.LogViewModel
+import com.github.yumelira.yumebox.screen.profiles.ProfilesViewModel
+import com.github.yumelira.yumebox.screen.rules.RulesViewModel
+import com.github.yumelira.yumebox.screen.settings.AccessControlViewModel
+import com.github.yumelira.yumebox.screen.settings.AppSettingsViewModel
+import com.github.yumelira.yumebox.screen.settings.NetworkSettingsViewModel
+import com.github.yumelira.yumebox.screen.settings.RemoteControllerViewModel
+import com.github.yumelira.yumebox.screen.settings.WifiAutomationViewModel
+import com.github.yumelira.yumebox.screen.settings.backup.BackupRepository
+import com.github.yumelira.yumebox.screen.settings.backup.BackupRestoreViewModel
+import com.github.yumelira.yumebox.screen.settings.backup.BackupStoreAdapter
 import org.koin.android.ext.koin.androidApplication
 import org.koin.core.module.Module
 import org.koin.core.module.dsl.viewModel

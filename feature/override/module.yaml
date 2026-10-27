@@ -5,7 +5,7 @@ apply:
   - //compose.module-template.yaml
 settings:
   android:
-    namespace: com.github.yumeyucca.yumebox.feature.override
+    namespace: com.github.yumelira.yumebox.feature.override
 dependencies:
   - //core
   - //common

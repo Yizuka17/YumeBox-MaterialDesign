@@ -18,7 +18,7 @@
  *
  */
 
-package com.github.yumeyucca.yumebox.presentation.icon.yume
+package com.github.yumelira.yumebox.presentation.icon.yume
 
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.SolidColor
@@ -27,7 +27,7 @@ import androidx.compose.ui.graphics.StrokeJoin
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.graphics.vector.path
 import androidx.compose.ui.unit.dp
-import com.github.yumeyucca.yumebox.presentation.icon.Yume
+import com.github.yumelira.yumebox.presentation.icon.Yume
 
 val Yume.clock: ImageVector
     get() {

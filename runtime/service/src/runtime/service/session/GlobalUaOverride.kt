@@ -18,10 +18,10 @@
  *
  */
 
-package com.github.yumeyucca.yumebox.runtime.service.session
+package com.github.yumelira.yumebox.runtime.service.session
 
-import com.github.yumeyucca.yumebox.core.model.OverrideSpec
-import com.github.yumeyucca.yumebox.runtime.service.profile.SubscriptionUserAgent
+import com.github.yumelira.yumebox.core.model.OverrideSpec
+import com.github.yumelira.yumebox.runtime.service.profile.SubscriptionUserAgent
 import java.io.File
 
 /**

@@ -18,7 +18,7 @@
  *
  */
 
-package com.github.yumeyucca.yumebox.runtime.service.util
+package com.github.yumelira.yumebox.runtime.service.util
 
 import com.tencent.mmkv.MMKV
 

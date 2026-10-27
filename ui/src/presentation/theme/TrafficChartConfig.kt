@@ -20,7 +20,7 @@
 
 @file:Suppress("UnusedSymbol", "MayBeConstant")
 
-package com.github.yumeyucca.yumebox.presentation.theme
+package com.github.yumelira.yumebox.presentation.theme
 
 object TrafficChartConfig {
     private const val firstSpeedBound = 0.5 * 1024 * 1024

@@ -18,7 +18,7 @@
  *
  */
 
-package com.github.yumeyucca.yumebox.runtime.service
+package com.github.yumelira.yumebox.runtime.service
 
 import android.app.Notification
 import android.app.NotificationChannel
@@ -31,17 +31,17 @@ import android.os.Build
 import android.os.IBinder
 import androidx.core.app.NotificationCompat
 import androidx.core.app.ServiceCompat
-import com.github.yumeyucca.yumebox.common.util.XiaomiAutoStart
-import com.github.yumeyucca.yumebox.core.util.AutoStartSessionGate
-import com.github.yumeyucca.yumebox.core.util.StartupTaskCoordinator
-import com.github.yumeyucca.yumebox.data.model.RunMode
-import com.github.yumeyucca.yumebox.data.store.*
-import com.github.yumeyucca.yumebox.runtime.api.RuntimeOwner
-import com.github.yumeyucca.yumebox.runtime.api.RuntimePhase
-import com.github.yumeyucca.yumebox.runtime.api.RuntimeStartSource
-import com.github.yumeyucca.yumebox.runtime.service.log.RuntimeLog
-import com.github.yumeyucca.yumebox.runtime.service.profile.ProfileService
-import com.github.yumeyucca.yumebox.runtime.service.util.*
+import com.github.yumelira.yumebox.common.util.XiaomiAutoStart
+import com.github.yumelira.yumebox.core.util.AutoStartSessionGate
+import com.github.yumelira.yumebox.core.util.StartupTaskCoordinator
+import com.github.yumelira.yumebox.data.model.RunMode
+import com.github.yumelira.yumebox.data.store.*
+import com.github.yumelira.yumebox.runtime.api.RuntimeOwner
+import com.github.yumelira.yumebox.runtime.api.RuntimePhase
+import com.github.yumelira.yumebox.runtime.api.RuntimeStartSource
+import com.github.yumelira.yumebox.runtime.service.log.RuntimeLog
+import com.github.yumelira.yumebox.runtime.service.profile.ProfileService
+import com.github.yumelira.yumebox.runtime.service.util.*
 import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers

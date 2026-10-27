@@ -18,7 +18,7 @@
  *
  */
 
-package com.github.yumeyucca.yumebox.runtime.service.shizuku
+package com.github.yumelira.yumebox.runtime.service.shizuku
 
 import android.content.ComponentName
 import android.content.Context
@@ -50,7 +50,7 @@ object ShizukuManager {
      * Packed builds keep this class in the APK's loader DEX (see :pack), because the packed payload
      * below /data/user/0/<pkg> is not readable for the shell user Shizuku runs as.
      */
-    private const val LOADER_USER_SERVICE_CLASS = "com.github.yumeyucca.yumebox.loader.ShizukuUserService"
+    private const val LOADER_USER_SERVICE_CLASS = "com.github.yumelira.yumebox.loader.ShizukuUserService"
 
     private val userServiceClass: String by lazy {
         runCatching { Class.forName(LOADER_USER_SERVICE_CLASS) }

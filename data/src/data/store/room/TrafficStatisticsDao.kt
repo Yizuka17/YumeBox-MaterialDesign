@@ -20,17 +20,17 @@
 
 @file:Suppress("UnusedSymbol")
 
-package com.github.yumeyucca.yumebox.data.store.room
+package com.github.yumelira.yumebox.data.store.room
 
 
 import androidx.room.Dao
 import androidx.room.Insert
 import androidx.room.Query
 import androidx.room.Transaction
-import com.github.yumeyucca.yumebox.data.model.AppRouteTrafficUsage
-import com.github.yumeyucca.yumebox.data.model.AppTrafficUsage
-import com.github.yumeyucca.yumebox.data.model.DailyTrafficSummary
-import com.github.yumeyucca.yumebox.data.model.HourlyTrafficSummary
+import com.github.yumelira.yumebox.data.model.AppRouteTrafficUsage
+import com.github.yumelira.yumebox.data.model.AppTrafficUsage
+import com.github.yumelira.yumebox.data.model.DailyTrafficSummary
+import com.github.yumelira.yumebox.data.model.HourlyTrafficSummary
 import kotlinx.coroutines.flow.Flow
 
 /**
@@ -219,7 +219,7 @@ abstract class TrafficStatisticsDao {
      * Reactive per-app aggregation over `[cutoffMillis, +inf)`, summed and sorted.
      *
      * The unattributed bucket (`app_key = 'system:unattributed'`,
-     * [com.github.yumeyucca.yumebox.data.model.TrafficStatisticsBuckets.UNATTRIBUTED_APP_KEY])
+     * [com.github.yumelira.yumebox.data.model.TrafficStatisticsBuckets.UNATTRIBUTED_APP_KEY])
      * always sorts LAST regardless of its total; every other app is ordered by total bytes
      * descending. `app_name`/`package_name` are taken from the most-recent row via the SQLite
      * single-`max()` bare-column rule (`MAX(last_active_at)` picks the winning row's bare columns).

@@ -1,4 +1,4 @@
-package com.github.yumeyucca.yumebox.core.locale
+package com.github.yumelira.yumebox.core.locale
 
 internal val ZhHansYumeStrings_ProfilesVM: YumeStrings_ProfilesVM = YumeStrings_ProfilesVM(
     Message = YumeStrings_ProfilesVM_Message(

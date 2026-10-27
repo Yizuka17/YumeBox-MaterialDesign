@@ -20,7 +20,7 @@
 
 @file:Suppress("JavaCollectionWithNullableTypeArgument")
 
-package com.github.yumeyucca.yumebox.data.controller
+package com.github.yumelira.yumebox.data.controller
 
 import android.content.Context
 import android.content.pm.ApplicationInfo

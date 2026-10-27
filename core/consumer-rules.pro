@@ -11,7 +11,7 @@
 # Both native libraries resolve these by name at runtime: libcompat.so declares its entry points
 # as Java_com_github_yumeyucca_yumebox_core_bridge_{NativeProcess,Channel,UnixSocket}_*, and
 # liboverride.so as ..._bridge_Compiler_*. Renaming the package or the classes breaks the lookup.
--keep class com.github.yumeyucca.yumebox.core.bridge.** { *; }
+-keep class com.github.yumelira.yumebox.core.bridge.** { *; }
 
 # Orphaned: the comment here used to claim libcompat.c resolved kotlin.Unit, but neither native
 # library does — libcompat.c only FindClass'es java/io/IOException, and liboverride.so touches no

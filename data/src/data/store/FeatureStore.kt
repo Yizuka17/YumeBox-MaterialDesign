@@ -20,9 +20,9 @@
 
 @file:Suppress("UnusedSymbol")
 
-package com.github.yumeyucca.yumebox.data.store
+package com.github.yumelira.yumebox.data.store
 
-import com.github.yumeyucca.yumebox.data.model.RemoteProtocol
+import com.github.yumelira.yumebox.data.model.RemoteProtocol
 import com.tencent.mmkv.MMKV
 
 class FeatureStore(

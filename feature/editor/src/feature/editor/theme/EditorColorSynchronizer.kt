@@ -20,11 +20,11 @@
 
 @file:Suppress("UnusedSymbol", "FunctionName")
 
-package com.github.yumeyucca.yumebox.feature.editor.theme
+package com.github.yumelira.yumebox.feature.editor.theme
 
 
 import androidx.compose.ui.graphics.toArgb
-import com.github.yumeyucca.yumebox.presentation.theme.AppColors
+import com.github.yumelira.yumebox.presentation.theme.AppColors
 import io.github.rosemoe.sora.widget.CodeEditor
 import io.github.rosemoe.sora.widget.schemes.EditorColorScheme
 

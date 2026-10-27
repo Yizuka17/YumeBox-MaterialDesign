@@ -20,12 +20,12 @@
 
 @file:Suppress("UnusedSymbol", "FunctionName")
 
-package com.github.yumeyucca.yumebox.presentation.component
+package com.github.yumelira.yumebox.presentation.component
 
 
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
-import com.github.yumeyucca.yumebox.presentation.util.DialogState
+import com.github.yumelira.yumebox.presentation.util.DialogState
 
 @Composable
 fun BaseDialogVisibilityHost(

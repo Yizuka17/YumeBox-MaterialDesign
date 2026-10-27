@@ -18,11 +18,11 @@
  *
  */
 
-package com.github.yumeyucca.yumebox.screen.settings
+package com.github.yumelira.yumebox.screen.settings
 
 import android.content.Context
 import androidx.core.net.toUri
-import com.github.yumeyucca.yumebox.core.util.moeWallpaperFile
+import com.github.yumelira.yumebox.core.util.moeWallpaperFile
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import java.io.File

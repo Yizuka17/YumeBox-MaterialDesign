@@ -18,7 +18,7 @@
  *
  */
 
-package com.github.yumeyucca.yumebox.screen.navigation
+package com.github.yumelira.yumebox.screen.navigation
 
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.runtime.*
@@ -26,11 +26,11 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.state.ToggleableState
 import androidx.compose.ui.text.TextRange
 import androidx.compose.ui.text.input.TextFieldValue
-import com.github.yumeyucca.yumebox.presentation.component.AppFormDialog
-import com.github.yumeyucca.yumebox.presentation.component.AppTextFieldDialog
-import com.github.yumeyucca.yumebox.presentation.component.OemTextField
-import com.github.yumeyucca.yumebox.presentation.component.PreferenceValueItem
-import com.github.yumeyucca.yumebox.core.locale.YumeTxt
+import com.github.yumelira.yumebox.presentation.component.AppFormDialog
+import com.github.yumelira.yumebox.presentation.component.AppTextFieldDialog
+import com.github.yumelira.yumebox.presentation.component.OemTextField
+import com.github.yumelira.yumebox.presentation.component.PreferenceValueItem
+import com.github.yumelira.yumebox.core.locale.YumeTxt
 import top.yukonga.miuix.kmp.basic.Checkbox
 import top.yukonga.miuix.kmp.basic.Switch
 import top.yukonga.miuix.kmp.preference.WindowDropdownPreference

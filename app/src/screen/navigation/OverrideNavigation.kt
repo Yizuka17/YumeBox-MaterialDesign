@@ -20,20 +20,20 @@
 
 @file:Suppress("FunctionName")
 
-package com.github.yumeyucca.yumebox.screen.navigation
+package com.github.yumelira.yumebox.screen.navigation
 
 
 import androidx.compose.runtime.Composable
-import com.github.yumeyucca.yumebox.data.model.OverrideContentType
-import com.github.yumeyucca.yumebox.feature.editor.language.LanguageScope
-import com.github.yumeyucca.yumebox.feature.editor.screen.ConfigPreviewScreen
-import com.github.yumeyucca.yumebox.presentation.component.Navigator
-import com.github.yumeyucca.yumebox.presentation.navigation.Route
-import com.github.yumeyucca.yumebox.presentation.screen.OverrideListScreen
-import com.github.yumeyucca.yumebox.presentation.util.OverrideEditorStore
-import com.github.yumeyucca.yumebox.presentation.viewmodel.OverrideConfigViewModel
+import com.github.yumelira.yumebox.data.model.OverrideContentType
+import com.github.yumelira.yumebox.feature.editor.language.LanguageScope
+import com.github.yumelira.yumebox.feature.editor.screen.ConfigPreviewScreen
+import com.github.yumelira.yumebox.presentation.component.Navigator
+import com.github.yumelira.yumebox.presentation.navigation.Route
+import com.github.yumelira.yumebox.presentation.screen.OverrideListScreen
+import com.github.yumelira.yumebox.presentation.util.OverrideEditorStore
+import com.github.yumelira.yumebox.presentation.viewmodel.OverrideConfigViewModel
 import org.koin.androidx.compose.koinViewModel
-import com.github.yumeyucca.yumebox.core.locale.YumeTxt
+import com.github.yumelira.yumebox.core.locale.YumeTxt
 
 @Composable
 fun OverrideScreen(navigator: Navigator) {

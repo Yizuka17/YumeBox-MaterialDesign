@@ -20,14 +20,14 @@
 
 @file:Suppress("UnnecessaryVariable")
 
-package com.github.yumeyucca.yumebox.presentation.screen
+package com.github.yumelira.yumebox.presentation.screen
 
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.saveable.rememberSaveable
-import com.github.yumeyucca.yumebox.domain.model.ProxyGroupInfo
+import com.github.yumelira.yumebox.domain.model.ProxyGroupInfo
 
 data class ProxyGroupSelectionState(
     val selectedGroupName: String?,

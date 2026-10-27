@@ -18,11 +18,11 @@
  *
  */
 
-package com.github.yumeyucca.yumebox.data.controller
+package com.github.yumelira.yumebox.data.controller
 
-import com.github.yumeyucca.yumebox.core.model.RunMode
-import com.github.yumeyucca.yumebox.data.model.AccessControlMode
-import com.github.yumeyucca.yumebox.data.store.NetworkSettingsStore
+import com.github.yumelira.yumebox.core.model.RunMode
+import com.github.yumelira.yumebox.data.model.AccessControlMode
+import com.github.yumelira.yumebox.data.store.NetworkSettingsStore
 import kotlinx.coroutines.CancellationException
 
 class AccessControlController(

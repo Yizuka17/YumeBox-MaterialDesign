@@ -52,7 +52,7 @@
     <uses-permission android:name="android.permission.CAMERA"/>
 
     <application
-        android:name="com.github.yumeyucca.yumebox.App"
+        android:name="com.github.yumelira.yumebox.App"
         android:appComponentFactory="androidx.core.app.CoreComponentFactory"
         android:allowBackup="true"
         android:enableOnBackInvokedCallback="true"
@@ -94,11 +94,11 @@
                 <data android:scheme="yumebox"/>
             </intent-filter>
             <intent-filter>
-                <action android:name="com.github.yumeyucca.yumebox.action.START_CLASH"/>
+                <action android:name="com.github.yumelira.yumebox.action.START_CLASH"/>
                 <category android:name="android.intent.category.DEFAULT"/>
             </intent-filter>
             <intent-filter>
-                <action android:name="com.github.yumeyucca.yumebox.action.STOP_CLASH"/>
+                <action android:name="com.github.yumelira.yumebox.action.STOP_CLASH"/>
                 <category android:name="android.intent.category.DEFAULT"/>
             </intent-filter>
         </activity>

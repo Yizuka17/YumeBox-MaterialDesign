@@ -18,12 +18,12 @@
  *
  */
 
-package com.github.yumeyucca.yumebox.substore.util
+package com.github.yumelira.yumebox.substore.util
 
 import android.app.Application
-import com.github.yumeyucca.yumebox.common.util.ByteFormatter.formatSpeed
-import com.github.yumeyucca.yumebox.common.util.SubscriptionUserAgentDefaults
-import com.github.yumeyucca.yumebox.data.store.AppSettingsStore
+import com.github.yumelira.yumebox.common.util.ByteFormatter.formatSpeed
+import com.github.yumelira.yumebox.common.util.SubscriptionUserAgentDefaults
+import com.github.yumelira.yumebox.data.store.AppSettingsStore
 import io.ktor.client.*
 import io.ktor.client.engine.android.*
 import io.ktor.client.plugins.*

@@ -20,7 +20,7 @@
 
 @file:Suppress("UnusedReceiverParameter", "DuplicatedCode")
 
-package com.github.yumeyucca.yumebox.presentation.icon.yume
+package com.github.yumelira.yumebox.presentation.icon.yume
 
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.PathFillType.Companion.NonZero
@@ -31,7 +31,7 @@ import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.graphics.vector.ImageVector.Builder
 import androidx.compose.ui.graphics.vector.path
 import androidx.compose.ui.unit.dp
-import com.github.yumeyucca.yumebox.presentation.icon.Yume
+import com.github.yumelira.yumebox.presentation.icon.Yume
 
 val Yume.GitMerge: ImageVector
     get() {

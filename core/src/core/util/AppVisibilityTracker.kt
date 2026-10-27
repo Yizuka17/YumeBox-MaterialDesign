@@ -7,7 +7,7 @@
  * License.
  */
 
-package com.github.yumeyucca.yumebox.core.util
+package com.github.yumelira.yumebox.core.util
 
 import android.app.Activity
 import android.app.Application

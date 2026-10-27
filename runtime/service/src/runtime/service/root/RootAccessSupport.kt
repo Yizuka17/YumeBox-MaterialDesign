@@ -18,12 +18,12 @@
  *
  */
 
-package com.github.yumeyucca.yumebox.runtime.service.root
+package com.github.yumelira.yumebox.runtime.service.root
 
 import com.topjohnwu.superuser.Shell
 import kotlinx.coroutines.InternalCoroutinesApi
 import kotlinx.coroutines.suspendCancellableCoroutine
-import com.github.yumeyucca.yumebox.core.locale.YumeTxt
+import com.github.yumelira.yumebox.core.locale.YumeTxt
 
 object RootAccessSupport {
     // tryResume/completeResume (internal API): the libsu shell callback may fire after the

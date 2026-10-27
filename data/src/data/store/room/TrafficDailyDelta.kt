@@ -18,7 +18,7 @@
  *
  */
 
-package com.github.yumeyucca.yumebox.data.store.room
+package com.github.yumelira.yumebox.data.store.room
 
 /**
  * DAO write-input carriers. Time-agnostic: the facade computes [dateMillis] (midnight day bucket)

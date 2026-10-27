@@ -20,7 +20,7 @@
 
 @file:Suppress("FunctionName", "UnusedVariable")
 
-package com.github.yumeyucca.yumebox.screen.moe
+package com.github.yumelira.yumebox.screen.moe
 
 import androidx.compose.animation.core.*
 import androidx.compose.foundation.background
@@ -36,7 +36,7 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.unit.dp
-import com.github.yumeyucca.yumebox.presentation.theme.AppTheme
+import com.github.yumelira.yumebox.presentation.theme.AppTheme
 import top.yukonga.miuix.kmp.theme.MiuixTheme
 
 @Composable

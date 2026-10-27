@@ -20,11 +20,11 @@
 
 @file:Suppress("UnusedSymbol")
 
-package com.github.yumeyucca.yumebox.core.util
+package com.github.yumelira.yumebox.core.util
 
 
 import android.annotation.SuppressLint
-import com.github.yumeyucca.yumebox.core.model.Traffic
+import com.github.yumelira.yumebox.core.model.Traffic
 
 private val IEC_UNITS = arrayOf("Bytes", "KiB", "MiB", "GiB")
 

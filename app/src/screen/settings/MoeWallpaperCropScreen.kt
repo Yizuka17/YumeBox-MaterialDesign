@@ -20,7 +20,7 @@
 
 @file:Suppress("DuplicatedCode", "FunctionName")
 
-package com.github.yumeyucca.yumebox.screen.settings
+package com.github.yumelira.yumebox.screen.settings
 
 
 import android.graphics.BitmapFactory
@@ -45,13 +45,13 @@ import com.github.panpf.sketch.request.ImageRequest
 import com.github.panpf.sketch.resize.Precision
 import com.github.panpf.sketch.resize.Scale
 import com.github.panpf.sketch.util.screenSize
-import com.github.yumeyucca.yumebox.presentation.component.Navigator
-import com.github.yumeyucca.yumebox.presentation.component.calculateWallpaperViewportLayout
-import com.github.yumeyucca.yumebox.presentation.theme.UiDp
+import com.github.yumelira.yumebox.presentation.component.Navigator
+import com.github.yumelira.yumebox.presentation.component.calculateWallpaperViewportLayout
+import com.github.yumelira.yumebox.presentation.theme.UiDp
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import org.koin.androidx.compose.koinViewModel
-import com.github.yumeyucca.yumebox.core.locale.YumeTxt
+import com.github.yumelira.yumebox.core.locale.YumeTxt
 import top.yukonga.miuix.kmp.basic.Button
 import top.yukonga.miuix.kmp.basic.ButtonDefaults
 import top.yukonga.miuix.kmp.basic.Scaffold

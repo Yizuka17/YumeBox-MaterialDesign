@@ -18,16 +18,16 @@
  *
  */
 
-package com.github.yumeyucca.yumebox.runtime.service
+package com.github.yumelira.yumebox.runtime.service
 
 import android.content.Intent
 import android.net.VpnService
 import androidx.core.app.ServiceCompat
-import com.github.yumeyucca.yumebox.runtime.api.appContextOrSelf
-import com.github.yumeyucca.yumebox.runtime.api.initializeServiceGlobal
-import com.github.yumeyucca.yumebox.runtime.service.notification.ServiceNotificationManager
-import com.github.yumeyucca.yumebox.runtime.service.session.VpnSession
-import com.github.yumeyucca.yumebox.runtime.service.util.cancelAndJoinBlocking
+import com.github.yumelira.yumebox.runtime.api.appContextOrSelf
+import com.github.yumelira.yumebox.runtime.api.initializeServiceGlobal
+import com.github.yumelira.yumebox.runtime.service.notification.ServiceNotificationManager
+import com.github.yumelira.yumebox.runtime.service.session.VpnSession
+import com.github.yumelira.yumebox.runtime.service.util.cancelAndJoinBlocking
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job

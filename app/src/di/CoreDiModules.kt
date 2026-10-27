@@ -18,20 +18,20 @@
  *
  */
 
-package com.github.yumeyucca.yumebox.di
+package com.github.yumelira.yumebox.di
 
-import com.github.yumeyucca.yumebox.common.util.AppLanguageManager
-import com.github.yumeyucca.yumebox.core.model.ConnectionSnapshot
-import com.github.yumeyucca.yumebox.data.controller.*
-import com.github.yumeyucca.yumebox.data.network.NetworkInfoService
-import com.github.yumeyucca.yumebox.data.store.*
-import com.github.yumeyucca.yumebox.data.store.room.createTrafficStatisticsDao
-import com.github.yumeyucca.yumebox.domain.model.TrafficData
-import com.github.yumeyucca.yumebox.runtime.api.RuntimeOwner
-import com.github.yumeyucca.yumebox.runtime.client.ProfilesRepository
-import com.github.yumeyucca.yumebox.runtime.client.ProxyFacade
-import com.github.yumeyucca.yumebox.runtime.client.RuntimeStateMapper
-import com.github.yumeyucca.yumebox.runtime.client.access.RuntimeAccess
+import com.github.yumelira.yumebox.common.util.AppLanguageManager
+import com.github.yumelira.yumebox.core.model.ConnectionSnapshot
+import com.github.yumelira.yumebox.data.controller.*
+import com.github.yumelira.yumebox.data.network.NetworkInfoService
+import com.github.yumelira.yumebox.data.store.*
+import com.github.yumelira.yumebox.data.store.room.createTrafficStatisticsDao
+import com.github.yumelira.yumebox.domain.model.TrafficData
+import com.github.yumelira.yumebox.runtime.api.RuntimeOwner
+import com.github.yumelira.yumebox.runtime.client.ProfilesRepository
+import com.github.yumelira.yumebox.runtime.client.ProxyFacade
+import com.github.yumelira.yumebox.runtime.client.RuntimeStateMapper
+import com.github.yumelira.yumebox.runtime.client.access.RuntimeAccess
 import com.tencent.mmkv.MMKV
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers

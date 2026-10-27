@@ -18,7 +18,7 @@
  *
  */
 
-package com.github.yumeyucca.yumebox.common.util
+package com.github.yumelira.yumebox.common.util
 
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.flow.Flow

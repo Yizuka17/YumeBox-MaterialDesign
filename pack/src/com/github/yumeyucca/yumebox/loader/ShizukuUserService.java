@@ -1,4 +1,4 @@
-package com.github.yumeyucca.yumebox.loader;
+package com.github.yumelira.yumebox.loader;
 
 import android.os.Binder;
 import android.os.IBinder;
@@ -16,7 +16,7 @@ import java.lang.reflect.Method;
  * {@code /data/user/0/<pkg>} cannot be traversed by it.</p>
  *
  * <p>The Binder contract has to stay in sync with
- * {@code com.github.yumeyucca.yumebox.runtime.service.shizuku.IPrivilegedService} and the firewall
+ * {@code com.github.yumelira.yumebox.runtime.service.shizuku.IPrivilegedService} and the firewall
  * call with {@code ...shizuku.OemDenyFirewall}.</p>
  */
 public final class ShizukuUserService extends Binder {
@@ -24,7 +24,7 @@ public final class ShizukuUserService extends Binder {
     private static final String TAG = "YumeBoxShizukuService";
 
     private static final String DESCRIPTOR =
-            "com.github.yumeyucca.yumebox.runtime.service.shizuku.IPrivilegedService";
+            "com.github.yumelira.yumebox.runtime.service.shizuku.IPrivilegedService";
 
     private static final int TRANSACTION_SET_PACKAGE_NETWORKING_ENABLED = FIRST_CALL_TRANSACTION;
 

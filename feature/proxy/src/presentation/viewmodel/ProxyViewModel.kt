@@ -20,23 +20,23 @@
 
 @file:Suppress("UnusedSymbol")
 
-package com.github.yumeyucca.yumebox.presentation.viewmodel
+package com.github.yumelira.yumebox.presentation.viewmodel
 
 
 import androidx.lifecycle.viewModelScope
-import com.github.yumeyucca.yumebox.core.presentation.ContractStateViewModel
-import com.github.yumeyucca.yumebox.core.presentation.LoadableState
-import com.github.yumeyucca.yumebox.data.controller.RuntimeOverrideController
-import com.github.yumeyucca.yumebox.data.model.ProxySortMode
-import com.github.yumeyucca.yumebox.data.store.ProxyDisplaySettingsStore
-import com.github.yumeyucca.yumebox.domain.model.ProxyGroupInfo
-import com.github.yumeyucca.yumebox.runtime.client.ProxyFacade
-import com.github.yumeyucca.yumebox.runtime.client.ProxyGroupSyncPriority
+import com.github.yumelira.yumebox.core.presentation.ContractStateViewModel
+import com.github.yumelira.yumebox.core.presentation.LoadableState
+import com.github.yumelira.yumebox.data.controller.RuntimeOverrideController
+import com.github.yumelira.yumebox.data.model.ProxySortMode
+import com.github.yumelira.yumebox.data.store.ProxyDisplaySettingsStore
+import com.github.yumelira.yumebox.domain.model.ProxyGroupInfo
+import com.github.yumelira.yumebox.runtime.client.ProxyFacade
+import com.github.yumelira.yumebox.runtime.client.ProxyGroupSyncPriority
 import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.*
 import kotlinx.coroutines.launch
-import com.github.yumeyucca.yumebox.core.locale.YumeTxt
+import com.github.yumelira.yumebox.core.locale.YumeTxt
 
 sealed interface ProxyDelayTestProgress {
     data class Running(val completed: Int, val total: Int) : ProxyDelayTestProgress

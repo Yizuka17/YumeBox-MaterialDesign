@@ -5,7 +5,7 @@ apply:
   - //android.module-template.yaml
 settings:
   android:
-    namespace: com.github.yumeyucca.yumebox.loader
+    namespace: com.github.yumelira.yumebox.loader
 dependencies:
   - $libs.hiddenapibypass
   - $libs.androidx.annotation.jvm

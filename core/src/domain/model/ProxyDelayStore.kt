@@ -18,10 +18,10 @@
  *
  */
 
-package com.github.yumeyucca.yumebox.domain.model
+package com.github.yumelira.yumebox.domain.model
 
-import com.github.yumeyucca.yumebox.core.model.Proxy
-import com.github.yumeyucca.yumebox.core.model.ProxyGroup
+import com.github.yumelira.yumebox.core.model.Proxy
+import com.github.yumelira.yumebox.core.model.ProxyGroup
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import java.util.concurrent.ConcurrentHashMap

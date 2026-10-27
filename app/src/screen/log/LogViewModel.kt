@@ -20,16 +20,16 @@
 
 @file:Suppress("ConvertLongToDuration")
 
-package com.github.yumeyucca.yumebox.screen.log
+package com.github.yumelira.yumebox.screen.log
 
 import android.content.Context
 import android.net.Uri
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.github.yumeyucca.yumebox.core.model.LogMessage
-import com.github.yumeyucca.yumebox.runtime.api.LogObserver
-import com.github.yumeyucca.yumebox.runtime.api.LogSubscription
-import com.github.yumeyucca.yumebox.runtime.client.access.RuntimeAccess
+import com.github.yumelira.yumebox.core.model.LogMessage
+import com.github.yumelira.yumebox.runtime.api.LogObserver
+import com.github.yumelira.yumebox.runtime.api.LogSubscription
+import com.github.yumelira.yumebox.runtime.client.access.RuntimeAccess
 import kotlinx.coroutines.*
 import kotlinx.coroutines.flow.*
 import timber.log.Timber

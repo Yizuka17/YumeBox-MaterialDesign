@@ -20,13 +20,13 @@
 
 @file:Suppress("UnusedSymbol")
 
-package com.github.yumeyucca.yumebox.presentation.util
+package com.github.yumelira.yumebox.presentation.util
 
 
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
-import com.github.yumeyucca.yumebox.feature.editor.language.LanguageScope
+import com.github.yumelira.yumebox.feature.editor.language.LanguageScope
 
 object OverrideEditorStore {
     var configPreviewTitle by mutableStateOf("")

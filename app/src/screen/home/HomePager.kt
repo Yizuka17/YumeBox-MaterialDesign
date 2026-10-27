@@ -20,7 +20,7 @@
 
 @file:Suppress("DuplicatedCode", "FunctionName", "RedundantIf")
 
-package com.github.yumeyucca.yumebox.screen.home
+package com.github.yumelira.yumebox.screen.home
 
 import android.widget.Toast
 import androidx.compose.foundation.layout.*
@@ -33,19 +33,19 @@ import androidx.compose.ui.platform.LocalHapticFeedback
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.LifecycleEventObserver
 import androidx.lifecycle.compose.LocalLifecycleOwner
-import com.github.yumeyucca.yumebox.common.util.toast
-import com.github.yumeyucca.yumebox.data.network.IpMonitoringState
-import com.github.yumeyucca.yumebox.domain.model.TrafficData
-import com.github.yumeyucca.yumebox.presentation.component.LocalNavigator
-import com.github.yumeyucca.yumebox.presentation.component.ScreenLazyColumn
-import com.github.yumeyucca.yumebox.presentation.component.TopBar
-import com.github.yumeyucca.yumebox.presentation.component.combinePaddingValues
-import com.github.yumeyucca.yumebox.presentation.navigation.Route
-import com.github.yumeyucca.yumebox.presentation.theme.UiDp
-import com.github.yumeyucca.yumebox.runtime.api.Profile
+import com.github.yumelira.yumebox.common.util.toast
+import com.github.yumelira.yumebox.data.network.IpMonitoringState
+import com.github.yumelira.yumebox.domain.model.TrafficData
+import com.github.yumelira.yumebox.presentation.component.LocalNavigator
+import com.github.yumelira.yumebox.presentation.component.ScreenLazyColumn
+import com.github.yumelira.yumebox.presentation.component.TopBar
+import com.github.yumelira.yumebox.presentation.component.combinePaddingValues
+import com.github.yumelira.yumebox.presentation.navigation.Route
+import com.github.yumelira.yumebox.presentation.theme.UiDp
+import com.github.yumelira.yumebox.runtime.api.Profile
 import kotlinx.coroutines.launch
 import org.koin.androidx.compose.koinViewModel
-import com.github.yumeyucca.yumebox.core.locale.YumeTxt
+import com.github.yumelira.yumebox.core.locale.YumeTxt
 import top.yukonga.miuix.kmp.basic.MiuixScrollBehavior
 import top.yukonga.miuix.kmp.basic.Scaffold
 

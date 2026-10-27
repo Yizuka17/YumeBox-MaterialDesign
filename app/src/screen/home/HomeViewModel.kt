@@ -20,34 +20,34 @@
 
 @file:Suppress("UnusedSymbol", "CanBeParameter")
 
-package com.github.yumeyucca.yumebox.screen.home
+package com.github.yumelira.yumebox.screen.home
 
 import android.app.Application
 import android.content.Intent
 import androidx.lifecycle.viewModelScope
-import com.github.yumeyucca.yumebox.common.util.stateInWhileSubscribed
-import com.github.yumeyucca.yumebox.core.model.RunMode
-import com.github.yumeyucca.yumebox.core.presentation.AndroidContractStateViewModel
-import com.github.yumeyucca.yumebox.core.util.AutoStartSessionGate
-import com.github.yumeyucca.yumebox.core.util.PollingTimerSpecs
-import com.github.yumeyucca.yumebox.core.util.PollingTimers
-import com.github.yumeyucca.yumebox.data.network.IpMonitoringState
-import com.github.yumeyucca.yumebox.data.network.NetworkInfoService
-import com.github.yumeyucca.yumebox.data.store.NetworkSettingsStore
-import com.github.yumeyucca.yumebox.domain.model.TrafficData
-import com.github.yumeyucca.yumebox.runtime.api.Profile
-import com.github.yumeyucca.yumebox.runtime.api.RuntimeOwner
-import com.github.yumeyucca.yumebox.runtime.api.RuntimePhase
-import com.github.yumeyucca.yumebox.runtime.client.ProfilesRepository
-import com.github.yumeyucca.yumebox.runtime.client.ProxyFacade
-import com.github.yumeyucca.yumebox.runtime.client.ProxyGroupSyncPriority
-import com.github.yumeyucca.yumebox.runtime.client.RuntimeStateMapper
-import com.github.yumeyucca.yumebox.runtime.service.WifiAutomationService
+import com.github.yumelira.yumebox.common.util.stateInWhileSubscribed
+import com.github.yumelira.yumebox.core.model.RunMode
+import com.github.yumelira.yumebox.core.presentation.AndroidContractStateViewModel
+import com.github.yumelira.yumebox.core.util.AutoStartSessionGate
+import com.github.yumelira.yumebox.core.util.PollingTimerSpecs
+import com.github.yumelira.yumebox.core.util.PollingTimers
+import com.github.yumelira.yumebox.data.network.IpMonitoringState
+import com.github.yumelira.yumebox.data.network.NetworkInfoService
+import com.github.yumelira.yumebox.data.store.NetworkSettingsStore
+import com.github.yumelira.yumebox.domain.model.TrafficData
+import com.github.yumelira.yumebox.runtime.api.Profile
+import com.github.yumelira.yumebox.runtime.api.RuntimeOwner
+import com.github.yumelira.yumebox.runtime.api.RuntimePhase
+import com.github.yumelira.yumebox.runtime.client.ProfilesRepository
+import com.github.yumelira.yumebox.runtime.client.ProxyFacade
+import com.github.yumelira.yumebox.runtime.client.ProxyGroupSyncPriority
+import com.github.yumelira.yumebox.runtime.client.RuntimeStateMapper
+import com.github.yumelira.yumebox.runtime.service.WifiAutomationService
 import kotlinx.coroutines.*
 import kotlinx.coroutines.channels.BufferOverflow
 import kotlinx.coroutines.flow.*
-import com.github.yumeyucca.yumebox.core.locale.YumeTxt
-import com.github.yumeyucca.yumebox.core.util.BuiltinGeoAssetsRequiredException
+import com.github.yumelira.yumebox.core.locale.YumeTxt
+import com.github.yumelira.yumebox.core.util.BuiltinGeoAssetsRequiredException
 import timber.log.Timber
 
 class HomeViewModel(
@@ -56,7 +56,7 @@ class HomeViewModel(
     private val profilesRepository: ProfilesRepository,
     private val networkInfoService: NetworkInfoService,
     private val networkSettingsStore: NetworkSettingsStore,
-    private val remoteControllerStore: com.github.yumeyucca.yumebox.data.store.RemoteControllerStore,
+    private val remoteControllerStore: com.github.yumelira.yumebox.data.store.RemoteControllerStore,
 ) :
     AndroidContractStateViewModel<HomeUiState, HomeUiEffect>(
         application,
@@ -155,7 +155,7 @@ class HomeViewModel(
     val speedHistory: StateFlow<List<Long>> = _speedHistory.asStateFlow()
     private var reconcileJob: Job? = null
 
-    private val mainProxyNode: StateFlow<com.github.yumeyucca.yumebox.core.model.Proxy?> =
+    private val mainProxyNode: StateFlow<com.github.yumelira.yumebox.core.model.Proxy?> =
         proxyFacade.resolvedPrimaryNode
 
     val selectedServerName: StateFlow<String?> =
@@ -593,7 +593,7 @@ class HomeViewModel(
             clearPendingStart()
             _pendingTransition.value = PendingTransition.None
             showError(YumeTxt.Home.Message.BuiltinGeoRequired)
-        } catch (error: com.github.yumeyucca.yumebox.runtime.api.VpnPermissionRequired) {
+        } catch (error: com.github.yumelira.yumebox.runtime.api.VpnPermissionRequired) {
             _pendingTransition.value = PendingTransition.AwaitingPermission
             _vpnPrepareIntent.emit(error.intent)
             Timber.i("VPN permission required")

@@ -18,11 +18,11 @@
  *
  */
 
-package com.github.yumeyucca.yumebox.screen.profiles
+package com.github.yumelira.yumebox.screen.profiles
 
 import androidx.compose.runtime.*
 import androidx.compose.ui.text.input.TextFieldValue
-import com.github.yumeyucca.yumebox.presentation.util.ProfileImportType
+import com.github.yumelira.yumebox.presentation.util.ProfileImportType
 
 @Stable
 internal class ProfileAddFormState {

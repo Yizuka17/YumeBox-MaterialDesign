@@ -20,10 +20,10 @@
 
 @file:Suppress("UnusedSymbol")
 
-package com.github.yumeyucca.yumebox.runtime.service.config
+package com.github.yumelira.yumebox.runtime.service.config
 
 
-import com.github.yumeyucca.yumebox.core.model.TunDnsMode
+import com.github.yumelira.yumebox.core.model.TunDnsMode
 import com.tencent.mmkv.MMKV
 import kotlinx.serialization.json.Json
 import java.util.*

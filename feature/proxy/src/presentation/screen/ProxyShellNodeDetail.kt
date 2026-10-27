@@ -4,7 +4,7 @@
  * Copyright (c) YumeYucca 2025 - Present
  */
 
-package com.github.yumeyucca.yumebox.presentation.screen
+package com.github.yumelira.yumebox.presentation.screen
 
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.runtime.Composable

@@ -18,13 +18,13 @@
  *
  */
 
-package com.github.yumeyucca.yumebox.runtime.client
+package com.github.yumelira.yumebox.runtime.client
 
 import android.content.Context
 import android.content.Intent
-import com.github.yumeyucca.yumebox.core.data.RepositoryUtils.safeApiCall
-import com.github.yumeyucca.yumebox.runtime.api.*
-import com.github.yumeyucca.yumebox.runtime.client.access.RuntimeAccess
+import com.github.yumelira.yumebox.core.data.RepositoryUtils.safeApiCall
+import com.github.yumelira.yumebox.runtime.api.*
+import com.github.yumelira.yumebox.runtime.client.access.RuntimeAccess
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import timber.log.Timber

@@ -7,7 +7,7 @@
  * License.
  */
 
-package com.github.yumeyucca.yumebox.runtime.service.session
+package com.github.yumelira.yumebox.runtime.service.session
 
 import android.content.BroadcastReceiver
 import android.content.Context

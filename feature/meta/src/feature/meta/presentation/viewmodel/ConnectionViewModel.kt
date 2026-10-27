@@ -20,18 +20,18 @@
 
 @file:Suppress("UnusedSymbol", "FunctionName")
 
-package com.github.yumeyucca.yumebox.feature.meta.presentation.viewmodel
+package com.github.yumelira.yumebox.feature.meta.presentation.viewmodel
 
 
 import android.content.Context
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.github.yumeyucca.yumebox.core.domain.ConnectionHistoryManager
-import com.github.yumeyucca.yumebox.core.model.ConnectionInfo
-import com.github.yumeyucca.yumebox.core.model.ConnectionSnapshot
-import com.github.yumeyucca.yumebox.core.util.PollingTimerSpecs
-import com.github.yumeyucca.yumebox.core.util.PollingTimers
-import com.github.yumeyucca.yumebox.runtime.client.access.RuntimeAccess
+import com.github.yumelira.yumebox.core.domain.ConnectionHistoryManager
+import com.github.yumelira.yumebox.core.model.ConnectionInfo
+import com.github.yumelira.yumebox.core.model.ConnectionSnapshot
+import com.github.yumelira.yumebox.core.util.PollingTimerSpecs
+import com.github.yumelira.yumebox.core.util.PollingTimers
+import com.github.yumelira.yumebox.runtime.client.access.RuntimeAccess
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.flow.*

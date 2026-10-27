@@ -17,10 +17,10 @@
  * Copyright (c) YumeYucca 2025 - Present
  *
  */
-package com.github.yumeyucca.yumebox.domain.model
+package com.github.yumelira.yumebox.domain.model
 
-import com.github.yumeyucca.yumebox.core.model.Proxy
-import com.github.yumeyucca.yumebox.core.model.ProxyGroup
+import com.github.yumelira.yumebox.core.model.Proxy
+import com.github.yumelira.yumebox.core.model.ProxyGroup
 import java.util.concurrent.ConcurrentHashMap
 
 fun membersByGroup(entries: Iterable<Pair<String, List<Proxy>>>): Map<String, Set<String>> =

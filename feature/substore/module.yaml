@@ -7,7 +7,7 @@ plugins:
   build-logic: enabled
 settings:
   android:
-    namespace: com.github.yumeyucca.yumebox.feature.substore
+    namespace: com.github.yumelira.yumebox.feature.substore
 dependencies:
   - //core
   - //common

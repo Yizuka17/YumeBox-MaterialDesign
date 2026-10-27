@@ -1,4 +1,4 @@
-package com.github.yumeyucca.yumebox.core.locale
+package com.github.yumelira.yumebox.core.locale
 
 internal val ZhHansYumeStrings_TrafficStatistics: YumeStrings_TrafficStatistics = YumeStrings_TrafficStatistics(
     Title = "统计",

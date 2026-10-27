@@ -5,7 +5,7 @@ apply:
   - //compose.module-template.yaml
 settings:
   android:
-    namespace: com.github.yumeyucca.yumebox.common
+    namespace: com.github.yumelira.yumebox.common
 dependencies:
   - //core
   - $libs.androidx.core.ktx

@@ -18,13 +18,13 @@
  *
  */
 
-package com.github.yumeyucca.yumebox.screen.rules
+package com.github.yumelira.yumebox.screen.rules
 
 import android.content.Context
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.github.yumeyucca.yumebox.core.model.RuntimeRule
-import com.github.yumeyucca.yumebox.runtime.client.access.RuntimeAccess
+import com.github.yumelira.yumebox.core.model.RuntimeRule
+import com.github.yumelira.yumebox.runtime.client.access.RuntimeAccess
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.*
 import kotlinx.coroutines.launch

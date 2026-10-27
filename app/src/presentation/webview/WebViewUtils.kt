@@ -20,9 +20,9 @@
 
 @file:Suppress("UnusedSymbol")
 
-package com.github.yumeyucca.yumebox.presentation.webview
+package com.github.yumelira.yumebox.presentation.webview
 
-import com.github.yumeyucca.yumebox.data.model.RemoteProtocol
+import com.github.yumelira.yumebox.data.model.RemoteProtocol
 
 object WebViewUtils {
     private val onlinePanelUrls =

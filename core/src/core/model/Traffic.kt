@@ -18,6 +18,6 @@
  *
  */
 
-package com.github.yumeyucca.yumebox.core.model
+package com.github.yumelira.yumebox.core.model
 
 typealias Traffic = Long

@@ -18,17 +18,17 @@
  *
  */
 
-package com.github.yumeyucca.yumebox.runtime.client.access
+package com.github.yumelira.yumebox.runtime.client.access
 
-import com.github.yumeyucca.yumebox.core.model.ConnectionSnapshot
-import com.github.yumeyucca.yumebox.core.model.Provider
-import com.github.yumeyucca.yumebox.core.model.ProviderList
-import com.github.yumeyucca.yumebox.core.model.ProxyGroup
-import com.github.yumeyucca.yumebox.core.model.ProxySort
-import com.github.yumeyucca.yumebox.core.model.RuntimeRule
-import com.github.yumeyucca.yumebox.runtime.api.CoreApi
-import com.github.yumeyucca.yumebox.runtime.api.LogObserver
-import com.github.yumeyucca.yumebox.runtime.api.LogSubscription
+import com.github.yumelira.yumebox.core.model.ConnectionSnapshot
+import com.github.yumelira.yumebox.core.model.Provider
+import com.github.yumelira.yumebox.core.model.ProviderList
+import com.github.yumelira.yumebox.core.model.ProxyGroup
+import com.github.yumelira.yumebox.core.model.ProxySort
+import com.github.yumelira.yumebox.core.model.RuntimeRule
+import com.github.yumelira.yumebox.runtime.api.CoreApi
+import com.github.yumelira.yumebox.runtime.api.LogObserver
+import com.github.yumelira.yumebox.runtime.api.LogSubscription
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job

@@ -18,7 +18,7 @@
  *
  */
 
-package com.github.yumeyucca.yumebox.common.util
+package com.github.yumelira.yumebox.common.util
 
 import android.app.Activity
 import android.app.AppOpsManager

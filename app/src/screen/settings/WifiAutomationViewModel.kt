@@ -7,25 +7,25 @@
  * License.
  */
 
-package com.github.yumeyucca.yumebox.screen.settings
+package com.github.yumelira.yumebox.screen.settings
 
 import android.app.Application
 import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.viewModelScope
-import com.github.yumeyucca.yumebox.common.util.stateInWhileSubscribed
-import com.github.yumeyucca.yumebox.data.model.RunMode
-import com.github.yumeyucca.yumebox.data.model.WifiAutomationAction
-import com.github.yumeyucca.yumebox.data.model.WifiAutomationFallbackAction
-import com.github.yumeyucca.yumebox.data.model.WifiAutomationRule
-import com.github.yumeyucca.yumebox.data.store.NetworkSettingsStore
-import com.github.yumeyucca.yumebox.runtime.api.Profile
-import com.github.yumeyucca.yumebox.runtime.client.ProfilesRepository
-import com.github.yumeyucca.yumebox.runtime.service.WifiAutomationService
-import com.github.yumeyucca.yumebox.runtime.service.session.WifiSsidObservation
-import com.github.yumeyucca.yumebox.runtime.service.session.WifiSsidObserver
-import com.github.yumeyucca.yumebox.runtime.service.session.WifiSsidScanResult
-import com.github.yumeyucca.yumebox.runtime.service.session.WifiSsidScanner
-import com.github.yumeyucca.yumebox.runtime.service.session.WifiSsidNetwork
+import com.github.yumelira.yumebox.common.util.stateInWhileSubscribed
+import com.github.yumelira.yumebox.data.model.RunMode
+import com.github.yumelira.yumebox.data.model.WifiAutomationAction
+import com.github.yumelira.yumebox.data.model.WifiAutomationFallbackAction
+import com.github.yumelira.yumebox.data.model.WifiAutomationRule
+import com.github.yumelira.yumebox.data.store.NetworkSettingsStore
+import com.github.yumelira.yumebox.runtime.api.Profile
+import com.github.yumelira.yumebox.runtime.client.ProfilesRepository
+import com.github.yumelira.yumebox.runtime.service.WifiAutomationService
+import com.github.yumelira.yumebox.runtime.service.session.WifiSsidObservation
+import com.github.yumelira.yumebox.runtime.service.session.WifiSsidObserver
+import com.github.yumelira.yumebox.runtime.service.session.WifiSsidScanResult
+import com.github.yumelira.yumebox.runtime.service.session.WifiSsidScanner
+import com.github.yumelira.yumebox.runtime.service.session.WifiSsidNetwork
 import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.flow.*

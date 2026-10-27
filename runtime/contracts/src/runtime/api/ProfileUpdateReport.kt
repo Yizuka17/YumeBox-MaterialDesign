@@ -18,7 +18,7 @@
  *
  */
 
-package com.github.yumeyucca.yumebox.runtime.api
+package com.github.yumelira.yumebox.runtime.api
 
 /**
  * Best-effort summary of external proxy/rule provider prefetch during profile update.

@@ -18,14 +18,14 @@
  *
  */
 
-package com.github.yumeyucca.yumebox.runtime.api
+package com.github.yumelira.yumebox.runtime.api
 
-import com.github.yumeyucca.yumebox.core.model.ConnectionSnapshot
-import com.github.yumeyucca.yumebox.core.model.Provider
-import com.github.yumeyucca.yumebox.core.model.ProviderList
-import com.github.yumeyucca.yumebox.core.model.ProxyGroup
-import com.github.yumeyucca.yumebox.core.model.ProxySort
-import com.github.yumeyucca.yumebox.core.model.RuntimeRule
+import com.github.yumelira.yumebox.core.model.ConnectionSnapshot
+import com.github.yumelira.yumebox.core.model.Provider
+import com.github.yumelira.yumebox.core.model.ProviderList
+import com.github.yumelira.yumebox.core.model.ProxyGroup
+import com.github.yumelira.yumebox.core.model.ProxySort
+import com.github.yumelira.yumebox.core.model.RuntimeRule
 
 interface CoreApi {
     suspend fun queryTrafficNow(): Long

@@ -17,7 +17,7 @@
  * Copyright (c) YumeYucca 2025 - Present
  *
  */
-package com.github.yumeyucca.yumebox.presentation.screen.node
+package com.github.yumelira.yumebox.presentation.screen.node
 
 import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.animation.core.tween
@@ -36,11 +36,11 @@ import androidx.compose.ui.draw.clipToBounds
 import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.layout.layout
 import androidx.compose.ui.text.TextStyle
-import com.github.yumeyucca.yumebox.presentation.theme.AnimationSpecs
-import com.github.yumeyucca.yumebox.presentation.theme.UiDp
-import com.github.yumeyucca.yumebox.presentation.viewmodel.ProxyDelayTestProgress
+import com.github.yumelira.yumebox.presentation.theme.AnimationSpecs
+import com.github.yumelira.yumebox.presentation.theme.UiDp
+import com.github.yumelira.yumebox.presentation.viewmodel.ProxyDelayTestProgress
 import kotlinx.coroutines.flow.StateFlow
-import com.github.yumeyucca.yumebox.core.locale.YumeTxt
+import com.github.yumelira.yumebox.core.locale.YumeTxt
 import top.yukonga.miuix.kmp.basic.InfiniteProgressIndicator
 import top.yukonga.miuix.kmp.basic.Text
 import top.yukonga.miuix.kmp.theme.MiuixTheme

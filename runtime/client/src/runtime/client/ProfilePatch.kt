@@ -18,7 +18,7 @@
  *
  */
 
-package com.github.yumeyucca.yumebox.runtime.client
+package com.github.yumelira.yumebox.runtime.client
 
 /**
  * Editable profile fields collected by the edit dialogs and applied in one call by

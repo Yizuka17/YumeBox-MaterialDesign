@@ -18,7 +18,7 @@
  *
  */
 
-package com.github.yumeyucca.yumebox.presentation.navigation
+package com.github.yumelira.yumebox.presentation.navigation
 
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.runtime.Composable
@@ -36,8 +36,8 @@ import com.arkivanov.decompose.router.stack.ChildStack
 import com.arkivanov.decompose.router.stack.childStack
 import com.arkivanov.decompose.value.Value
 import com.arkivanov.essenty.lifecycle.LifecycleRegistry
-import com.github.yumeyucca.yumebox.presentation.component.LocalNavigator
-import com.github.yumeyucca.yumebox.presentation.component.Navigator
+import com.github.yumelira.yumebox.presentation.component.LocalNavigator
+import com.github.yumelira.yumebox.presentation.component.Navigator
 
 @Immutable
 internal class SecondaryDetailStack(

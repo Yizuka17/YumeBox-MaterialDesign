@@ -20,25 +20,25 @@
 
 @file:Suppress("UnusedSymbol", "CanBeParameter")
 
-package com.github.yumeyucca.yumebox.screen.settings
+package com.github.yumelira.yumebox.screen.settings
 
 import android.app.Application
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.github.yumeyucca.yumebox.common.util.XiaomiAutoStart
-import com.github.yumeyucca.yumebox.common.util.stateInWhileSubscribed
-import com.github.yumeyucca.yumebox.common.util.toast
-import com.github.yumeyucca.yumebox.core.util.moeWallpaperFile
-import com.github.yumeyucca.yumebox.data.controller.AppSettingsController
-import com.github.yumeyucca.yumebox.data.model.AppColorTheme
-import com.github.yumeyucca.yumebox.data.model.AppLanguage
-import com.github.yumeyucca.yumebox.data.model.ThemeMode
-import com.github.yumeyucca.yumebox.data.store.AppSettingsStore
-import com.github.yumeyucca.yumebox.data.store.FeatureStore
-import com.github.yumeyucca.yumebox.data.store.Preference
-import com.github.yumeyucca.yumebox.presentation.theme.DEFAULT_CUSTOM_THEME_SEED_ARGB
-import com.github.yumeyucca.yumebox.runtime.service.notification.HyperOsIsland
-import com.github.yumeyucca.yumebox.runtime.service.shizuku.ShizukuManager
+import com.github.yumelira.yumebox.common.util.XiaomiAutoStart
+import com.github.yumelira.yumebox.common.util.stateInWhileSubscribed
+import com.github.yumelira.yumebox.common.util.toast
+import com.github.yumelira.yumebox.core.util.moeWallpaperFile
+import com.github.yumelira.yumebox.data.controller.AppSettingsController
+import com.github.yumelira.yumebox.data.model.AppColorTheme
+import com.github.yumelira.yumebox.data.model.AppLanguage
+import com.github.yumelira.yumebox.data.model.ThemeMode
+import com.github.yumelira.yumebox.data.store.AppSettingsStore
+import com.github.yumelira.yumebox.data.store.FeatureStore
+import com.github.yumelira.yumebox.data.store.Preference
+import com.github.yumelira.yumebox.presentation.theme.DEFAULT_CUSTOM_THEME_SEED_ARGB
+import com.github.yumelira.yumebox.runtime.service.notification.HyperOsIsland
+import com.github.yumelira.yumebox.runtime.service.shizuku.ShizukuManager
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
@@ -47,7 +47,7 @@ import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
-import com.github.yumeyucca.yumebox.core.locale.YumeTxt
+import com.github.yumelira.yumebox.core.locale.YumeTxt
 
 class AppSettingsViewModel(
     private val application: Application,

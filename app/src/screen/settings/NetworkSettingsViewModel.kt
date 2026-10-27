@@ -18,22 +18,22 @@
  *
  */
 
-package com.github.yumeyucca.yumebox.screen.settings
+package com.github.yumelira.yumebox.screen.settings
 
 import android.app.Application
 import android.net.Uri
 import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.viewModelScope
-import com.github.yumeyucca.yumebox.common.util.stateInWhileSubscribed
-import com.github.yumeyucca.yumebox.core.model.TunDnsMode
-import com.github.yumeyucca.yumebox.data.controller.NetworkSettingsController
-import com.github.yumeyucca.yumebox.data.model.AccessControlMode
-import com.github.yumeyucca.yumebox.data.model.RunMode
-import com.github.yumeyucca.yumebox.data.model.TunStack
-import com.github.yumeyucca.yumebox.data.store.NetworkSettingsStore
-import com.github.yumeyucca.yumebox.data.store.Preference
-import com.github.yumeyucca.yumebox.runtime.service.core.KernelManager
-import com.github.yumeyucca.yumebox.runtime.service.root.RootAccessSupport
+import com.github.yumelira.yumebox.common.util.stateInWhileSubscribed
+import com.github.yumelira.yumebox.core.model.TunDnsMode
+import com.github.yumelira.yumebox.data.controller.NetworkSettingsController
+import com.github.yumelira.yumebox.data.model.AccessControlMode
+import com.github.yumelira.yumebox.data.model.RunMode
+import com.github.yumelira.yumebox.data.model.TunStack
+import com.github.yumelira.yumebox.data.store.NetworkSettingsStore
+import com.github.yumelira.yumebox.data.store.Preference
+import com.github.yumelira.yumebox.runtime.service.core.KernelManager
+import com.github.yumelira.yumebox.runtime.service.root.RootAccessSupport
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.*
 import kotlinx.coroutines.launch

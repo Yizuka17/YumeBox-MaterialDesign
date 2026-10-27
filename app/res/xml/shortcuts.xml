@@ -7,7 +7,7 @@
         android:shortcutLongLabel="@string/shortcut_start_clash_long"
         android:shortcutShortLabel="@string/shortcut_start_clash_short">
         <intent
-            android:action="com.github.yumeyucca.yumebox.action.START_CLASH"/>
+            android:action="com.github.yumelira.yumebox.action.START_CLASH"/>
     </shortcut>
 
     <shortcut
@@ -17,6 +17,6 @@
         android:shortcutLongLabel="@string/shortcut_stop_clash_long"
         android:shortcutShortLabel="@string/shortcut_stop_clash_short">
         <intent
-            android:action="com.github.yumeyucca.yumebox.action.STOP_CLASH"/>
+            android:action="com.github.yumelira.yumebox.action.STOP_CLASH"/>
     </shortcut>
 </shortcuts>

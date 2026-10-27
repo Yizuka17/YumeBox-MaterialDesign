@@ -20,28 +20,28 @@
 
 @file:Suppress("UnusedSymbol")
 
-package com.github.yumeyucca.yumebox.screen.profiles
+package com.github.yumelira.yumebox.screen.profiles
 
 
 import android.app.Application
 import android.net.Uri
 import androidx.lifecycle.viewModelScope
-import com.github.yumeyucca.yumebox.core.presentation.AndroidContractStateViewModel
-import com.github.yumeyucca.yumebox.data.store.LinkOpenMode
-import com.github.yumeyucca.yumebox.data.store.Preference
-import com.github.yumeyucca.yumebox.data.store.ProfileLink
-import com.github.yumeyucca.yumebox.data.store.ProfileLinksStore
-import com.github.yumeyucca.yumebox.runtime.api.FetchObserver
-import com.github.yumeyucca.yumebox.runtime.api.Profile
-import com.github.yumeyucca.yumebox.runtime.api.ProfileUpdateReport
-import com.github.yumeyucca.yumebox.runtime.client.ProfilePatch
-import com.github.yumeyucca.yumebox.runtime.client.ProfilesRepository
+import com.github.yumelira.yumebox.core.presentation.AndroidContractStateViewModel
+import com.github.yumelira.yumebox.data.store.LinkOpenMode
+import com.github.yumelira.yumebox.data.store.Preference
+import com.github.yumelira.yumebox.data.store.ProfileLink
+import com.github.yumelira.yumebox.data.store.ProfileLinksStore
+import com.github.yumelira.yumebox.runtime.api.FetchObserver
+import com.github.yumelira.yumebox.runtime.api.Profile
+import com.github.yumelira.yumebox.runtime.api.ProfileUpdateReport
+import com.github.yumelira.yumebox.runtime.client.ProfilePatch
+import com.github.yumelira.yumebox.runtime.client.ProfilesRepository
 import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.launch
-import com.github.yumeyucca.yumebox.core.locale.YumeTxt
+import com.github.yumelira.yumebox.core.locale.YumeTxt
 import timber.log.Timber
 import java.util.*
 

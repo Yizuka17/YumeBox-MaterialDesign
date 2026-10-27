@@ -20,19 +20,19 @@
 
 @file:Suppress("FunctionName")
 
-package com.github.yumeyucca.yumebox.feature.meta.presentation.viewmodel
+package com.github.yumelira.yumebox.feature.meta.presentation.viewmodel
 
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.github.yumeyucca.yumebox.data.controller.AppIdentityResolver
-import com.github.yumeyucca.yumebox.data.model.*
-import com.github.yumeyucca.yumebox.data.store.TrafficStatisticsStore
-import com.github.yumeyucca.yumebox.presentation.component.BarChartItem
+import com.github.yumelira.yumebox.data.controller.AppIdentityResolver
+import com.github.yumelira.yumebox.data.model.*
+import com.github.yumelira.yumebox.data.store.TrafficStatisticsStore
+import com.github.yumelira.yumebox.presentation.component.BarChartItem
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.*
 import kotlinx.coroutines.launch
-import com.github.yumeyucca.yumebox.core.locale.YumeTxt
+import com.github.yumelira.yumebox.core.locale.YumeTxt
 import java.util.*
 
 class TrafficStatisticsViewModel(private val trafficStatisticsStore: TrafficStatisticsStore) :

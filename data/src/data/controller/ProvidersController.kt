@@ -18,11 +18,11 @@
  *
  */
 
-package com.github.yumeyucca.yumebox.data.controller
+package com.github.yumelira.yumebox.data.controller
 
 import android.content.Context
 import android.net.Uri
-import com.github.yumeyucca.yumebox.core.model.Provider
+import com.github.yumelira.yumebox.core.model.Provider
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import java.io.File

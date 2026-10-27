@@ -18,11 +18,11 @@
  *
  */
 
-package com.github.yumeyucca.yumebox.runtime.service.notification
+package com.github.yumelira.yumebox.runtime.service.notification
 
 import org.json.JSONObject
 import java.util.concurrent.atomic.AtomicLong
-import com.github.yumeyucca.yumebox.core.locale.YumeTxt
+import com.github.yumelira.yumebox.core.locale.YumeTxt
 
 /**
  * Builds the HyperOS Super Island payload that the system reads from the `miui.focus.param`

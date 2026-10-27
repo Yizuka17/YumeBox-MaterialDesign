@@ -20,14 +20,14 @@
 
 @file:Suppress("UnusedSymbol", "FunctionName", "UnusedReceiverParameter")
 
-package com.github.yumeyucca.yumebox.presentation.screen
+package com.github.yumelira.yumebox.presentation.screen
 
 import androidx.compose.foundation.layout.RowScope
 import androidx.compose.foundation.layout.padding
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.vector.ImageVector
-import com.github.yumeyucca.yumebox.presentation.theme.UiDp
+import com.github.yumelira.yumebox.presentation.theme.UiDp
 import top.yukonga.miuix.kmp.basic.Icon
 import top.yukonga.miuix.kmp.basic.IconButton
 

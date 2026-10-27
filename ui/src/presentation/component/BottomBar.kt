@@ -20,7 +20,7 @@
 
 @file:Suppress("UnusedSymbol", "FunctionName")
 
-package com.github.yumeyucca.yumebox.presentation.component
+package com.github.yumelira.yumebox.presentation.component
 
 
 import androidx.compose.animation.animateBounds
@@ -54,16 +54,16 @@ import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.IntOffset
 import androidx.compose.ui.unit.LayoutDirection
 import androidx.compose.ui.unit.sp
-import com.github.yumeyucca.yumebox.presentation.icon.Yume
-import com.github.yumeyucca.yumebox.presentation.icon.yume.ArrowDownUp
-import com.github.yumeyucca.yumebox.presentation.icon.yume.Bolt
-import com.github.yumeyucca.yumebox.presentation.icon.yume.House
-import com.github.yumeyucca.yumebox.presentation.icon.yume.PackageCheck
-import com.github.yumeyucca.yumebox.presentation.theme.AnimationSpecs
-import com.github.yumeyucca.yumebox.presentation.theme.AppTheme
-import com.github.yumeyucca.yumebox.presentation.theme.UiDp
-import com.github.yumeyucca.yumebox.presentation.theme.YumeHaze
-import com.github.yumeyucca.yumebox.presentation.theme.YumeHaze.chromeEffect
+import com.github.yumelira.yumebox.presentation.icon.Yume
+import com.github.yumelira.yumebox.presentation.icon.yume.ArrowDownUp
+import com.github.yumelira.yumebox.presentation.icon.yume.Bolt
+import com.github.yumelira.yumebox.presentation.icon.yume.House
+import com.github.yumelira.yumebox.presentation.icon.yume.PackageCheck
+import com.github.yumelira.yumebox.presentation.theme.AnimationSpecs
+import com.github.yumelira.yumebox.presentation.theme.AppTheme
+import com.github.yumelira.yumebox.presentation.theme.UiDp
+import com.github.yumelira.yumebox.presentation.theme.YumeHaze
+import com.github.yumelira.yumebox.presentation.theme.YumeHaze.chromeEffect
 import com.kyant.shapes.Capsule
 import dev.chrisbanes.haze.HazeState
 import dev.chrisbanes.haze.blur.HazeBlurStyle
@@ -71,7 +71,7 @@ import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.job
 import kotlinx.coroutines.launch
-import com.github.yumeyucca.yumebox.core.locale.YumeTxt
+import com.github.yumelira.yumebox.core.locale.YumeTxt
 import top.yukonga.miuix.kmp.basic.Icon
 import top.yukonga.miuix.kmp.theme.MiuixTheme
 import kotlin.math.abs

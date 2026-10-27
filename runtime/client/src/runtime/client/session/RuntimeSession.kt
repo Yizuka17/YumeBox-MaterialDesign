@@ -18,22 +18,22 @@
  *
  */
 
-package com.github.yumeyucca.yumebox.runtime.client.session
+package com.github.yumelira.yumebox.runtime.client.session
 
-import com.github.yumeyucca.yumebox.core.model.RunMode
-import com.github.yumeyucca.yumebox.core.util.AppVisibilityTracker
-import com.github.yumeyucca.yumebox.runtime.api.Profile
-import com.github.yumeyucca.yumebox.runtime.api.RuntimeOwner
-import com.github.yumeyucca.yumebox.runtime.api.RuntimePhase
-import com.github.yumeyucca.yumebox.runtime.api.RuntimeSnapshot
-import com.github.yumeyucca.yumebox.runtime.api.RuntimeStartSource
-import com.github.yumeyucca.yumebox.runtime.api.RuntimeState
-import com.github.yumeyucca.yumebox.runtime.api.appContextOrSelf
-import com.github.yumeyucca.yumebox.runtime.client.ProxyGroupSyncPriority
-import com.github.yumeyucca.yumebox.runtime.client.RuntimeStartRequest
-import com.github.yumeyucca.yumebox.runtime.client.RuntimeStateMapper
-import com.github.yumeyucca.yumebox.runtime.client.RuntimeStopRequest
-import com.github.yumeyucca.yumebox.runtime.client.access.RuntimeAccess
+import com.github.yumelira.yumebox.core.model.RunMode
+import com.github.yumelira.yumebox.core.util.AppVisibilityTracker
+import com.github.yumelira.yumebox.runtime.api.Profile
+import com.github.yumelira.yumebox.runtime.api.RuntimeOwner
+import com.github.yumelira.yumebox.runtime.api.RuntimePhase
+import com.github.yumelira.yumebox.runtime.api.RuntimeSnapshot
+import com.github.yumelira.yumebox.runtime.api.RuntimeStartSource
+import com.github.yumelira.yumebox.runtime.api.RuntimeState
+import com.github.yumelira.yumebox.runtime.api.appContextOrSelf
+import com.github.yumelira.yumebox.runtime.client.ProxyGroupSyncPriority
+import com.github.yumelira.yumebox.runtime.client.RuntimeStartRequest
+import com.github.yumelira.yumebox.runtime.client.RuntimeStateMapper
+import com.github.yumelira.yumebox.runtime.client.RuntimeStopRequest
+import com.github.yumelira.yumebox.runtime.client.access.RuntimeAccess
 import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow

@@ -1,4 +1,4 @@
-package com.github.yumeyucca.yumebox.core.locale
+package com.github.yumelira.yumebox.core.locale
 
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider

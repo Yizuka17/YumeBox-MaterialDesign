@@ -18,15 +18,15 @@
  *
  */
 
-package com.github.yumeyucca.yumebox.common.util
+package com.github.yumelira.yumebox.common.util
 
 import android.content.Context
 import android.content.Intent
-import com.github.yumeyucca.yumebox.core.util.AutoStartSessionGate
-import com.github.yumeyucca.yumebox.data.store.NetworkSettingsStore
-import com.github.yumeyucca.yumebox.runtime.client.ProfilesRepository
-import com.github.yumeyucca.yumebox.runtime.client.ProxyFacade
-import com.github.yumeyucca.yumebox.runtime.service.WifiAutomationService
+import com.github.yumelira.yumebox.core.util.AutoStartSessionGate
+import com.github.yumelira.yumebox.data.store.NetworkSettingsStore
+import com.github.yumelira.yumebox.runtime.client.ProfilesRepository
+import com.github.yumelira.yumebox.runtime.client.ProxyFacade
+import com.github.yumelira.yumebox.runtime.service.WifiAutomationService
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.launch
 import org.koin.core.component.KoinComponent
@@ -38,8 +38,8 @@ class IntentController(
     private val scope: CoroutineScope,
 ) : KoinComponent {
     companion object {
-        private const val ACTION_START_CLASH = "com.github.yumeyucca.yumebox.action.START_CLASH"
-        private const val ACTION_STOP_CLASH = "com.github.yumeyucca.yumebox.action.STOP_CLASH"
+        private const val ACTION_START_CLASH = "com.github.yumelira.yumebox.action.START_CLASH"
+        private const val ACTION_STOP_CLASH = "com.github.yumelira.yumebox.action.STOP_CLASH"
     }
 
     private val proxyFacade: ProxyFacade by inject()

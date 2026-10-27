@@ -18,9 +18,9 @@
  *
  */
 
-package com.github.yumeyucca.yumebox.presentation.screen.node
+package com.github.yumelira.yumebox.presentation.screen.node
 
-import com.github.yumeyucca.yumebox.presentation.util.extractFlaggedName
+import com.github.yumelira.yumebox.presentation.util.extractFlaggedName
 
 internal data class ProxyDisplayPresentation(
     val countryCode: String?,

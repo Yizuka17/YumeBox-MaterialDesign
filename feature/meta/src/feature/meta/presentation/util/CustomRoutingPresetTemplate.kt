@@ -18,7 +18,7 @@
  *
  */
 
-package com.github.yumeyucca.yumebox.feature.meta.presentation.util
+package com.github.yumelira.yumebox.feature.meta.presentation.util
 
 import java.net.URLEncoder
 import java.nio.charset.StandardCharsets

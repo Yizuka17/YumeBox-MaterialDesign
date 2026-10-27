@@ -18,13 +18,13 @@
  *
  */
 
-package com.github.yumeyucca.yumebox.runtime.client.session
+package com.github.yumelira.yumebox.runtime.client.session
 
 import android.content.Context
-import com.github.yumeyucca.yumebox.data.store.NetworkSettingsStore
-import com.github.yumeyucca.yumebox.data.store.RemoteControllerStore
-import com.github.yumeyucca.yumebox.runtime.api.RuntimeControl
-import com.github.yumeyucca.yumebox.runtime.service.RuntimeCoordinator
+import com.github.yumelira.yumebox.data.store.NetworkSettingsStore
+import com.github.yumelira.yumebox.data.store.RemoteControllerStore
+import com.github.yumelira.yumebox.runtime.api.RuntimeControl
+import com.github.yumelira.yumebox.runtime.service.RuntimeCoordinator
 import kotlinx.coroutines.CoroutineScope
 
 /** Construction bag for [RuntimeSession]. Keeps the session entry free of long argument lists. */

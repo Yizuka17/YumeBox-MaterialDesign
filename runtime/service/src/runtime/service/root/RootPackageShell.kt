@@ -18,7 +18,7 @@
  *
  */
 
-package com.github.yumeyucca.yumebox.runtime.service.root
+package com.github.yumelira.yumebox.runtime.service.root
 
 import com.topjohnwu.superuser.Shell
 

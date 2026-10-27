@@ -20,7 +20,7 @@
 
 @file:Suppress("UnusedSymbol", "PropertyName")
 
-package com.github.yumeyucca.yumebox.core.presentation
+package com.github.yumelira.yumebox.core.presentation
 
 
 import android.app.Application

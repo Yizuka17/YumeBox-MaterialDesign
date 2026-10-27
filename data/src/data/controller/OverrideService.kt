@@ -18,12 +18,12 @@
  *
  */
 
-package com.github.yumeyucca.yumebox.data.controller
+package com.github.yumelira.yumebox.data.controller
 
 import android.content.Context
 import android.content.Intent
-import com.github.yumeyucca.yumebox.runtime.api.Intents
-import com.github.yumeyucca.yumebox.runtime.api.appContextOrSelf
+import com.github.yumelira.yumebox.runtime.api.Intents
+import com.github.yumelira.yumebox.runtime.api.appContextOrSelf
 import timber.log.Timber
 
 class OverrideService(

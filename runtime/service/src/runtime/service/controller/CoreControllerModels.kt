@@ -18,9 +18,9 @@
  *
  */
 
-package com.github.yumeyucca.yumebox.runtime.service.controller
+package com.github.yumelira.yumebox.runtime.service.controller
 
-import com.github.yumeyucca.yumebox.core.model.TunnelState
+import com.github.yumelira.yumebox.core.model.TunnelState
 import kotlinx.serialization.Serializable
 
 @Serializable

@@ -27,19 +27,19 @@
  * License.
  */
 
-package com.github.yumeyucca.yumebox.presentation.navigation
+package com.github.yumelira.yumebox.presentation.navigation
 
 import androidx.compose.runtime.Composable
-import com.github.yumeyucca.yumebox.presentation.component.Navigator
-import com.github.yumeyucca.yumebox.screen.about.AboutScreen
-import com.github.yumeyucca.yumebox.screen.about.OpenSourceLicensesScreen
-import com.github.yumeyucca.yumebox.screen.connection.ConnectionDetailScreen
-import com.github.yumeyucca.yumebox.screen.connection.ConnectionScreen
-import com.github.yumeyucca.yumebox.screen.log.LogScreen
-import com.github.yumeyucca.yumebox.screen.navigation.*
-import com.github.yumeyucca.yumebox.screen.rules.RulesScreen
-import com.github.yumeyucca.yumebox.screen.settings.*
-import com.github.yumeyucca.yumebox.screen.traffic.TrafficStatisticsScreen
+import com.github.yumelira.yumebox.presentation.component.Navigator
+import com.github.yumelira.yumebox.screen.about.AboutScreen
+import com.github.yumelira.yumebox.screen.about.OpenSourceLicensesScreen
+import com.github.yumelira.yumebox.screen.connection.ConnectionDetailScreen
+import com.github.yumelira.yumebox.screen.connection.ConnectionScreen
+import com.github.yumelira.yumebox.screen.log.LogScreen
+import com.github.yumelira.yumebox.screen.navigation.*
+import com.github.yumelira.yumebox.screen.rules.RulesScreen
+import com.github.yumelira.yumebox.screen.settings.*
+import com.github.yumelira.yumebox.screen.traffic.TrafficStatisticsScreen
 
 @Composable
 fun RouteContent(route: Route, navigator: Navigator) {

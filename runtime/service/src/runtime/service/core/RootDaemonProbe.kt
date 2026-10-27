@@ -18,7 +18,7 @@
  *
  */
 
-package com.github.yumeyucca.yumebox.runtime.service.core
+package com.github.yumelira.yumebox.runtime.service.core
 
 import android.os.SystemClock
 import com.topjohnwu.superuser.Shell

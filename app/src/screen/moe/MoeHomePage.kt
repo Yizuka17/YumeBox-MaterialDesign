@@ -20,7 +20,7 @@
 
 @file:Suppress("FunctionName", "UnnecessaryVariable", "KotlinDeprecation")
 
-package com.github.yumeyucca.yumebox.screen.moe
+package com.github.yumelira.yumebox.screen.moe
 
 import android.content.Context
 import android.content.Intent
@@ -45,26 +45,26 @@ import androidx.compose.ui.platform.LocalHapticFeedback
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.LifecycleEventObserver
 import androidx.lifecycle.compose.LocalLifecycleOwner
-import com.github.yumeyucca.yumebox.common.util.toast
-import com.github.yumeyucca.yumebox.core.util.PollingTimerSpecs
-import com.github.yumeyucca.yumebox.core.util.PollingTimers
-import com.github.yumeyucca.yumebox.data.model.ThemeMode
-import com.github.yumeyucca.yumebox.domain.model.TrafficData
-import com.github.yumeyucca.yumebox.presentation.component.BottomBarDestination
-import com.github.yumeyucca.yumebox.presentation.component.LocalHandlePageChange
-import com.github.yumeyucca.yumebox.presentation.component.LocalNavigator
-import com.github.yumeyucca.yumebox.presentation.icon.ShellIcons
-import com.github.yumeyucca.yumebox.presentation.icon.Yume
-import com.github.yumeyucca.yumebox.presentation.icon.yume.Zashboard
-import com.github.yumeyucca.yumebox.presentation.icon.yume.Palette
-import com.github.yumeyucca.yumebox.presentation.navigation.Route
-import com.github.yumeyucca.yumebox.presentation.theme.AnimationSpecs
-import com.github.yumeyucca.yumebox.screen.home.HomeProxyControlState
-import com.github.yumeyucca.yumebox.screen.home.HomeViewModel
-import com.github.yumeyucca.yumebox.screen.settings.AppSettingsViewModel
+import com.github.yumelira.yumebox.common.util.toast
+import com.github.yumelira.yumebox.core.util.PollingTimerSpecs
+import com.github.yumelira.yumebox.core.util.PollingTimers
+import com.github.yumelira.yumebox.data.model.ThemeMode
+import com.github.yumelira.yumebox.domain.model.TrafficData
+import com.github.yumelira.yumebox.presentation.component.BottomBarDestination
+import com.github.yumelira.yumebox.presentation.component.LocalHandlePageChange
+import com.github.yumelira.yumebox.presentation.component.LocalNavigator
+import com.github.yumelira.yumebox.presentation.icon.ShellIcons
+import com.github.yumelira.yumebox.presentation.icon.Yume
+import com.github.yumelira.yumebox.presentation.icon.yume.Zashboard
+import com.github.yumelira.yumebox.presentation.icon.yume.Palette
+import com.github.yumelira.yumebox.presentation.navigation.Route
+import com.github.yumelira.yumebox.presentation.theme.AnimationSpecs
+import com.github.yumelira.yumebox.screen.home.HomeProxyControlState
+import com.github.yumelira.yumebox.screen.home.HomeViewModel
+import com.github.yumelira.yumebox.screen.settings.AppSettingsViewModel
 import kotlinx.coroutines.launch
 import org.koin.androidx.compose.koinViewModel
-import com.github.yumeyucca.yumebox.core.locale.YumeTxt
+import com.github.yumelira.yumebox.core.locale.YumeTxt
 import top.yukonga.miuix.kmp.theme.MiuixTheme
 
 @Composable
@@ -78,8 +78,8 @@ fun MoeHomePage(
     pageProgress: Float = 1f,
     sidebarProgress: Float = pageProgress,
     onOpenPanel: (() -> Unit)? = null,
-    windowLayoutMode: com.github.yumeyucca.yumebox.presentation.component.WindowLayoutMode =
-        com.github.yumeyucca.yumebox.presentation.component.WindowLayoutMode.Compact,
+    windowLayoutMode: com.github.yumelira.yumebox.presentation.component.WindowLayoutMode =
+        com.github.yumelira.yumebox.presentation.component.WindowLayoutMode.Compact,
 ) {
     val homeViewModel = koinViewModel<HomeViewModel>()
     val appSettingsViewModel = koinViewModel<AppSettingsViewModel>()

@@ -20,7 +20,7 @@
 
 @file:Suppress("FunctionName")
 
-package com.github.yumeyucca.yumebox.screen.settings
+package com.github.yumelira.yumebox.screen.settings
 
 
 import androidx.compose.foundation.layout.Arrangement
@@ -31,21 +31,21 @@ import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.state.ToggleableState
-import com.github.yumeyucca.yumebox.common.util.toast
-import com.github.yumeyucca.yumebox.core.model.GeoFileType
-import com.github.yumeyucca.yumebox.core.model.GeoXItem
-import com.github.yumeyucca.yumebox.core.model.geoXItems
-import com.github.yumeyucca.yumebox.core.util.runtimeHomeDir
-import com.github.yumeyucca.yumebox.presentation.component.*
-import com.github.yumeyucca.yumebox.presentation.component.AppCard
-import com.github.yumeyucca.yumebox.presentation.navigation.Route
-import com.github.yumeyucca.yumebox.presentation.theme.AppTheme
-import com.github.yumeyucca.yumebox.substore.util.SubStoreDownloadClient
+import com.github.yumelira.yumebox.common.util.toast
+import com.github.yumelira.yumebox.core.model.GeoFileType
+import com.github.yumelira.yumebox.core.model.GeoXItem
+import com.github.yumelira.yumebox.core.model.geoXItems
+import com.github.yumelira.yumebox.core.util.runtimeHomeDir
+import com.github.yumelira.yumebox.presentation.component.*
+import com.github.yumelira.yumebox.presentation.component.AppCard
+import com.github.yumelira.yumebox.presentation.navigation.Route
+import com.github.yumelira.yumebox.presentation.theme.AppTheme
+import com.github.yumelira.yumebox.substore.util.SubStoreDownloadClient
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import org.koin.compose.koinInject
-import com.github.yumeyucca.yumebox.core.locale.YumeTxt
+import com.github.yumelira.yumebox.core.locale.YumeTxt
 import top.yukonga.miuix.kmp.basic.BasicComponent
 import top.yukonga.miuix.kmp.basic.ButtonDefaults
 import top.yukonga.miuix.kmp.basic.Checkbox

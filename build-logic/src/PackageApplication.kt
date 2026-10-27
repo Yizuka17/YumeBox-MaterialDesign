@@ -97,13 +97,13 @@ private fun packageLocked(root: File, state: File, options: Map<String, String>,
         val runtime = maven.artifact("org.lsposed.hiddenapibypass", "hiddenapibypass", "6.2", "aar")
         val dex = workspace.resolve("loader-dex")
         LoaderDexBuilder(tools.sdk, workspace.resolve("loader-work")).build(loaderArtifact, listOf(runtime), 26, dex)
-        ApkPacker(tools.sdk, workspace.resolve("packer"), dex.resolve("classes.dex"), "com.github.yumeyucca.yumebox.App", "androidx.core.app.CoreComponentFactory", signing).pack(prepared, ready)
+        ApkPacker(tools.sdk, workspace.resolve("packer"), dex.resolve("classes.dex"), "com.github.yumelira.yumebox.App", "androidx.core.app.CoreComponentFactory", signing).pack(prepared, ready)
         verifyPackedPayload(ready)
     } else {
         tools.finish(prepared, ready, signing)
     }
     tools.verify(ready, signing)
-    val applicationId = "com.github.yumeyucca.yumebox"
+    val applicationId = "com.github.yumelira.yumebox"
     manifest.verify(ready, plan, applicationId, loader)
     val name = plan.apkFileName("arm64-v8a")
     val output = root.resolve("output_apk/$variant/$name").apply { parentFile.mkdirs() }

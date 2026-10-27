@@ -9,7 +9,7 @@
  * Copyright (c) YumeYucca 2025 - Present
  */
 
-package com.github.yumeyucca.yumebox.presentation.component
+package com.github.yumelira.yumebox.presentation.component
 
 import android.text.InputType
 import android.text.TextWatcher

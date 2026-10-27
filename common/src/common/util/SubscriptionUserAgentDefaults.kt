@@ -18,7 +18,7 @@
  *
  */
 
-package com.github.yumeyucca.yumebox.common.util
+package com.github.yumelira.yumebox.common.util
 
 /** Shared default User-Agent recognized by most airport subscription gates. */
 object SubscriptionUserAgentDefaults {

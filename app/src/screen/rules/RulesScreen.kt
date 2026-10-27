@@ -20,7 +20,7 @@
 
 @file:Suppress("DuplicatedCode", "FunctionName")
 
-package com.github.yumeyucca.yumebox.screen.rules
+package com.github.yumelira.yumebox.screen.rules
 
 
 import androidx.compose.foundation.gestures.detectTapGestures
@@ -39,12 +39,12 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalLocale
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.text.style.TextOverflow
-import com.github.yumeyucca.yumebox.common.util.toast
-import com.github.yumeyucca.yumebox.core.model.RuntimeRule
-import com.github.yumeyucca.yumebox.presentation.component.*
-import com.github.yumeyucca.yumebox.presentation.theme.AppTheme
+import com.github.yumelira.yumebox.common.util.toast
+import com.github.yumelira.yumebox.core.model.RuntimeRule
+import com.github.yumelira.yumebox.presentation.component.*
+import com.github.yumelira.yumebox.presentation.theme.AppTheme
 import org.koin.androidx.compose.koinViewModel
-import com.github.yumeyucca.yumebox.core.locale.YumeTxt
+import com.github.yumelira.yumebox.core.locale.YumeTxt
 import top.yukonga.miuix.kmp.basic.MiuixScrollBehavior
 import top.yukonga.miuix.kmp.basic.Scaffold
 import top.yukonga.miuix.kmp.basic.Switch
@@ -55,7 +55,7 @@ import top.yukonga.miuix.kmp.theme.MiuixTheme
  * Runtime rules from `GET /rules`. Each card has an enable switch wired to `PATCH /rules/disable`.
  * This is **not** the custom-routing editor.
  *
- * Search chrome mirrors [com.github.yumeyucca.yumebox.screen.connection.ConnectionScreen] (collapsed
+ * Search chrome mirrors [com.github.yumelira.yumebox.screen.connection.ConnectionScreen] (collapsed
  * bar in TopBar + SearchPager overlay). Horizontal inset for cards is owned by shared [AppCard]
  * (`applyHorizontalPadding`), same as Log — not LazyColumn contentPadding.
  */

@@ -5,8 +5,8 @@ plugins:
   build-logic: enabled
 settings:
   android:
-    applicationId: com.github.yumeyucca.yumebox
-    namespace: com.github.yumeyucca.yumebox
+    applicationId: com.github.yumelira.yumebox
+    namespace: com.github.yumelira.yumebox
     versionCode: 1
     versionName: "build-input"
     abiFilters: [arm64-v8a]
