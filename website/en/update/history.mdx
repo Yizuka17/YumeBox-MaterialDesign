@@ -20,15 +20,14 @@ This page records this fork's releases, dated by their publication time in UTC+8
 
 <Update label="2026-10-28" tags={["Release"]} description="v0.6.5-beta.1">
 
-- Integrated upstream Moe runtime and build changes while retaining the fork's ACG home and MD3 interface; updated Mihomo to Alpha 5b79f3c3.
-- Switched update checks to this repository's GitHub Releases, with prerelease support, six-hour foreground checks, progress, cancellation, retry and package identity/version/signature validation.
+- Integrated upstream Moe runtime and build changes, and upgraded Mihomo to Alpha 5b79f3c3.
+- Update checks now read this repository's GitHub Releases directly, with stable/prerelease filtering, six-hour foreground checks and package identity/version/signature validation.
 - Release covers retain their original aspect ratio and support preview, zoom and long-press saving.
-- Expanded backups to ZIP archives covering settings, profile sources, overrides and bindings, wallpapers, statistics, logs, Geo and Sub-Store data; retained support for JSON settings backups.
-- Bundled a matching Sub-Store engine and fixed native version-mismatch crashes, frontend/backend connectivity and shutdown timers after leaving the page.
-- Added natural-height masonry node cards with consistent spacing; fixed serialized batch checks, ineffective concurrency settings and scrolling stalls.
-- Fixed crashes in profile JSON editing, renaming, override imports and emoji handling, custom-routing navigation and connection-detail scrolling ([#3](https://github.com/Yizuka17/YumeBox-MaterialDesign/issues/3)).
-- Super Island and proxy notifications open home instead of the old node popup; reorganized settings and restored uppercase region labels.
-- Restored the fork's original cat icons and the YumeBox MD3 Quick Settings label. This fix is included in the existing Beta 1 Release, with versionCode 6505.
+- Node cards use a two-column, natural-height masonry layout with consistent spacing.
+- Expanded settings backups into ZIP archives containing profile sources, overrides and bindings, wallpapers, statistics, logs, Geo and Sub-Store data; retained JSON settings backup compatibility.
+- Bundled a matching Sub-Store native engine, eliminating a separate engine extension. Frontend/backend resources are still downloaded in the app on first use.
+- Added HyperOS Super Island and Shizuku support, showing subscription, node and live traffic information. The island and proxy notifications open home.
+- Grouped app settings into Home, Theme, Interface, Service, Behavior and Privacy, with network and custom User-Agent settings together.
 
 [Release](https://github.com/Yizuka17/YumeBox-MaterialDesign/releases/tag/v0.6.5-beta.1) · [Compare commits](https://github.com/Yizuka17/YumeBox-MaterialDesign/compare/v0.5.5-alpha...v0.6.5-beta.1)
 

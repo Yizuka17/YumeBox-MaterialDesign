@@ -61,7 +61,8 @@ object AppLanguageManager {
     }
 
     fun wrap(base: Context): Context {
-        val configuration = Configuration(base.resources.configuration)
+        // Override only locale, so night mode and other system changes remain inherited.
+        val configuration = Configuration()
         applyLocale(configuration, activeLocale)
         return base.createConfigurationContext(configuration)
     }

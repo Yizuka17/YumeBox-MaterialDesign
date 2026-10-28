@@ -46,7 +46,7 @@ import com.github.yumelira.yumebox.data.model.MonetStyle
 import com.github.yumelira.yumebox.data.model.ThemeMode
 import top.yukonga.miuix.kmp.theme.MiuixTheme
 
-internal val LocalPlatformSystemUiEffect = compositionLocalOf<@Composable () -> Unit> { {} }
+internal val LocalPlatformSystemUiEffect = compositionLocalOf<@Composable (Boolean) -> Unit> { { _ -> } }
 
 @OptIn(ExperimentalMaterial3ExpressiveApi::class)
 @Composable
@@ -65,7 +65,6 @@ fun YumeTheme(
     appColors: AppColors? = null,
     content: @Composable () -> Unit,
 ) {
-    LocalPlatformSystemUiEffect.current()
     val context = LocalContext.current
     val configuration = LocalConfiguration.current
     val effectiveThemeMode = themeMode ?: ThemeMode.Auto
@@ -74,6 +73,7 @@ fun YumeTheme(
         ThemeMode.Light -> false
         ThemeMode.Dark -> true
     }
+    LocalPlatformSystemUiEffect.current(isDark)
     val materialColorScheme = remember(
         context,
         colorTheme,
