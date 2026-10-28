@@ -27,9 +27,9 @@ Settings = {
 
     DataSettings = {
         ExportBackup = "Export Backup"
-        ExportBackupSummary = "Save user settings to a JSON file"
-        ImportBackup = "Import Backup"
-        ImportBackupSummary = "Restore user settings from a backup file"
+        ExportBackupSummary = "Settings, profiles and overrides"
+        ImportBackup = "Restore Backup"
+        ImportBackupSummary = "ZIP and legacy JSON"
         AppDataManagement = "App Data Management"
         AppDataManagementSummary = "Clean up some cache files"
     }

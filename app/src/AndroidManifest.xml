@@ -115,6 +115,10 @@
             android:taskAffinity=""
             android:theme="@style/Theme.YumeBox.Translucent.Popup"/>
 
+        <service
+            android:name="com.github.yumelira.yumebox.substore.SubStoreService"
+            android:exported="false" />
+
         <activity
             android:name=".WebViewActivity"
             android:configChanges="orientation|screenSize|keyboardHidden"

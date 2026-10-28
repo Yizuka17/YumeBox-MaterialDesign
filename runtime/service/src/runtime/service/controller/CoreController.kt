@@ -54,7 +54,8 @@ class CoreController(
     /** Local controller endpoint: fixed socket path, secret read per request. */
     class Local(val socketPath: String, val secret: () -> String)
 
-    private val json = Json { ignoreUnknownKeys = true }
+    // Mihomo represents an empty Go slice as null (for example connections at startup).
+    private val json = Json { ignoreUnknownKeys = true; coerceInputValues = true }
 
     @Volatile private var trafficSampleCache: TimedTrafficSample? = null
 
@@ -72,6 +73,9 @@ class CoreController(
                 socketTimeoutMillis = REQUEST_TIMEOUT_MS
                 requestTimeoutMillis = REQUEST_TIMEOUT_MS
             }
+            engine { config {
+                dispatcher(okhttp3.Dispatcher().apply { maxRequests = 64; maxRequestsPerHost = 64 })
+            } }
             local?.let { target ->
                 engine { config { socketFactory(UnixSocketFactory(target.socketPath)) } }
             }
@@ -426,11 +430,17 @@ class CoreController(
             val response = request(HttpMethod.Get, *pathSegments, query = delayQuery)
             if (response.status.isSuccess()) {
                 json.decodeFromString<RawDelayResult>(response.bodyAsText()).delay
+            } else if (response.status == HttpStatusCode.NotFound) {
+                null // Only an unknown node requires a second probe through its provider.
             } else {
-                null
+                -1
             }
-        } catch (_: Throwable) { // fault barrier: remote REST delay test degrades to "no result"
-            null
+        } catch (cancelled: CancellationException) {
+            throw cancelled
+        } catch (response: ClientRequestException) {
+            if (response.response.status == HttpStatusCode.NotFound) null else -1
+        } catch (_: Exception) {
+            -1
         }
 
     /** Proxy + rule providers; built-in Compatible entries are omitted. */

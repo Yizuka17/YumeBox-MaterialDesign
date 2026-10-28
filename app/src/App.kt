@@ -21,6 +21,7 @@
 package com.github.yumelira.yumebox
 
 import android.app.Application
+import android.content.Context
 import android.content.ComponentName
 import android.content.res.Configuration
 import com.github.yumelira.yumebox.common.util.AppLanguageManager
@@ -44,14 +45,39 @@ import org.koin.core.context.startKoin
 import org.tukaani.xz.XZInputStream
 import timber.log.Timber
 import java.io.File
+import com.github.panpf.sketch.Sketch
+import com.github.panpf.sketch.SingletonSketch
+import com.github.panpf.sketch.fetch.HurlHttpUriFetcher
+import com.github.panpf.sketch.decode.SvgDecoder
+import com.github.panpf.sketch.decode.ImageDecoderGifDecoder
+import com.github.panpf.sketch.decode.MovieGifDecoder
+import com.github.panpf.sketch.decode.ImageDecoderAnimatedWebpDecoder
+import com.github.panpf.sketch.decode.ImageDecoderAnimatedHeifDecoder
 
-class App : Application() {
+class App : Application(), SingletonSketch.Factory {
     private val startupScope = CoroutineScope(SupervisorJob() + Dispatchers.Default)
 
     companion object {
         lateinit var instance: App
             private set
     }
+
+    // The packed APK intentionally omits META-INF service registrations. Register image
+    // components explicitly so release covers, remote flags and animated wallpapers work.
+    override fun createSketch(context: Context): Sketch = Sketch.Builder(context)
+        .componentLoaderEnabled(false)
+        .addComponents {
+            add(HurlHttpUriFetcher.Factory())
+            add(SvgDecoder.Factory())
+            if (android.os.Build.VERSION.SDK_INT >= 28) {
+                add(ImageDecoderGifDecoder.Factory())
+                add(ImageDecoderAnimatedWebpDecoder.Factory())
+                add(ImageDecoderAnimatedHeifDecoder.Factory())
+            } else {
+                add(MovieGifDecoder.Factory())
+            }
+        }
+        .build()
 
     override fun onCreate() {
         super.onCreate()

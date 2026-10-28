@@ -71,9 +71,7 @@ fun FeatureContent(
     val isDownloadingSubStoreBackend by viewModel.isDownloadingSubStoreBackend.collectAsState()
     val isDownloadingSubStoreResources by viewModel.isDownloadingSubStoreResources.collectAsState()
     val subStoreResourceProgressItems by viewModel.subStoreResourceProgressItems.collectAsState()
-    val isExtensionInstalled by viewModel.isExtensionInstalled.collectAsState()
     val isJavetLoaded by viewModel.isJavetLoaded.collectAsState()
-    val isSubStoreInitialized by viewModel.isSubStoreInitialized.collectAsState()
     val selectedPanelType by viewModel.selectedPanelType.state.collectAsState()
     val panelOpenMode by viewModel.panelOpenMode.state.collectAsState()
     val healthCheckConcurrency by viewModel.healthCheckConcurrency.state.collectAsState()
@@ -96,13 +94,6 @@ fun FeatureContent(
             innerPadding = combinePaddingValues(innerPadding, mainLikePadding),
         ) {
             item {
-                val canStartService = isExtensionInstalled && isSubStoreInitialized
-                when {
-                    isServiceRunning -> MLang.Feature.ServiceStatus.Running.format(frontendUrl)
-                    !isExtensionInstalled -> MLang.Feature.ServiceStatus.NeedExtension
-                    !isSubStoreInitialized -> MLang.Feature.ServiceStatus.NeedSubStore
-                    else -> MLang.Feature.ServiceStatus.NotRunning
-                }
                 Title(MLang.Feature.ServiceStatus.Section)
                 Card {
                     val autoCloseItems = AutoCloseMode.entries.map { it.getDisplayName() }
@@ -116,7 +107,7 @@ fun FeatureContent(
                         values = autoCloseValues,
                         onValueChange = { mode ->
                             viewModel.setAutoCloseMode(mode)
-                            if (mode != AutoCloseMode.DISABLED && !isServiceRunning && canStartService) {
+                            if (mode != AutoCloseMode.DISABLED && !isServiceRunning) {
                                 viewModel.startService()
                             } else if (mode == AutoCloseMode.DISABLED && isServiceRunning) {
                                 viewModel.stopService()
@@ -221,23 +212,9 @@ fun FeatureContent(
                 Card {
 
                     PreferenceArrowItem(
-                        title = if (isExtensionInstalled) {
-                            MLang.Feature.SubStore.ExtensionInstalled
-                        } else {
-                            MLang.Feature.SubStore.ExtensionInstall
-                        },
-                        summary = when {
-                            isExtensionInstalled && isJavetLoaded -> MLang.Feature.SubStore.JavetAvailable
-                            isExtensionInstalled -> MLang.Feature.SubStore.JavetPending
-                            else -> MLang.Feature.SubStore.DownloadHint
-                        },
-                        onClick = {
-                            if (!isExtensionInstalled) {
-                                onOpenExternalUrl("https://github.com/YumeLira/YumeBox/releases/tag/Expand")
-                            } else {
-                                viewModel.refreshExtensionStatus()
-                            }
-                        },
+                        title = MLang.Feature.SubStore.BuiltinEngine,
+                        summary = if (isJavetLoaded) MLang.Feature.SubStore.JavetAvailable else MLang.Feature.SubStore.JavetNotReady,
+                        onClick = viewModel::refreshEngineStatus,
                     )
                     PreferenceArrowItem(
                         title = MLang.Feature.SubStore.DownloadResources,

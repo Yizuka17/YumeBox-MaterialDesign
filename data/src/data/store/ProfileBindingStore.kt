@@ -36,6 +36,9 @@ import timber.log.Timber
 import java.io.File
 
 class ProfileBindingStore(context: Context) : ProfileBindingProvider {
+    fun reloadFromDisk() {
+        bindingsStateFlow.value = loadBindings()
+    }
     private val metadataFile = File(context.filesDir, "overrides/metadata.yaml")
 
     private val bindingsStateFlow = MutableStateFlow<Map<String, ProfileBinding>>(emptyMap())

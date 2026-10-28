@@ -3,4 +3,6 @@
     <application android:label="YumeBox update validation" android:debuggable="true" />
     <instrumentation android:name="com.github.yizuka17.yumebox.md3.validation.UpdateInstrumentation"
         android:targetPackage="com.github.yizuka17.yumebox.md3" android:functionalTest="true" />
+    <instrumentation android:name="com.github.yizuka17.yumebox.md3.validation.GlobalBackupInstrumentation"
+        android:targetPackage="com.github.yizuka17.yumebox.md3" android:functionalTest="true" />
 </manifest>

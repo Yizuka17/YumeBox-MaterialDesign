@@ -45,6 +45,29 @@ import kotlinx.coroutines.flow.Flow
  */
 @Dao
 abstract class TrafficStatisticsDao {
+    @Query("SELECT * FROM app_traffic_daily ORDER BY date_millis, app_key")
+    protected abstract suspend fun backupApps(): List<AppTrafficDailyEntity>
+
+    @Query("SELECT * FROM route_traffic_daily ORDER BY date_millis, app_key, route_key")
+    protected abstract suspend fun backupRoutes(): List<RouteTrafficDailyEntity>
+
+    @Query("SELECT * FROM traffic_hourly ORDER BY hour_start_millis")
+    protected abstract suspend fun backupHours(): List<TrafficHourlyEntity>
+
+    @Transaction
+    open suspend fun exportBackup(): TrafficStatisticsBackup =
+        TrafficStatisticsBackup(backupApps(), backupRoutes(), backupHours())
+
+    @Insert(onConflict = androidx.room.OnConflictStrategy.REPLACE)
+    protected abstract suspend fun restoreHours(rows: List<TrafficHourlyEntity>)
+
+    @Transaction
+    open suspend fun restoreBackup(backup: TrafficStatisticsBackup) {
+        clearAll()
+        insertLegacyApps(backup.apps)
+        insertLegacyRoutes(backup.routes)
+        restoreHours(backup.hours)
+    }
     /** Idempotent legacy import; original MMKV data is retained for rollback. */
     @Transaction
     open suspend fun importLegacy(

@@ -258,6 +258,15 @@ class ProxyFacade(
             NodeDataSource.None -> 0
         }
 
+    /** Batch callers publish their results together rather than rebuilding every group per node. */
+    suspend fun measureProxyDelay(proxyName: String): Int = when (nodeSession.value.source) {
+        NodeDataSource.Active -> coreOps.healthCheckProxy(proxyName)
+        NodeDataSource.Preview -> preview.healthCheckProxy(proxyName)
+        NodeDataSource.None -> 0
+    }
+
+    val runtimeGeneration: Long get() = runtimeSnapshot.value.generation
+
     suspend fun queryConnections(): ConnectionSnapshot {
         if (!session.snapshotValue().running) {
             return ConnectionSnapshot()

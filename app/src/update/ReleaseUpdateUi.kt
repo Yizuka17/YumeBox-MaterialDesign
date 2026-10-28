@@ -27,7 +27,10 @@ fun ReleaseUpdateHost() {
             else scope.launch {
                 try { manager.downloadAndInstall(update); manager.dismiss() }
                 catch (e: CancellationException) { throw e }
-                catch (e: Exception) { context.toast(e.message ?: "下载失败，请重试") }
+                catch (e: Exception) {
+                    android.util.Log.w("ReleaseUpdate", "Download or installer failed", e)
+                    context.toast(e.message ?: "下载失败，请重试")
+                }
             }
         },
     )

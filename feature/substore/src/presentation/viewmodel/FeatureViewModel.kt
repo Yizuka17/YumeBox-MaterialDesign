@@ -27,8 +27,6 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.github.yumelira.yumebox.common.util.DeviceUtil
 import com.github.yumelira.yumebox.common.util.showToastDialog
-import com.github.yumelira.yumebox.core.util.PollingTimerSpecs
-import com.github.yumelira.yumebox.core.util.PollingTimers
 import com.github.yumelira.yumebox.data.store.AppSettingsStore
 import com.github.yumelira.yumebox.data.store.FeatureStore
 import com.github.yumelira.yumebox.data.store.LinkOpenMode
@@ -67,7 +65,10 @@ class FeatureViewModel(
     val exitUiWhenBackground: Preference<Boolean> = store.exitUiWhenBackground
     val healthCheckConcurrency: Preference<Int> = appSettings.healthCheckConcurrency
 
-    private val _autoCloseMode = MutableStateFlow(AutoCloseMode.DISABLED)
+    private val autoClosePreference = store.subStoreAutoCloseMode
+    private val _autoCloseMode = MutableStateFlow(if (SubStoreServiceController.snapshot.value.isActive)
+        AutoCloseMode.entries.getOrNull(autoClosePreference.value)?.takeUnless { it == AutoCloseMode.DISABLED } ?: AutoCloseMode.ALWAYS_ON
+        else AutoCloseMode.DISABLED)
     val autoCloseMode: StateFlow<AutoCloseMode> = _autoCloseMode.asStateFlow()
 
     val serviceRunningState: StateFlow<Boolean> = SubStoreServiceController.snapshot
@@ -78,7 +79,16 @@ class FeatureViewModel(
             initialValue = SubStoreServiceController.snapshot.value.isActive,
         )
 
-    private var autoCloseJob: Job? = null
+    init {
+        viewModelScope.launch {
+            SubStoreServiceController.snapshot.collect { state ->
+                _autoCloseMode.value = if (state.isActive)
+                    AutoCloseMode.entries.getOrNull(autoClosePreference.value)?.takeUnless { it == AutoCloseMode.DISABLED } ?: AutoCloseMode.ALWAYS_ON
+                    else AutoCloseMode.DISABLED
+            }
+        }
+    }
+
     private var subStoreResourceDownloadJob: Job? = null
 
     private val _isDownloadingSubStoreFrontend = MutableStateFlow(false)
@@ -97,14 +107,10 @@ class FeatureViewModel(
     private val _isSubStoreInitialized = MutableStateFlow(false)
     val isSubStoreInitialized: StateFlow<Boolean> = _isSubStoreInitialized.asStateFlow()
 
-    private val _isExtensionInstalled = MutableStateFlow(false)
-    val isExtensionInstalled: StateFlow<Boolean> = _isExtensionInstalled.asStateFlow()
-
     private val _isJavetLoaded = MutableStateFlow(false)
     val isJavetLoaded: StateFlow<Boolean> = _isJavetLoaded.asStateFlow()
 
     companion object {
-        private const val EXTENSION_PACKAGE_NAME = "com.github.yumelira.yumebox.extension"
         private const val JAVET_LIB_NAME = "libjavet-node-android"
     }
 
@@ -113,7 +119,11 @@ class FeatureViewModel(
             showToast(MLang.Feature.SubStore.Not32Bit)
             return
         }
-        if (!checkSubStoreReadiness()) return
+        if (!checkSubStoreReadiness()) {
+            _autoCloseMode.value = AutoCloseMode.DISABLED
+            autoClosePreference.set(AutoCloseMode.DISABLED.ordinal)
+            return
+        }
         viewModelScope.launch {
             runCatching {
                 SubStoreServiceController.startService(
@@ -122,10 +132,9 @@ class FeatureViewModel(
                         backendPort = backendPort.value,
                         frontendPort = frontendPort.value,
                         allowLan = allowLanAccess.value,
+                        autoCloseMinutes = _autoCloseMode.value.minutes,
                     ),
                 )
-            }.onSuccess {
-                setupAutoCloseTimer()
             }.onFailure { error ->
                 showToast(error.message ?: MLang.Util.Error.UnknownError)
             }
@@ -134,10 +143,6 @@ class FeatureViewModel(
 
     private fun checkSubStoreReadiness(): Boolean {
         return when {
-            !_isExtensionInstalled.value -> {
-                showToast(MLang.Feature.SubStore.InstallExtension); false
-            }
-
             !_isSubStoreInitialized.value -> {
                 showToast(MLang.Feature.SubStore.DownloadSubStoreFirst); false
             }
@@ -152,47 +157,37 @@ class FeatureViewModel(
 
     fun stopService() {
         viewModelScope.launch {
-            cancelAutoCloseTimer()
             SubStoreServiceController.stopService(application)
             _autoCloseMode.value = AutoCloseMode.DISABLED
+            autoClosePreference.set(AutoCloseMode.DISABLED.ordinal)
         }
     }
 
     fun setAllowLanAccess(allow: Boolean) = allowLanAccess.set(allow)
     fun setAutoCloseMode(mode: AutoCloseMode) {
         _autoCloseMode.value = mode
+        autoClosePreference.set(mode.ordinal)
         if (serviceRunningState.value) {
-            cancelAutoCloseTimer()
-            setupAutoCloseTimer()
+            SubStoreServiceController.updateAutoClose(application, mode.minutes)
         }
     }
 
     fun initializeSubStoreStatus() {
         viewModelScope.launch {
             _isSubStoreInitialized.value = SubStorePaths.isResourcesReady()
-            _isExtensionInstalled.value = checkExtensionInstalled()
             initializeJavetStatus()
         }
     }
 
-    private fun checkExtensionInstalled(): Boolean = runCatching {
-        application.packageManager.getApplicationInfo(EXTENSION_PACKAGE_NAME, 0)
-        true
-    }.getOrDefault(false)
-
     private fun initializeJavetStatus() {
-        if (!_isExtensionInstalled.value) {
-            _isJavetLoaded.value = false; return
-        }
         NativeLibraryManager.initialize(application)
         _isJavetLoaded.value = if (!NativeLibraryManager.isLibraryAvailable(JAVET_LIB_NAME)) {
             NativeLibraryManager.extractAllLibraries()[JAVET_LIB_NAME] == true
         } else true
     }
 
-    fun refreshExtensionStatus() {
+    fun refreshEngineStatus() {
         viewModelScope.launch {
-            _isExtensionInstalled.value = checkExtensionInstalled()
             initializeJavetStatus()
         }
     }
@@ -384,33 +379,8 @@ class FeatureViewModel(
         }
     }
 
-    private fun setupAutoCloseTimer() {
-        cancelAutoCloseTimer()
-        val mode = _autoCloseMode.value
-        mode.minutes?.let { minutes ->
-            autoCloseJob = viewModelScope.launch {
-                val timeoutMillis = minutes * 60 * 1000L
-                PollingTimers.awaitTick(
-                    PollingTimerSpecs.dynamic(
-                        name = "substore_auto_close",
-                        intervalMillis = timeoutMillis,
-                        initialDelayMillis = timeoutMillis,
-                    ),
-                )
-                showToast(MLang.Feature.ServiceStatus.AutoClosed)
-                stopService()
-            }
-        }
-    }
-
-    private fun cancelAutoCloseTimer() {
-        autoCloseJob?.cancel()
-        autoCloseJob = null
-    }
-
     override fun onCleared() {
         cancelSubStoreResourceDownload()
-        cancelAutoCloseTimer()
         super.onCleared()
     }
 }

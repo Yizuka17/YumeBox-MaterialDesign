@@ -7,8 +7,7 @@ import android.content.ContextWrapper;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.os.Bundle;
-import java.io.File;
-import java.io.IOException;
+import java.io.*;
 import java.lang.reflect.*;
 import java.util.*;
 import java.util.concurrent.*;
@@ -119,6 +118,8 @@ public final class UpdateInstrumentation extends Instrumentation {
             verifySettingsBackup();
             verifyGeoValidation();
             verifyLegacyLogVisibility();
+            verifyEmptyKernelConnections();
+            verifyParallelDelayRequests();
             result.putString("stream", report + "PASS: " + passed + " updater device checks\n");
         } catch (Throwable error) {
             resultCode = Activity.RESULT_CANCELED;
@@ -136,6 +137,84 @@ public final class UpdateInstrumentation extends Instrumentation {
             editor.commit();
         }
         finish(resultCode, result);
+    }
+
+    private void verifyParallelDelayRequests() throws Throwable {
+        java.net.ServerSocket server = new java.net.ServerSocket(0, 32, java.net.InetAddress.getByName("127.0.0.1"));
+        ExecutorService workers = Executors.newCachedThreadPool();
+        java.util.concurrent.atomic.AtomicInteger active = new java.util.concurrent.atomic.AtomicInteger();
+        java.util.concurrent.atomic.AtomicInteger maximum = new java.util.concurrent.atomic.AtomicInteger();
+        java.util.concurrent.atomic.AtomicInteger requests = new java.util.concurrent.atomic.AtomicInteger();
+        workers.submit(() -> {
+            while (!server.isClosed()) try {
+                final java.net.Socket socket = server.accept();
+                workers.submit(() -> {
+                    try (java.net.Socket connection = socket) {
+                        BufferedReader reader = new BufferedReader(new InputStreamReader(connection.getInputStream(), "UTF-8"));
+                        String request = reader.readLine(), line;
+                        while ((line = reader.readLine()) != null && !line.isEmpty()) { }
+                        requests.incrementAndGet();
+                        int count = active.incrementAndGet(); maximum.accumulateAndGet(count, Math::max);
+                        Thread.sleep(200);
+                        boolean timeout = request != null && request.contains("/timeout/");
+                        boolean providerNode = request != null && request.startsWith("GET /proxies/provider-only/");
+                        boolean providers = request != null && (request.startsWith("GET /providers/proxies?") || request.startsWith("GET /providers/proxies "));
+                        String body = providers ? "{\"providers\":{\"validation-provider\":{\"vehicleType\":\"HTTP\",\"proxies\":[{\"name\":\"provider-only\",\"type\":\"Shadowsocks\"}]}}}" : timeout || providerNode ? "{}" : "{\"delay\":42}";
+                        String status = timeout ? "504 Gateway Timeout" : providerNode ? "404 Not Found" : "200 OK";
+                        byte[] bytes = body.getBytes("UTF-8");
+                        OutputStream output = connection.getOutputStream();
+                        output.write(("HTTP/1.1 " + status + "\r\nContent-Type: application/json\r\nContent-Length: " + bytes.length + "\r\nConnection: close\r\n\r\n").getBytes("UTF-8"));
+                        output.write(bytes); output.flush();
+                    } catch (Exception ignored) { }
+                    finally { active.decrementAndGet(); }
+                });
+            } catch (Exception stopped) { break; }
+        });
+        ExecutorService probes = Executors.newFixedThreadPool(16);
+        Object controller = null;
+        try {
+            Object http = loader.loadClass("com.github.yumelira.yumebox.data.model.RemoteProtocol").getField("HTTP").get(null);
+            Object backend = loader.loadClass("com.github.yumelira.yumebox.data.model.RemoteBackend")
+                .getConstructor(String.class, String.class, String.class, int.class, String.class, http.getClass())
+                .newInstance("validation", "Validation", "127.0.0.1", server.getLocalPort(), "", http);
+            Object provider = Proxy.newProxyInstance(loader, new Class<?>[]{loader.loadClass("kotlin.jvm.functions.Function0")}, (p, method, args) -> backend);
+            Class<?> controllerClass = loader.loadClass("com.github.yumelira.yumebox.runtime.service.controller.CoreController");
+            controller = controllerClass.getConstructor(loader.loadClass("com.github.yumelira.yumebox.runtime.service.controller.CoreController$Local"), loader.loadClass("kotlin.jvm.functions.Function0"))
+                .newInstance(null, provider);
+            final Object actual = controller;
+            List<Future<Object>> futures = new ArrayList<>();
+            for (int i = 0; i < 16; i++) {
+                final int index = i;
+                futures.add(probes.submit(() -> { try { return suspend(actual, "healthCheckProxy", "validation-" + index); } catch (Throwable e) { throw new RuntimeException(e); } }));
+            }
+            for (Future<Object> future : futures) {
+                Object response = future.get(15, TimeUnit.SECONDS);
+                check(Integer.valueOf(42).equals(response), "parallel delay probe returns its real response (" + response + "; requests=" + requests.get() + ")");
+            }
+            check(maximum.get() >= 8, "delay HTTP transport allows at least eight simultaneous probes (observed " + maximum.get() + ")");
+            int before = requests.get();
+            check(Integer.valueOf(-1).equals(suspend(controller, "healthCheckProxy", "timeout")), "unreachable proxy is reported as a timeout");
+            check(requests.get() == before + 1, "timeout avoids a redundant provider lookup and second probe");
+            check(Integer.valueOf(42).equals(suspend(controller, "healthCheckProxy", "provider-only")), "provider-only nodes retain the 404 fallback and real delay result");
+        } finally {
+            server.close(); probes.shutdownNow(); workers.shutdownNow();
+            if (controller != null) {
+                Field delegate = controller.getClass().getDeclaredField("client$delegate"); delegate.setAccessible(true);
+                invoke(invoke(delegate.get(controller), "getValue"), "close");
+            }
+        }
+    }
+
+    private void verifyEmptyKernelConnections() throws Throwable {
+        Object controller = loader.loadClass("com.github.yumelira.yumebox.runtime.service.controller.CoreController").getConstructor().newInstance();
+        Field field = controller.getClass().getDeclaredField("json"); field.setAccessible(true);
+        Object json = field.get(controller);
+        Object companion = loader.loadClass("com.github.yumelira.yumebox.core.model.ConnectionSnapshot").getField("Companion").get(null);
+        Object serializer = invoke(companion, "serializer");
+        Object empty = invoke(json, "decodeFromString", serializer, "{\"connections\":null,\"memory\":0}");
+        check(((List<?>)invoke(empty, "getConnections")).isEmpty(), "Mihomo null connection slice decodes as an empty list");
+        Object active = invoke(json, "decodeFromString", serializer, "{\"connections\":[{\"id\":\"validation\"}],\"memory\":0}");
+        check(((List<?>)invoke(active, "getConnections")).size() == 1, "non-empty Mihomo connections are retained");
     }
 
     private void verifyLegacyLogVisibility() throws Throwable {

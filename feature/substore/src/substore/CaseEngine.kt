@@ -68,6 +68,7 @@ class CaseEngine(backendPort: Int, frontendPort: Int, allowLan: Boolean) : Close
                     "--SUB_STORE_BACKEND_API_HOST=$host",
                     "--SUB_STORE_BACKEND_API_PORT=$backendPort",
                     "--SUB_STORE_DATA_BASE_PATH=${SubStorePaths.dataDir.absolutePath}",
+                    "--SUB_STORE_CORS_ALLOWED_ORIGINS=${allowedFrontendOrigins(frontendPort, allowLan)}",
                 )
             )
 
@@ -152,4 +153,16 @@ class CaseEngine(backendPort: Int, frontendPort: Int, allowLan: Boolean) : Close
             Timber.e(e, "CaseEngine cleanup failed")
         }
     }
+
+    private fun allowedFrontendOrigins(port: Int, allowLan: Boolean): String = buildSet {
+        add("http://127.0.0.1:$port")
+        add("http://localhost:$port")
+        if (allowLan) runCatching {
+            java.net.NetworkInterface.getNetworkInterfaces().toList().forEach { network ->
+                network.inetAddresses.toList().filterIsInstance<java.net.Inet4Address>()
+                    .filterNot { it.isAnyLocalAddress || it.isLoopbackAddress || it.isMulticastAddress }
+                    .forEach { add("http://${it.hostAddress}:$port") }
+            }
+        }
+    }.joinToString(",")
 }

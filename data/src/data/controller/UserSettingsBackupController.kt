@@ -120,6 +120,12 @@ class UserSettingsBackupController(
         importAssets(backup.assets)
     }
 
+    fun validateBackup(rawJson: String) {
+        val backup = json.decodeFromString(UserSettingsBackup.serializer(), rawJson)
+        require(backup.format == BACKUP_FORMAT) { "Unsupported backup format" }
+        require(backup.version in 1..BACKUP_VERSION) { "Unsupported backup version" }
+    }
+
     private fun exportAssets(): JsonObject = buildJsonObject {
         val wallpaperBytes = acgWallpaperStorage.readBytes(appSettingsStore.acgWallpaperUri.value)
         if (wallpaperBytes != null) {
@@ -144,6 +150,23 @@ class UserSettingsBackupController(
     }
 
     private fun exportAppSettings(): JsonObject = buildJsonObject {
+        put("initialSetupCompleted", appSettingsStore.initialSetupCompleted.value)
+        put("privacyPolicyAccepted", appSettingsStore.privacyPolicyAccepted.value)
+        put("homePreviewGuideShown", appSettingsStore.homePreviewGuideShown.value)
+        put("topBarBlurEnabled", appSettingsStore.topBarBlurEnabled.value)
+        put("classicHomeEnabled", appSettingsStore.classicHomeEnabled.value)
+        put("useSystemWallpaper", appSettingsStore.useSystemWallpaper.value)
+        put("systemWallpaperPermissionRequested", appSettingsStore.systemWallpaperPermissionRequested.value)
+        put("moeWallpaperUri", appSettingsStore.moeWallpaperUri.value)
+        put("moeWallpaperSourceUri", appSettingsStore.moeWallpaperSourceUri.value)
+        put("moeWallpaperZoom", appSettingsStore.moeWallpaperZoom.value)
+        put("moeWallpaperBiasX", appSettingsStore.moeWallpaperBiasX.value)
+        put("moeWallpaperBiasY", appSettingsStore.moeWallpaperBiasY.value)
+        put("moeHomeQuote", appSettingsStore.moeHomeQuote.value)
+        put("moeSidebarExpanded", appSettingsStore.moeSidebarExpanded.value)
+        put("splitLeftRatio", appSettingsStore.splitLeftRatio.value)
+        put("predictiveBackEnabled", appSettingsStore.predictiveBackEnabled.value)
+        put("predictiveBackMaxProgress", appSettingsStore.predictiveBackMaxProgress.value)
         put("themeMode", appSettingsStore.themeMode.value.name)
         put("appLanguage", appSettingsStore.appLanguage.value.name)
         put("colorTheme", appSettingsStore.colorTheme.value.name)
@@ -187,6 +210,23 @@ class UserSettingsBackupController(
     }
 
     private fun importAppSettings(obj: JsonObject) {
+        obj.bool("initialSetupCompleted")?.let(appSettingsStore.initialSetupCompleted::set)
+        obj.bool("privacyPolicyAccepted")?.let(appSettingsStore.privacyPolicyAccepted::set)
+        obj.bool("homePreviewGuideShown")?.let(appSettingsStore.homePreviewGuideShown::set)
+        obj.bool("topBarBlurEnabled")?.let(appSettingsStore.topBarBlurEnabled::set)
+        obj.bool("classicHomeEnabled")?.let(appSettingsStore.classicHomeEnabled::set)
+        obj.bool("useSystemWallpaper")?.let(appSettingsStore.useSystemWallpaper::set)
+        obj.bool("systemWallpaperPermissionRequested")?.let(appSettingsStore.systemWallpaperPermissionRequested::set)
+        obj.string("moeWallpaperUri")?.let(appSettingsStore.moeWallpaperUri::set)
+        obj.string("moeWallpaperSourceUri")?.let(appSettingsStore.moeWallpaperSourceUri::set)
+        obj.float("moeWallpaperZoom")?.let(appSettingsStore.moeWallpaperZoom::set)
+        obj.float("moeWallpaperBiasX")?.let(appSettingsStore.moeWallpaperBiasX::set)
+        obj.float("moeWallpaperBiasY")?.let(appSettingsStore.moeWallpaperBiasY::set)
+        obj.string("moeHomeQuote")?.let(appSettingsStore.moeHomeQuote::set)
+        obj.bool("moeSidebarExpanded")?.let(appSettingsStore.moeSidebarExpanded::set)
+        obj.float("splitLeftRatio")?.let(appSettingsStore.splitLeftRatio::set)
+        obj.bool("predictiveBackEnabled")?.let(appSettingsStore.predictiveBackEnabled::set)
+        obj.float("predictiveBackMaxProgress")?.let(appSettingsStore.predictiveBackMaxProgress::set)
         obj.enumValue<ThemeMode>("themeMode")?.let(appSettingsStore.themeMode::set)
         obj.enumValue<AppLanguage>("appLanguage")?.let(appSettingsStore.appLanguage::set)
         obj.enumValue<AppColorTheme>("colorTheme")?.let(appSettingsStore.colorTheme::set)
@@ -237,6 +277,8 @@ class UserSettingsBackupController(
     }
 
     private fun exportFeatureSettings(): JsonObject = buildJsonObject {
+        put("panelProtocol", featureStore.panelProtocol.value.name)
+        put("subStoreAutoCloseMode", featureStore.subStoreAutoCloseMode.value)
         put("allowLanAccess", featureStore.allowLanAccess.value)
         put("backendPort", featureStore.backendPort.value)
         put("frontendPort", featureStore.frontendPort.value)
@@ -247,6 +289,8 @@ class UserSettingsBackupController(
     }
 
     private fun importFeatureSettings(obj: JsonObject) {
+        obj.enumValue<com.github.yumelira.yumebox.data.model.RemoteProtocol>("panelProtocol")?.let(featureStore.panelProtocol::set)
+        obj.int("subStoreAutoCloseMode")?.let(featureStore.subStoreAutoCloseMode::set)
         obj.bool("allowLanAccess")?.let(featureStore.allowLanAccess::set)
         obj.int("backendPort")?.let(featureStore.backendPort::set)
         obj.int("frontendPort")?.let(featureStore.frontendPort::set)
@@ -257,6 +301,18 @@ class UserSettingsBackupController(
     }
 
     private fun exportNetworkSettings(): JsonObject = buildJsonObject {
+        put("disableAllOverride", networkSettingsStore.disableAllOverride.value)
+        put("ebpfBypassCn", networkSettingsStore.ebpfBypassCn.value)
+        put("accessControlSelectedFirst", networkSettingsStore.accessControlSelectedFirst.value)
+        put("accessControlShowSystemApps", networkSettingsStore.accessControlShowSystemApps.value)
+        put("accessControlSortMode", networkSettingsStore.accessControlSortMode.value.name)
+        put("wifiAutomationEnabled", networkSettingsStore.wifiAutomationEnabled.value)
+        put("wifiAutomationLocationRequested", networkSettingsStore.wifiAutomationLocationRequested.value)
+        put("wifiAutomationRules", json.encodeToJsonElement(ListSerializer(com.github.yumelira.yumebox.data.model.WifiAutomationRule.serializer()), networkSettingsStore.wifiAutomationRules.value))
+        put("wifiAutomationOtherWifiAction", networkSettingsStore.wifiAutomationOtherWifiAction.value.name)
+        put("wifiAutomationNoWifiAction", networkSettingsStore.wifiAutomationNoWifiAction.value.name)
+        put("wifiAutomationOtherWifiProfileUuid", networkSettingsStore.wifiAutomationOtherWifiProfileUuid.value)
+        put("wifiAutomationNoWifiProfileUuid", networkSettingsStore.wifiAutomationNoWifiProfileUuid.value)
         put("runMode", networkSettingsStore.runMode.value.name)
         put("bypassPrivateNetwork", networkSettingsStore.bypassPrivateNetwork.value)
         put("dnsHijack", networkSettingsStore.dnsHijack.value)
@@ -280,6 +336,18 @@ class UserSettingsBackupController(
     }
 
     private fun importNetworkSettings(obj: JsonObject) {
+        obj.bool("disableAllOverride")?.let(networkSettingsStore.disableAllOverride::set)
+        obj.bool("ebpfBypassCn")?.let(networkSettingsStore.ebpfBypassCn::set)
+        obj.bool("accessControlSelectedFirst")?.let(networkSettingsStore.accessControlSelectedFirst::set)
+        obj.bool("accessControlShowSystemApps")?.let(networkSettingsStore.accessControlShowSystemApps::set)
+        obj.enumValue<com.github.yumelira.yumebox.data.model.AccessControlSortMode>("accessControlSortMode")?.let(networkSettingsStore.accessControlSortMode::set)
+        obj.bool("wifiAutomationEnabled")?.let(networkSettingsStore.wifiAutomationEnabled::set)
+        obj.bool("wifiAutomationLocationRequested")?.let(networkSettingsStore.wifiAutomationLocationRequested::set)
+        obj["wifiAutomationRules"]?.let { networkSettingsStore.wifiAutomationRules.set(json.decodeFromJsonElement(ListSerializer(com.github.yumelira.yumebox.data.model.WifiAutomationRule.serializer()), it)) }
+        obj.enumValue<com.github.yumelira.yumebox.data.model.WifiAutomationFallbackAction>("wifiAutomationOtherWifiAction")?.let(networkSettingsStore.wifiAutomationOtherWifiAction::set)
+        obj.enumValue<com.github.yumelira.yumebox.data.model.WifiAutomationFallbackAction>("wifiAutomationNoWifiAction")?.let(networkSettingsStore.wifiAutomationNoWifiAction::set)
+        obj.string("wifiAutomationOtherWifiProfileUuid")?.let(networkSettingsStore.wifiAutomationOtherWifiProfileUuid::set)
+        obj.string("wifiAutomationNoWifiProfileUuid")?.let(networkSettingsStore.wifiAutomationNoWifiProfileUuid::set)
         val mode = obj.enumValue<RunMode>("runMode") ?: when (obj.string("proxyMode")) {
             "Tun", "VpnService", "Http" -> RunMode.VpnService
             "RootTun" -> RunMode.Tun

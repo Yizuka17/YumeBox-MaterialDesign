@@ -24,6 +24,7 @@ import androidx.room.ColumnInfo
 import androidx.room.Entity
 
 @Entity(tableName = "traffic_hourly", primaryKeys = ["hour_start_millis"])
+@kotlinx.serialization.Serializable
 data class TrafficHourlyEntity(
     @ColumnInfo(name = "hour_start_millis") val hourStartMillis: Long,
     @ColumnInfo(name = "total_upload") val totalUpload: Long = 0L,

@@ -27,9 +27,9 @@ Settings = {
 
     DataSettings = {
         ExportBackup = "导出备份"
-        ExportBackupSummary = "将用户设置保存为 JSON 文件"
-        ImportBackup = "导入备份"
-        ImportBackupSummary = "从备份文件恢复用户设置"
+        ExportBackupSummary = "设置、配置与覆写"
+        ImportBackup = "恢复备份"
+        ImportBackupSummary = "支持 ZIP 和旧版 JSON"
         AppDataManagement = "应用数据管理"
         AppDataManagementSummary = "清理部分缓存文件"
     }

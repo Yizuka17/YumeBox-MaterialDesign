@@ -29,6 +29,7 @@ import androidx.room.Index
     primaryKeys = ["date_millis", "app_key", "route_key"],
     indices = [Index("date_millis", "app_key")],
 )
+@kotlinx.serialization.Serializable
 data class RouteTrafficDailyEntity(
     @ColumnInfo(name = "date_millis") val dateMillis: Long,
     @ColumnInfo(name = "app_key") val appKey: String,

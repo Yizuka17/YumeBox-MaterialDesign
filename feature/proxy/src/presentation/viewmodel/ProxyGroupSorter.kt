@@ -24,6 +24,8 @@ import com.github.yumelira.yumebox.core.model.Proxy
 import com.github.yumelira.yumebox.data.model.ProxySortMode
 import com.github.yumelira.yumebox.domain.model.ProxyGroupInfo
 import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.flow.flowOn
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
@@ -37,6 +39,7 @@ internal class ProxyGroupSorter {
         val sortMode: ProxySortMode,
         val originalOrder: List<String>,
         val result: ProxyGroupInfo,
+        val frozen: Boolean,
     )
 
     private val groupOriginalOrder = MutableStateFlow<Map<String, List<String>>>(emptyMap())
@@ -52,13 +55,15 @@ internal class ProxyGroupSorter {
         scope: CoroutineScope,
         proxyGroups: StateFlow<List<ProxyGroupInfo>>,
         sortMode: StateFlow<ProxySortMode>,
+        testingGroups: StateFlow<Set<String>>,
     ): StateFlow<List<ProxyGroupInfo>> = combine(
         proxyGroups,
         sortMode,
         groupOriginalOrder,
-    ) { groups, mode, originalOrderCache ->
-        buildSortedProxyGroups(groups, mode, originalOrderCache)
-    }.stateIn(
+        testingGroups,
+    ) { groups, mode, originalOrderCache, testing ->
+        buildSortedProxyGroups(groups, mode, originalOrderCache, testing)
+    }.flowOn(Dispatchers.Default).stateIn(
         scope = scope,
         started = SharingStarted.WhileSubscribed(5000),
         initialValue = emptyList(),
@@ -128,22 +133,26 @@ internal class ProxyGroupSorter {
         groups: List<ProxyGroupInfo>,
         mode: ProxySortMode,
         originalOrderCache: Map<String, List<String>>,
+        testing: Set<String>,
     ): List<ProxyGroupInfo> {
         val previousCache = sortedGroupCache
         val nextCache = HashMap<String, SortedGroupCacheEntry>(groups.size)
         val results = groups.map { group ->
             val originalOrder = originalOrderCache[group.name].orEmpty()
             val cached = previousCache[group.name]
+            val frozen = mode == ProxySortMode.BY_LATENCY && group.name in testing
             if (
                 cached != null &&
                 cached.sourceGroup == group &&
                 cached.sortMode == mode &&
+                cached.frozen == frozen &&
                 cached.originalOrder == originalOrder
             ) {
                 nextCache[group.name] = cached
                 cached.result
             } else {
-                val sortedProxies = sortProxies(
+                val sortedProxies = if (frozen) reorderByNameSequence(group.proxies,
+                    cached?.result?.proxies?.map(Proxy::name) ?: originalOrder) else sortProxies(
                     proxies = group.proxies,
                     sortMode = mode,
                     originalOrder = originalOrder,
@@ -154,6 +163,7 @@ internal class ProxyGroupSorter {
                     sortMode = mode,
                     originalOrder = originalOrder,
                     result = result,
+                    frozen = frozen,
                 ).also {
                     nextCache[group.name] = it
                 }.result

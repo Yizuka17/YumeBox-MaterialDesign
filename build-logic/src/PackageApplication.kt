@@ -95,7 +95,7 @@ private fun packageLocked(root: File, state: File, options: Map<String, String>,
     val prepared = workspace.resolve("prepared.apk")
     rewriteApk(rewritten, prepared, additions) { name ->
         name.startsWith("META-INF/") || name.endsWith(".kotlin_module") || name.endsWith(".kotlin_builtins") ||
-            (name.startsWith("lib/") && name.substringAfterLast('/').startsWith("libjavet") || name.endsWith("BundleMRS.7z"))
+            (name.startsWith("lib/") && name.substringAfterLast('/').startsWith("libjavet") && !name.startsWith("lib/arm64-v8a/") || name.endsWith("BundleMRS.7z"))
     }
     val signing = signingIdentity(root, tools, variant, "--allow-unsigned" in flags)
     val ready = workspace.resolve("ready.apk")

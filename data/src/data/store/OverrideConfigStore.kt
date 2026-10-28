@@ -38,6 +38,7 @@ class OverrideConfigStore(
     private val context: Context,
     private val bindingProvider: ProfileBindingProvider,
 ) : OverrideConfigProvider {
+    suspend fun reloadFromDisk() = refreshConfigsFlow()
     fun isSystemPreset(id: String): Boolean = BuiltInOverrideCatalog.isBuiltIn(id)
     suspend fun getSystemPresets(): List<OverrideConfig> = listOfNotNull(getById("builtin-official-mrs"))
     suspend fun loadCustomRouting(): com.github.yumelira.yumebox.core.model.ConfigurationOverride? =

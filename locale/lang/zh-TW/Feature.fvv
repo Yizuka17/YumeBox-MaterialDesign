@@ -33,10 +33,11 @@ Feature = {
     }
 
     SubStore = {
-        SectionHint = "Sub-Store 資源下載，需要同時安裝擴充套件包和靜態資源，首次安裝擴充套件包之後，請結束應用程式再開啟"
+        SectionHint = "Sub-Store 引擎已內建，首次使用請下載前端和後端資源"
+        BuiltinEngine = "內建 Sub-Store 引擎"
         ExtensionInstalled = "擴充套件包已安裝"
         ExtensionInstall = "安裝擴充套件包"
-        JavetAvailable = "Javet 庫可用，點選重新整理狀態"
+        JavetAvailable = "引擎已就緒，無需安裝擴充套件包，點選重新整理狀態"
         JavetPending = "擴充套件包已安裝，Javet 庫待提取，點選重新整理狀態"
         DownloadHint = "點選前往下載擴充套件包"
         DownloadResources = "下載資源"
@@ -60,7 +61,7 @@ Feature = {
         Not32Bit = "Sub-Store 不支援 32 位裝置"
         InstallExtension = "請先安裝擴充套件包"
         DownloadSubStoreFirst = "請先下載 Sub-Store 資源"
-        JavetNotReady = "Javet 庫未就緒，請確保擴充套件包已正確安裝"
+        JavetNotReady = "內建引擎未就緒，請重新安裝完整應用程式套件"
         FrontendDownloadSuccess = "Sub-Store 前端下載完成"
         FrontendDownloadFailed = "Sub-Store 前端下載失敗"
         BackendDownloadSuccess = "Sub-Store 後端下載完成"

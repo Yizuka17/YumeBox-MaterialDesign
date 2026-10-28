@@ -36,6 +36,9 @@ import com.github.yumelira.yumebox.runtime.client.ProxyFacade
 import com.github.yumelira.yumebox.runtime.client.ProxyGroupSyncPriority
 import dev.oom_wg.purejoy.mlang.MLang
 import kotlinx.coroutines.CancellationException
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.delay
+import kotlinx.coroutines.isActive
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.async
 import kotlinx.coroutines.awaitAll
@@ -67,9 +70,7 @@ class ProxyViewModel(
     val singleNodeTest: StateFlow<Boolean> = appSettings.singleNodeTest.state
         .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), true)
 
-    private val healthCheckConcurrency: StateFlow<Int> = appSettings.healthCheckConcurrency.state
-        .map(::normalizeHealthCheckConcurrency)
-        .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), DEFAULT_HEALTH_CHECK_CONCURRENCY)
+    private val healthCheckConcurrency = appSettings.healthCheckConcurrency
 
     private val lockedGroupTestDelays = MutableStateFlow<Map<String, Map<String, Int>>>(emptyMap())
 
@@ -80,7 +81,7 @@ class ProxyViewModel(
         groups.filterNot(ProxyGroupInfo::hidden).map { group ->
             group.withLockedDelays(lockedDelays[group.name].orEmpty())
         }
-    }.stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), emptyList())
+    }.flowOn(Dispatchers.Default).stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), emptyList())
 
     private val activeSyncSources = mutableSetOf<String>()
     private var groupTestJob: Job? = null
@@ -100,6 +101,7 @@ class ProxyViewModel(
         scope = viewModelScope,
         proxyGroups = proxyGroups,
         sortMode = sortMode,
+        testingGroups = testingGroupNames,
     )
 
     fun ensureCoreLoaded(
@@ -196,30 +198,42 @@ class ProxyViewModel(
         }
 
         lockedGroupTestDelays.update { it + (groupName to emptyMap()) }
-        val semaphore = Semaphore(healthCheckConcurrency.value)
+        val generation = proxyFacade.runtimeGeneration
+        fun currentSession() = proxyFacade.runtimeGeneration == generation && tunnelMode.value == testMode
+        val semaphore = Semaphore(normalizeHealthCheckConcurrency(healthCheckConcurrency.value))
         coroutineScope {
-            targets.map { proxy ->
-                async {
+            val measured = java.util.concurrent.ConcurrentHashMap<String, Int>()
+            fun publish() {
+                if (currentSession() && proxyGroups.value.any { it.name == groupName }) {
+                    val snapshot = measured.toMap()
+                    lockedGroupTestDelays.update { it + (groupName to snapshot) }
+                }
+            }
+            val progress = launch(Dispatchers.Default) {
+                while (isActive) { delay(100); publish() }
+            }
+            try { targets.map { proxy ->
+                async(Dispatchers.IO) {
                     semaphore.withPermit {
+                        if (!currentSession()) throw CancellationException("Proxy session changed")
                         val proxyName = proxy.name
                         _testingProxyNames.update { it + proxyName }
                         try {
-                            val delay = runCatching {
-                                proxyFacade.healthCheckProxy(proxyName)
-                            }.getOrDefault(-1)
-                            if (tunnelMode.value == testMode && proxyGroups.value.any { it.name == groupName }) {
-                                lockedGroupTestDelays.update { all ->
-                                    val groupDelays = all[groupName].orEmpty() + (proxyName to delay)
-                                    all + (groupName to groupDelays)
-                                }
-                            }
+                            measured[proxyName] = try { proxyFacade.measureProxyDelay(proxyName) }
+                                catch (cancelled: CancellationException) { throw cancelled }
+                                catch (_: Exception) { -1 }
                         } finally {
                             _testingProxyNames.update { it - proxyName }
                         }
                     }
                 }
-        }.awaitAll()
+            }.awaitAll()
+            } finally {
+                progress.cancel()
+                if (currentSession()) publish() else lockedGroupTestDelays.update { it - groupName }
+            }
         }
+        if (currentSession()) proxyFacade.refreshProxyGroup(groupName)
     }
 
     fun setSortMode(mode: ProxySortMode) {

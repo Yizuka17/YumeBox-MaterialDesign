@@ -124,53 +124,11 @@ fun SettingPager(
     lazyListState: LazyListState,
 ) {
     val viewModel = koinViewModel<SettingViewModel>()
-    val appSettingsViewModel = koinViewModel<AppSettingsViewModel>()
     val navigator = LocalNavigator.current
     val context = LocalContext.current
 
     val versionInfo = BuildConfig.VERSION_NAME
-    val exportBackupLauncher = rememberLauncherForActivityResult(
-        contract = ActivityResultContracts.CreateDocument("application/json"),
-    ) { uri ->
-        uri ?: return@rememberLauncherForActivityResult
-        appSettingsViewModel.exportUserSettingsBackup()
-            .onSuccess { backupJson ->
-                runCatching {
-                    context.contentResolver.openOutputStream(uri)?.use { outputStream ->
-                        outputStream.write(backupJson.toByteArray())
-                        outputStream.flush()
-                    } ?: error(MLang.AppSettings.Backup.ExportFailed)
-                }.onSuccess {
-                    context.toast(MLang.AppSettings.Backup.ExportSuccess)
-                }.onFailure { throwable ->
-                    context.toast(MLang.AppSettings.Backup.ExportFailedDetail.format(throwable.message ?: MLang.Util.Error.UnknownError))
-                }
-            }
-            .onFailure { throwable ->
-                context.toast(MLang.AppSettings.Backup.ExportFailedDetail.format(throwable.message ?: MLang.Util.Error.UnknownError))
-            }
-    }
-    val importBackupLauncher = rememberLauncherForActivityResult(
-        contract = ActivityResultContracts.GetContent(),
-    ) { uri ->
-        uri ?: return@rememberLauncherForActivityResult
-        runCatching {
-            context.contentResolver.openInputStream(uri)
-                ?.bufferedReader()
-                ?.use { reader -> reader.readText() }
-                ?: error(MLang.AppSettings.Backup.ImportReadFailed)
-        }.onSuccess { backupJson ->
-            appSettingsViewModel.importUserSettingsBackup(backupJson)
-                .onSuccess {
-                    context.toast(MLang.AppSettings.Backup.ImportSuccess)
-                }
-                .onFailure { throwable ->
-                    context.toast(MLang.AppSettings.Backup.ImportFailedDetail.format(throwable.message ?: MLang.Util.Error.UnknownError))
-                }
-        }.onFailure { throwable ->
-            context.toast(MLang.AppSettings.Backup.ImportFailedDetail.format(throwable.message ?: MLang.Util.Error.UnknownError))
-        }
-    }
+    val backupActions = com.github.yumelira.yumebox.backup.rememberGlobalBackupActions()
 
     LaunchedEffect(Unit) {
         viewModel.events.collect { event ->
@@ -250,13 +208,13 @@ fun SettingPager(
                         title = MLang.Settings.DataSettings.ExportBackup,
                         summary = MLang.Settings.DataSettings.ExportBackupSummary,
                         imageVector = AppMd3Icons.Settings.ExportBackup,
-                        onClick = { exportBackupLauncher.launch("yumebox-settings-backup.json") },
+                        onClick = backupActions.export,
                     )
                     SettingsEntryItem(
                         title = MLang.Settings.DataSettings.ImportBackup,
                         summary = MLang.Settings.DataSettings.ImportBackupSummary,
                         imageVector = AppMd3Icons.Settings.ImportBackup,
-                        onClick = { importBackupLauncher.launch("application/json") },
+                        onClick = backupActions.restore,
                     )
                     SettingsEntryItem(
                         title = MLang.Settings.DataSettings.AppDataManagement,

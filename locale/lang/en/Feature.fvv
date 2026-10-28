@@ -33,10 +33,11 @@ Feature = {
     }
 
     SubStore = {
-        SectionHint = "Sub-Store resource download, both extension and static resources are required. After installing extension for the first time, please restart the app"
+        SectionHint = "Sub-Store engine is included. Download frontend and backend resources before first use"
+        BuiltinEngine = "Built-in Sub-Store Engine"
         ExtensionInstalled = "Extension Installed"
         ExtensionInstall = "Install Extension"
-        JavetAvailable = "Javet library available, click to refresh status"
+        JavetAvailable = "Engine ready, no extension required. Tap to refresh"
         JavetPending = "Extension installed, Javet pending extraction, click to refresh status"
         DownloadHint = "Click to download extension"
         DownloadResources = "Download Resources"
@@ -60,7 +61,7 @@ Feature = {
         Not32Bit = "Sub-Store does not support 32-bit devices"
         InstallExtension = "Please install extension first"
         DownloadSubStoreFirst = "Please download Sub-Store resources first"
-        JavetNotReady = "Javet library not ready, please ensure extension is properly installed"
+        JavetNotReady = "Built-in engine unavailable. Reinstall the complete app package"
         FrontendDownloadSuccess = "Sub-Store frontend downloaded"
         FrontendDownloadFailed = "Sub-Store frontend download failed"
         BackendDownloadSuccess = "Sub-Store backend downloaded"

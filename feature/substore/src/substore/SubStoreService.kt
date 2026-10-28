@@ -32,15 +32,20 @@ import timber.log.Timber
 class SubStoreService : Service() {
     private var caseEngine: CaseEngine? = null
     private var isRunning = false
+    private val handler = android.os.Handler(android.os.Looper.getMainLooper())
+    private val autoClose = Runnable { stopSelf() }
 
     override fun onBind(intent: Intent): IBinder? {
         return null
     }
 
     override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int {
-        if (isRunning) return START_STICKY
-
         val request = SubStoreServiceController.requestFrom(intent)
+        if (intent?.action == SubStoreServiceController.ACTION_UPDATE_AUTO_CLOSE) {
+            if (isRunning) scheduleAutoClose(request.autoCloseMinutes) else stopSelf(startId)
+            return START_NOT_STICKY
+        }
+        if (isRunning) return START_STICKY
         return runCatching {
             if (
                 NetworkUtil.isPortInUse(request.frontendPort) ||
@@ -69,6 +74,7 @@ class SubStoreService : Service() {
             engine.startServer()
             isRunning = true
             SubStoreServiceController.markRunning()
+            scheduleAutoClose(request.autoCloseMinutes)
 
             START_STICKY
         }.getOrElse { e ->
@@ -107,6 +113,7 @@ class SubStoreService : Service() {
     }
 
     private fun cleanupService() {
+        handler.removeCallbacks(autoClose)
         runCatching {
             caseEngine?.stopServer()
         }.onFailure { e ->
@@ -115,5 +122,10 @@ class SubStoreService : Service() {
         caseEngine = null
         isRunning = false
         SubStoreServiceController.markStopped()
+    }
+
+    private fun scheduleAutoClose(minutes: Int?) {
+        handler.removeCallbacks(autoClose)
+        if (minutes != null) handler.postDelayed(autoClose, minutes * 60_000L)
     }
 }

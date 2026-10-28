@@ -40,6 +40,7 @@ import org.koin.core.module.dsl.viewModel
 import org.koin.dsl.module
 
 val appIntegrationModule = module {
+    single { com.github.yumelira.yumebox.backup.GlobalBackupController(androidContext(), get(), get(), get(), get(), get(), get(), get()) }
     single<LogRecordGateway> { LogRecordServiceGateway() }
     single { GitHubUpdateManager(androidContext()) }
 }

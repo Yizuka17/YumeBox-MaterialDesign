@@ -30,6 +30,7 @@ data class SubStoreServiceRequest(
     val frontendPort: Int = 8080,
     val backendPort: Int = 8081,
     val allowLan: Boolean = false,
+    val autoCloseMinutes: Int? = null,
 )
 
 data class SubStoreServiceSnapshot(
@@ -46,6 +47,8 @@ object SubStoreServiceController {
     private const val EXTRA_FRONTEND_PORT = "frontendPort"
     private const val EXTRA_BACKEND_PORT = "backendPort"
     private const val EXTRA_ALLOW_LAN = "allowLan"
+    private const val EXTRA_AUTO_CLOSE = "autoCloseMinutes"
+    internal const val ACTION_UPDATE_AUTO_CLOSE = "com.github.yumelira.yumebox.substore.UPDATE_AUTO_CLOSE"
 
     private val _snapshot = MutableStateFlow(SubStoreServiceSnapshot())
     val snapshot: StateFlow<SubStoreServiceSnapshot> = _snapshot.asStateFlow()
@@ -59,9 +62,10 @@ object SubStoreServiceController {
             putExtra(EXTRA_FRONTEND_PORT, request.frontendPort)
             putExtra(EXTRA_BACKEND_PORT, request.backendPort)
             putExtra(EXTRA_ALLOW_LAN, request.allowLan)
+            putExtra(EXTRA_AUTO_CLOSE, request.autoCloseMinutes ?: 0)
         }
         runCatching {
-            context.startService(intent)
+            checkNotNull(context.startService(intent)) { "Sub-Store 服务未注册或无法启动" }
         }.onFailure {
             _snapshot.value = SubStoreServiceSnapshot()
             throw it
@@ -73,11 +77,17 @@ object SubStoreServiceController {
         context.stopService(Intent(context, SubStoreService::class.java))
     }
 
+    fun updateAutoClose(context: Context, minutes: Int?) {
+        if (_snapshot.value.isActive) context.startService(Intent(context, SubStoreService::class.java)
+            .setAction(ACTION_UPDATE_AUTO_CLOSE).putExtra(EXTRA_AUTO_CLOSE, minutes ?: 0))
+    }
+
     fun requestFrom(intent: Intent?): SubStoreServiceRequest {
         return SubStoreServiceRequest(
             frontendPort = intent?.getIntExtra(EXTRA_FRONTEND_PORT, DEFAULT_FRONTEND_PORT) ?: DEFAULT_FRONTEND_PORT,
             backendPort = intent?.getIntExtra(EXTRA_BACKEND_PORT, DEFAULT_BACKEND_PORT) ?: DEFAULT_BACKEND_PORT,
             allowLan = intent?.getBooleanExtra(EXTRA_ALLOW_LAN, false) ?: false,
+            autoCloseMinutes = intent?.getIntExtra(EXTRA_AUTO_CLOSE, 0)?.takeIf { it in listOf(5, 10) },
         )
     }
 

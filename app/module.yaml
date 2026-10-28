@@ -67,6 +67,8 @@ dependencies:
   - $libs.androidx.camera.video
   - $libs.sketch.compose
   - $libs.sketch.http
+  - io.github.panpf.sketch4:sketch-http-hurl:4.7.0
+  - $libs.sketch.svg
   - $libs.sketch.animated.gif
   - $libs.sketch.animated.heif
   - $libs.sketch.animated.webp

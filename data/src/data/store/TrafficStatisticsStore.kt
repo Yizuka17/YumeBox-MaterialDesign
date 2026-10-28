@@ -48,6 +48,15 @@ class TrafficStatisticsStore(
     private val dao: TrafficStatisticsDao,
     private val now: () -> Long = { System.currentTimeMillis() },
 ) {
+    suspend fun exportBackup(): com.github.yumelira.yumebox.data.store.room.TrafficStatisticsBackup {
+        legacyImport.await()
+        return dao.exportBackup()
+    }
+
+    suspend fun restoreBackup(backup: com.github.yumelira.yumebox.data.store.room.TrafficStatisticsBackup) {
+        legacyImport.await()
+        dao.restoreBackup(backup)
+    }
     private val legacyImport = CoroutineScope(SupervisorJob() + Dispatchers.IO).async {
         try {
             val marker = "fork_stats_room_imported_v1"

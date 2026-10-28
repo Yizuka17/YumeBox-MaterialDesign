@@ -25,6 +25,7 @@ package com.github.yumelira.yumebox.substore.engine
 import android.annotation.SuppressLint
 import android.content.Context
 import android.os.Build
+import com.caoccao.javet.interop.loader.JavetLibLoader
 import timber.log.Timber
 import java.io.File
 import java.io.FileOutputStream
@@ -74,8 +75,7 @@ object NativeLibraryManager {
             LibraryInfo(
                 name = "libjavet-node-android",
                 type = LibraryType.JNI_LOAD,
-                source = LibrarySource.EXTENSION_APK,
-                packageName = "com.github.yumelira.yumebox.extension"
+                source = LibrarySource.MAIN_APK,
             )
         )
     }
@@ -123,13 +123,19 @@ object NativeLibraryManager {
         val apkPath = context?.applicationInfo?.sourceDir
             ?: throw RuntimeException("Context not initialized")
 
+        val expected = if (info.name == "libjavet-node-android") "${info.name}.v.${JavetLibLoader.LIB_VERSION}.so" else info.name
+        if (bundledPath(expected) != null) {
+            actualLibraryNames[info.name] = expected
+            return true
+        }
+        val actualTargetFile = File(targetFile.parentFile, expected)
         val abi = getSupportedAbi()
         ZipFile(apkPath).use { zip ->
-            var libEntry = zip.getEntry("lib/$abi/${info.name}")
+            var libEntry = zip.getEntry("lib/$abi/$expected")
             if (libEntry == null) {
                 val supportedAbis = Build.SUPPORTED_ABIS
                 for (tryAbi in supportedAbis) {
-                    libEntry = zip.getEntry("lib/$tryAbi/${info.name}")
+                    libEntry = zip.getEntry("lib/$tryAbi/$expected")
                     if (libEntry != null) break
                 }
             }
@@ -139,14 +145,17 @@ object NativeLibraryManager {
             }
 
             zip.getInputStream(libEntry).use { input ->
-                FileOutputStream(targetFile).use { output ->
+                if (actualTargetFile.exists()) check(actualTargetFile.delete())
+                FileOutputStream(actualTargetFile).use { output ->
                     input.copyTo(output)
                 }
             }
 
-            targetFile.setReadable(true, false)
+            actualLibraryNames[info.name] = expected
+            actualTargetFile.setReadable(true, false)
+            actualTargetFile.setReadOnly()
             if (info.type == LibraryType.PROCESS_EXEC) {
-                targetFile.setExecutable(true, false)
+                actualTargetFile.setExecutable(true, false)
             }
 
             return true
@@ -168,14 +177,14 @@ object NativeLibraryManager {
         val abi = getSupportedAbi()
 
         ZipFile(extensionApk).use { zip ->
-            val pattern =
-                Regex("lib/($abi|${Build.SUPPORTED_ABIS.joinToString("|")})/${info.name}\\.v\\.\\d+\\.\\d+\\.\\d+\\.so")
-            val entry = zip.entries().asSequence().firstOrNull { e ->
-                pattern.matches(e.name)
-            }
+            // Loading another Javet JNI version aborts the VM before Kotlin can catch it.
+            val expected = "${info.name}.v.${JavetLibLoader.LIB_VERSION}.so"
+            val entry = (listOf(abi) + Build.SUPPORTED_ABIS).distinct()
+                .firstNotNullOfOrNull { zip.getEntry("lib/$it/$expected") }
 
             if (entry == null) {
-                Timber.w("Library not found in extension APK: ${info.name}")
+                actualLibraryNames.remove(info.name)
+                Timber.w("Compatible library missing in extension APK: $expected")
                 return false
             }
 
@@ -211,6 +220,10 @@ object NativeLibraryManager {
         if (!isInitialized) return null
 
         val actualName = actualLibraryNames[name] ?: name
+        if (name == "libjavet-node-android" && actualName != "$name.v.${JavetLibLoader.LIB_VERSION}.so") return null
+        if (managedLibraries[name]?.source == LibrarySource.MAIN_APK) {
+            bundledPath(actualName)?.let { return it }
+        }
         val libraryFile = File(libsBaseDir, actualName)
         return if (libraryFile.exists()) libraryFile.absolutePath else null
     }
@@ -224,6 +237,17 @@ object NativeLibraryManager {
             LibraryType.PROCESS_EXEC -> file.exists() && file.canRead() && file.canExecute()
             null -> false
         }
+    }
+
+    private fun bundledPath(fileName: String): String? {
+        val app = context ?: return null
+        val installed = File(app.applicationInfo.nativeLibraryDir, fileName)
+        if (installed.isFile && installed.canRead()) return installed.absolutePath
+        return runCatching {
+            val bridge = Class.forName("com.github.yumelira.yumebox.loader.PayloadRuntime", false, app.classLoader)
+            (bridge.getMethod("findNativeLibrary", String::class.java).invoke(null, fileName) as? String)
+                ?.takeIf { File(it).isFile && File(it).canRead() }
+        }.getOrNull()
     }
 
     @SuppressLint("UnsafeDynamicallyLoadedCode")

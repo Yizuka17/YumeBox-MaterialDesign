@@ -21,6 +21,7 @@
 package com.github.yumelira.yumebox.screen.about
 
 import androidx.compose.foundation.layout.aspectRatio
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Spacer
@@ -46,6 +47,7 @@ import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.mutableFloatStateOf
 import androidx.compose.runtime.produceState
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
@@ -77,6 +79,7 @@ import com.github.yumelira.yumebox.presentation.theme.UiDp
 import com.github.yumelira.yumebox.update.GitHubUpdateViewModel
 import com.github.yumelira.yumebox.update.UpdateCandidate
 import com.github.yumelira.yumebox.update.UpdateDownloadProgress
+import com.github.yumelira.yumebox.update.ReleaseCoverPreview
 import com.github.panpf.sketch.AsyncImage as SketchAsyncImage
 import com.github.panpf.sketch.rememberAsyncImageState
 import com.github.panpf.sketch.request.ImageRequest
@@ -397,8 +400,13 @@ private fun UpdateCoverImage(
     }
     if (coverImage.isBlank()) return
     val state = rememberAsyncImageState()
+    var showPreview by remember(coverImage) { mutableStateOf(false) }
+    var coverRatio by remember(coverImage) { mutableFloatStateOf(16f / 9f) }
 
     LaunchedEffect(state.loadState, coverImage, cachedCoverUri, coverUrl, coverDataUri) {
+        (state.loadState as? LoadState.Success)?.result?.imageInfo
+            ?.takeIf { it.width > 0 && it.height > 0 }
+            ?.let { coverRatio = it.width.toFloat() / it.height.toFloat() }
         if (state.loadState is LoadState.Error) {
             coverImage = when {
                 coverImage == cachedCoverUri && coverUrl.isNotBlank() -> coverUrl
@@ -417,14 +425,17 @@ private fun UpdateCoverImage(
     SketchAsyncImage(
         request = request,
         contentDescription = MLang.Component.Update.Message.CoverDesc,
-        contentScale = ContentScale.Crop,
+        contentScale = ContentScale.Fit,
         state = state,
         modifier = Modifier
             .fillMaxWidth()
-            .heightIn(max = UiDp.dp180)
-            .aspectRatio(16f / 9f)
-            .clip(RoundedCornerShape(UiDp.dp12)),
+            .aspectRatio(coverRatio)
+            .clip(RoundedCornerShape(UiDp.dp12))
+            .clickable(onClickLabel = "查看封面") { showPreview = true },
     )
+    if (showPreview) {
+        ReleaseCoverPreview(coverImage, onDismiss = { showPreview = false })
+    }
     Spacer(modifier = Modifier.height(UiDp.dp12))
 }
 
