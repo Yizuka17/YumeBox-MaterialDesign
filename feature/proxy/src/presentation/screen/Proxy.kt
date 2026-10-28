@@ -62,6 +62,7 @@ import androidx.compose.ui.hapticfeedback.HapticFeedbackType
 import androidx.compose.ui.input.nestedscroll.nestedScroll
 import androidx.compose.ui.layout.onSizeChanged
 import androidx.compose.ui.platform.LocalDensity
+import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.platform.LocalHapticFeedback
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
@@ -405,7 +406,8 @@ private fun ProxySurfboardContent(
             .fillMaxSize()
             .padding(top = innerPadding.calculateTopPadding()),
     ) {
-        val scrollModeSelector = maxHeight - mainInnerPadding.calculateBottomPadding() < 160.dp
+        val scrollModeSelector = LocalConfiguration.current.screenHeightDp < 400 ||
+            maxHeight - mainInnerPadding.calculateBottomPadding() < 160.dp
         HorizontalPager(
             state = pagerState,
             modifier = Modifier.fillMaxSize(),
