@@ -19,7 +19,7 @@
 YumeBox MD3 目前仅支持 **Android 8.0（API 26）及以上系统**。
 
 - 下载 arm64-v8a release 安装包：[GitHub Releases](https://github.com/Yizuka17/YumeBox-MaterialDesign/releases)
-- 官网与更新日志：[YumeBox](https://yumebox.oom-wg.dev/)
+- 项目更新日志：[YumeBox MD3](../website/update/history.mdx)
 - 覆写配置语法：[override 文档](https://yumebox.oom-wg.dev/override)
 - 每日一言 API 与用户自定义 JSON 格式：[每日一言格式说明](DailyQuote_ZH_HANS.md)
 
@@ -46,7 +46,7 @@ YumeBox MD3 在保留原项目核心能力的基础上，主要围绕界面体�
 
 完整更新日志、APK 资产和版本标签请查看：
 
-- [官网更新日志](https://yumebox.oom-wg.dev/update/history)
+- [项目更新日志](../website/update/history.mdx)
 - [GitHub Releases](https://github.com/Yizuka17/YumeBox-MaterialDesign/releases)
 
 ## 未来计划

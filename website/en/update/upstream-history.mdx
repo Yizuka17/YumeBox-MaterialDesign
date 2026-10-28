@@ -1,0 +1,530 @@
+---
+title: Upstream history archive
+sidebarTitle: Upstream history archive
+rss: false
+icon: clock
+---
+
+These YumeBox release records were imported from upstream and are retained as reference. See this fork's [changelog](history.mdx) for MD3 releases.
+
+
+<Card title="GitHub Releases" icon="download" horizontal href="https://github.com/YumeYucca/YumeBox/releases" />
+
+<Update label="2026-10-22" tags={["Feature updates","optimization","repair"]} description="v0.6.5">
+## Change
+
+- Added a HyperOS Super Island notification showing the current profile, node, and live speed, with a toggle in Service settings
+- Added Shizuku support: the Xiaomi XMSF firewall is temporarily bypassed while the island updates, and the authorization status is shown in Service settings
+- Runtime starts now go through one RuntimeCoordinator: the UI, quick tile, auto-restart, Wi-Fi automation, and config reloads share a single entry point, making start/stop/reload more reliable
+- Improved core readiness probing and VPN shutdown to shorten startup waits and avoid stale state
+- Improved Root daemon startup and reaping
+- The app no longer starts a local runtime while a remote controller is active, falling back only after repeated probe failures
+- Reworked the locale implementation with better system-language detection and Traditional Chinese support (zh-TW / zh-HK / zh-MO)
+- Added staggered entry animations for node and group rows on the proxy page
+- Nested groups now show a delay without tapping the row
+- Improved the delay test bar and sort sheet so the list is not remeasured, re-animated, or reordered
+- Delay results now update per node, so a test no longer rebuilds and re-sorts the whole group list
+- Fixed clipped squircle borders and Moe Home wallpaper corners
+- Fixed Shizuku classes being obfuscated and breaking authorization detection
+- Fixed boot auto-start on HyperOS / MIUI: enabling "Auto Start" now opens the system autostart settings when the permission is missing
+- The Substore Javet native is now downloaded per version and verified with SHA-256, preventing version-mismatch crashes
+- Stopped packaging the unused BundleMRS.7z, reducing APK size
+- Updated Kotlin, Gradle, Javet, Haze, Sketch, and other dependencies, and fixed dependency security alerts
+
+  **Full Changelog**: [https://github.com/YumeYucca/YumeBox/compare/v0.6.4...v0.6.5](https://github.com/YumeYucca/YumeBox/compare/v0.6.4...v0.6.5)
+</Update>
+
+<Update label="2026-9-19" tags={["Feature updates","optimization","repair"]} description="v0.6.4">
+## Change
+
+- Refactored proxy delay tests and health checks: group-level overlay, progress display, and coalesced delay refresh
+- Combined node search, sorting, and delay test actions in the proxy toolbar, with smoother list updates while testing
+- Improved health checks for preview runtime and when the proxy is stopped, with unified delay results
+- Merged remote-controller reachability probing with non-blocking proxy refresh to reduce stalls in remote mode
+- Removed the Moe Home wallpaper bottom-dim toggle; the bottom fade is always applied so rounded corners do not reveal the wallpaper
+- Improved country/region flag display logic
+- Updated the Android NDK and Go module dependencies
+
+  **Full Changelog**: [https://github.com/YumeYucca/YumeBox/compare/v0.6.3...v0.6.4](https://github.com/YumeYucca/YumeBox/compare/v0.6.3...v0.6.4)
+</Update>
+
+<Update label="2026-9-17" tags={["Feature updates","optimization","repair"]} description="v0.6.3">
+## Change
+
+- Wi-Fi automation can now switch to a specific profile when connecting to a matching network, other Wi-Fi, or no Wi-Fi
+- Added custom kernel import from a HTTPS URL or a plugin ZIP, then install and enable it immediately
+- Added GeoX `Model.bin` (LightGBM model) download for the Smart kernel
+- Added the MIPS TUN stack for VpnService, selectable alongside gVisor
+- Remote controller backends now support HTTP/HTTPS, with reachability probing and fallback to the local runtime
+- External panels support HTTP/HTTPS, open with the active controller connection, and request Android 17 local-network permission when needed
+- Added an eBPF option to bypass mainland China IPs in the kernel
+- Added a Moe Home toggle to dim the bottom of the wallpaper
+- Tablet split-view proxy details can now run a delay test from the top bar
+- Kernel selection now uses a bottom sheet; eBPF mode is shown only when available
+- Window layout now uses the shortest side, so phones no longer get the tablet shell in portrait
+- Improved rounded corners, bottom-bar padding, wallpaper fade, and long-distance pager jumps
+- Default subscription User-Agent is now `ClashMetaForAndroid/2.11.33`
+- Documentation homepage preview now uses an autoplay looping video
+- Fixed VpnService compiled YAML carrying `tun.stack`, which could make the core reject the config
+- Fixed override-compiler panics crossing JNI and crashing the Android process
+- Fixed access-control list scroll and selected-first order after leaving and re-entering the screen
+- Updated mihomo, gVisor, mipstack, Tailscale, and the `boa_engine` used by the override compiler
+
+  **Full Changelog**: [https://github.com/YumeYucca/YumeBox/compare/v0.6.2...v0.6.3](https://github.com/YumeYucca/YumeBox/compare/v0.6.2...v0.6.3)
+</Update>
+
+<Update label="2026-8-19" tags={["Feature updates","repair"]} description="v0.6.2">
+## Change
+
+- Added a [web-based custom icon builder](https://yumebox.yumeyuka.moe/guide/icon-builder) that lets users upload and customize app icons, then export an Android icon ZIP or submit a build request
+- Added a shortcut to the custom icon guide in app settings
+- Fixed an issue with Android monochrome launcher icons caused by the fallback icon resource
+
+  **Full Changelog**: [https://github.com/YumeYucca/YumeBox/compare/v0.6.1...v0.6.2](https://github.com/YumeYucca/YumeBox/compare/v0.6.1...v0.6.2)
+</Update>
+
+<Update label="2026-8-14" tags={["Feature updates","optimization","repair"]} description="v0.6.1">
+## Change
+
+- New: Classic Home and built-in theme switching
+- New: Use the system wallpaper as the Home background, with improved permission guidance and preview
+- New: Wi-Fi automation for running proxy actions based on the connected network
+- New: Single-node and proxy-group latency test buttons, including testing from the delay label
+- New: Node search for quickly finding nodes in the proxy list
+- New: Kernel management, kernel switching, and preview nodes when the proxy is not running
+- New: eBPF DNS hijacking and kernel networking support for improved connection stability
+- New: System options, permission handling, and localized runtime-unavailable messages
+- New: Classic app icon style, Clock and Tags icons, and log export for sharing runtime records
+- Improved: Home, proxy, Provider, WebView, detail-page, and external-panel navigation
+- Improved: External panel opening in the in-app WebView or an external browser
+- Improved: Latency result display, node cards, node lists, node grids, grouping, sorting, and node search
+- Improved: Route transitions, Android predictive-back gestures, touch feedback, click targets, and input fields
+- Improved: First-start initialization, runtime controls, service notifications, stopping, and recovery
+- Improved: Wi-Fi monitoring, service startup, and empty-configuration stopping
+- Improved: Javet installation, Telegram Bot API artifact handling, and CI APK staging
+- Fixed: Proxy tests accidentally selecting nodes, lost or delayed latency results, and single-node test failures
+- Fixed: Wi-Fi state flapping, duplicate service runs, VPN Runtime sockets, fast stop, TCP Relay loops, and UDP forwarding stability
+- Fixed: Proxy locating animation flashes and default theme accent colors
+- Updated: Tailscale to v1.102.2 and the Javet Android version
+- Removed: Legacy icon switching, unused build scripts, and Telegram social links
+- Compatibility: Starting with this version, only arm64 architectures are supported and Android SDK 26 or later is required
+- Documentation: Added multilingual JavaScript override API documentation
+
+  **Full Changelog**: [https://github.com/YumeYucca/YumeBox/compare/v0.6.0...v0.6.1](https://github.com/YumeYucca/YumeBox/compare/v0.6.0...v0.6.1)
+</Update>
+
+<Update label="2026-7-27" tags={["Feature updates","optimization","repair"]} description="v0.6.0">
+## Change
+
+- **Reconstruct and extremely streamline the application shell**, compress the application Dex and native payload, and significantly reduce the APK packaging size
+- **Newly added independent Package packaging module and custom APK Packer**, unified processing of payload compression, ABI packaging, integrity verification, dynamic loading, alignment and signature
+- **Completely rewrite the underlying Core API communication architecture**, remove the old JNI business bridge, and connect local and remote controllers uniformly through mihomo REST API
+- **Remove the pure proxy mode, change the routing of VPN Service, Tun and transparent proxy; the transparent proxy currently only provides limited support and its functions are not yet complete**
+- Reconstruct the runtime API, client and service layering, change the kernel to run as an independent process, and strengthen session, process and status management
+- Clean up the old Go/C Bridge, JNI Helper and abandoned native API, reconstruct the Go kernel entry and overwrite the compiler structure in Rust
+- Added a master-slave dual-column layout for tablets and large screens, and agent nodes support adaptive grid display and detail switching on the right
+- Added the function of locating the current agent node, and optimized the positioning scrolling of lists and grids and the stability of the agent page
+- Added a new connection details page, supplemented connection information labels and page navigation
+- Added runtime rule search, filtering and temporary enable/disable functions
+- Added hourly traffic statistics to improve the writing and display of statistical data
+- Added override** application to configuration** interface, which allows you to view and modify the binding relationship between override and multiple subscription configurations
+- Custom offload configuration supports skipping the default runtime patch to prevent advanced configuration from being automatically modified by the application
+- Added external HTTP Provider prefetching. The Provider will be downloaded to the corresponding configuration directory before the subscription is started.
+- Subscription download supports parsing request headers, following redirects and customizing User-Agent, and displays download progress
+- Added Traditional Chinese and Japanese interface translations, and built-in configuration names support localization
+- Fixed multi-language missing issues in home page settings, editor, custom streaming, remote controller and accessibility operations
+- Added kernel diagnostic export; runtime, kernel and configuration test logs are unified into `runtime.log` with timestamp
+- The log is no longer cleared every time it is started, the complete error cause is retained and the maximum file size is limited
+- Added mihomo branch hash and kernel version tag to the build information to facilitate identification and troubleshooting of the kernel version
+- Continue to display the agent entrance and current agent target in configuration reload and remote controller modes to reduce page status jumps
+- Optimize the display logic of configuration list partition, bottom operation panel and built-in/imported configurations
+- The open source license page is changed to directly open the project link, simplifying the intermediate pop-up window.
+- Optimize the startup process, move heavy tasks to background threads, and enhance automatic startup, session tracking and running state recovery
+- Optimize the local and Root runtime life cycles to prevent expired sessions, repeated failure prompts and continuous startup competition
+- Optimize agent group startup verification: increase timeout, interrupt response, kernel survival check and error log traceback
+- Optimize override execution, reuse JavaScript runtime, skip empty override chains, and avoid application operations waiting for runtime reloading
+- Optimize the materialization, metadata repair and configuration processing of built-in overrides, and change the built-in DNS leak prevention override to YAML resources
+- Optimize the system bar and input method margins of the editor to improve the full-screen editing experience
+- Optimize the sidebar and double-column page animation, rounded corners and blur effects, and use Haze rendering for the sidebar.
+- Fixed the problem that the Provider node is displayed as an unknown type, the delay cannot be displayed, and the single-node speed test always times out.
+- Fixed the issue where the default DNS configuration appends an invalid `system://` server, causing each resolution to produce a failed branch.
+- Fixed the problem that when the Root daemon is started continuously, the old instance exits incompletely and the socket path is incorrectly replaced.
+- Fixed the issue where the native kernel sub-process was not recycled after exiting and became a zombie process
+- Fixed the problem of not retrying after socket owner message sending is interrupted, and the problem of abnormal processing of connected Unix sockets
+- Fixed an issue where controller keys were exposed via the process command line
+- Fixed the problem that the quick setting tile cannot stop the service, the status is out of sync, and cannot be restored after an exception.
+- Fixed the problem that the interface-less automatic startup cannot be resumed and the local state remains in the stopped process.
+- Fixed issues such as blank import of subscriptions, abnormal content, illegal image resource types or sizes, etc.
+- Fixed Sub-Store startup crash caused by the Javet class being cropped after R8 compression
+- Fixed the problem that the title bar operation of the agent pop-up window did not continue to be subscribed, and the button state expired after the background was restored.
+- Fixed the issue where the double-click gesture on the homepage fails and the sidebar cannot be retracted after it is expanded.
+- Fixed the issue where homepage and proxy page polling did not stop with ViewModel cleanup
+- Added arm64-v8a and universal, Geo and NoGeo variants to the release process, and unified APK file naming
+- The local build only generates arm64-v8a by default. You can enable all ABIs or switch Geo resource packaging through the build switch.
+- CI supports simultaneous building of Geo/NoGeo versions, publishing universal APKs, and generating clear product names by variant
+- Publish APK to perform unified 16 KiB page alignment, integrity check and re-signing after packaging
+- Update Android build configuration to AGP 9 and switch to commit count based version numbering scheme
+
+  **Full Changelog**: [https://github.com/YumeYucca/YumeBox/compare/v0.5.3...v0.6.0](https://github.com/YumeYucca/YumeBox/compare/v0.5.3...v0.6.0)
+
+[Download link](https://github.com/YumeYucca/YumeBox/releases/tag/v0.6.0)
+</Update>
+
+<Update label="2026-7-7" tags={["Feature updates","optimization","repair"]} description="v0.5.3">
+## Change
+
+- Added application data export and restore backup functions, and added a new entrance to the settings page
+- Added remote mihomo controller to support shortcut dialog box
+- Added support for accessing the control panel shortcut (requires app opening permission) `Lab -> Panel related`
+- Added support for importing override configuration via network URL
+- Updated regional application intelligent detection of access control page
+- Apply `include/exclude-package` configuration to VPN builder
+- Support `Age` key pair generation
+- Reconstructed the first boot process, added home page preview and skeleton screen animation, and removed abandoned pages
+- Added new unified empty status default icons for agents, providers and override lists
+- Optimized automated builds will now inject unique version numbers
+- Optimize application battery optimization page direct access and status updates
+- Optimize the access control page card and button layout, and optimize the sorting logic
+- Optimize the pop-up window at the bottom of the agent and the editor animation to be smoother, and the wallpaper demo is changed to be triggered by a long press
+- Optimize the summary description of setting items, switch YAML highlighting to the compact version of tmLanguage
+- Optimize and redesign the moe homepage startup control and about page header card
+- Optimize a large number of copywriting and style descriptions, and delete redundant descriptions
+- Optimize the use of some pop-up window components to be more intuitive
+- Optimize the navigation bar border style to adapt to different themes
+- **Completely fix node persistence and synchronization issues**
+- Fixed the compiler support for expanding `<<` merge keys, and fixed the problem of missing inherited fields of agent group and rule provider
+- Fix the background coroutine scope and strictly limit the Starting status scope
+- Fixed the thread safety issue of `SessionRuntime` snapshot modification
+- Fixed an issue where `raw` did not refresh the preference cache after restoring data
+- Fixed `Age` decryption failure problem
+- Repair image resource reference methods and links
+- Fix multi-language gap #125
+- Fixed missing search box mask animation transition
+- Removed the network panel icon entry from the agent page (moved to the laboratory function page)
+- Removed navigation bar style selection and unified it to `island`
+- Remove all test node icons
+- Remove biometric related content that prohibits screenshots
+- Removed obsolete boot process content
+
+  **Full Changelog**: [https://github.com/YumeYucca/YumeBox/compare/v0.5.2...v0.5.3](https://github.com/YumeYucca/YumeBox/compare/v0.5.2...v0.5.3)
+
+[Download link](https://github.com/YumeYucca/YumeBox/releases/tag/v0.5.3)
+</Update>
+
+<Update label="2026-6-20" tags={["Feature updates","optimization","repair"]} description="v0.5.2">
+## Change
+
+- **The signature has been replaced and the installation cannot be overwritten. Please uninstall and reinstall**
+- Refactored override override
+- Added JS/YAML overwriting support
+- Added desktop creation web panel shortcut
+- Added Age support
+- Fix desktop control icon
+- Fixed magnet icon
+- Fix subscription sorting scheme
+- Fixed agent group acquisition exception
+- Fixed subscription update failure
+- Fixed subscription import exception
+- Fixed override not taking effect
+- Fixed subscription corruption caused by override
+- Fix background cache
+- Fixed persistent memory node failure
+- Remove the abandoned override scheme
+- Remove native signature verification
+
+  **Full Changelog**: [https://github.com/YumeYucca/YumeBox/compare/v0.5.1...v0.5.2](https://github.com/YumeYucca/YumeBox/compare/v0.5.1...v0.5.2)
+
+[Download link](https://github.com/YumeYucca/YumeBox/releases/tag/v0.5.2)
+</Update>
+
+<Update label="2026-4-9" tags={["Feature updates","optimization","repair"]} description="v0.5.1">
+## Change
+
+- **YumeBox Lite version supported**
+- Removed Senrty tracker
+- Removed EMAS push updates
+- Liquid glass removed
+- Added experimental homepage support, customizable replacement of cropped images
+- Added Meta feature to customize the diversion entrance
+- Added traffic statistics, which can be used to count apps. You need to start the search process.
+- Added navigation bar style
+- Added language switching
+- Added privacy setting options
+- Added background release UI
+- Added startup tactile feedback
+- Optimized icon format support
+- Optimize the process of starting the agent
+- Optimize navigation bar animation feedback
+- Optimize notification bar content
+- Optimize the notification bar shortcut pop-up window lag
+- Optimize card rounded corner size
+- Optimize node sorting animation
+- Optimize access control app search bar
+- Optimize traffic statistics graph
+- Optimize global color selection (dark theme)
+- Optimize the performance of pop-up window components
+- Optimize configuration card sorting
+- Optimize navigation feel
+- Optimize scrolling list padding
+- Optimize app directory resources
+- Fixed initialization page link error
+- Fixed the abnormal height of the pop-up window
+-Fixed the problem of auto-start blocking and stuck
+-Fixed tactile feedback for scrolling list
+- Fixed import pop-up window blocking
+-Fixed kernel hash exception
+
+## Irrelevant content
+
+- Multi-language plug-in removal, generate multi-language through generate-locale kotlin script
+- Workflows refactoring
+
+  **Full Changelog**: [https://github.com/YumeYucca/YumeBox/compare/v0.5.0...v0.5.1](https://github.com/YumeYucca/YumeBox/compare/v0.5.0...v0.5.1)
+
+[Download link](https://github.com/YumeYucca/YumeBox/releases/tag/v0.5.1)
+</Update>
+
+<Update label="2026-3-29" tags={["Feature updates","optimization","repair"]} description="v0.5.0">
+## Change
+
+- **Brand new overwriting system, allowing multiple configuration switching applications, overlaying visual editing, etc. to overwrite the default distribution template, supporting quick addition, editing distribution, etc.**
+- **Fully customized override configuration using suffix modifiers (`start end merge force`) for different override operations** See [override document](/override/yaml) for details
+- **Root Tun support, no VPN required**
+- Better initialization boot page
+- Better Toast pop-up window
+- More user-friendly UI interaction details UI optimization
+- Introduction of liquid glass (not recommended)
+-Support modifying subscription link
+- Rewritten part of the bridge
+- Added new connection page
+- Added the ability to use Rust to parse and overwrite configurations to generate runtime configurations
+- New configuration editor supports syntax checking and partial completion
+- Added single node speed measurement function
+- Added preview configuration
+- Added node page speed measurement animation
+- Added new nodes to support more tags
+- Added node page animation sorting effect
+- Added link preview page
+- Added GeoX file download
+- Reconstruct the log page
+-Fixed the problem that the pop-up window could not be closed in some scenarios
+- Fixed unexpected padding error on node page
+- Fixed routing system traffic pattern error
+- Fixed the unavailability status of the traffic statistics page
+- Fixed icon exception on some devices
+- Fixed the problem of stuck import configuration probability
+- The default theme will switch to dark green
+- Replace some icons to enhance visual effects
+- Optimize theme color selection in dark mode
+- Optimize agent group icon size
+- Optimize some pop-up window lag issues
+- Optimize card margins displayed on some pages
+- Optimize Topbar blur effect
+- Optimize animations for page navigation
+- Optimize the homepage sliding and follow-up
+- Optimize persistence node selection strategy
+- Optimize the homepage node Unknown and unexpected padding misalignment
+- Optimize navigation bar hiding logic
+- Removed the pop-up window on the connection node page to set up diversion
+- ~~Fixed the problem of not writing logs for author updates~~ [Download link](https://github.com/YumeYucca/YumeBox/releases/tag/v0.5.0)
+</Update>
+
+<Update label="2026-2-27" tags={["Feature updates","optimization","repair"]} description="v0.4.0">
+## Change
+
+- Optimize global color selection
+- Reconstruct some pages
+- Optimized function details
+- Significantly optimized packaging volume
+
+[Download link](https://github.com/YumeYucca/YumeBox/releases/tag/v0.4.0)
+</Update>
+
+<Update label="2026-2-22" tags={["Feature updates","optimization","repair"]} description="v0.3.10">
+## Change
+
+- Added cloud publishing push updates
+- Added about page to manually check for updates
+- Added drop-down test node on node page
+- Added access control to automatically select package names
+- Added navigation bar blur effect
+- Added hidden background card
+- Optimize navigation bar color selection,
+- Optimize the one-word style of the homepage
+- Optimize global color selection (used with custom theme colors)
+- Optimize the way to open the external panel
+- Optimize external controller (no need to overwrite again)
+- Optimize pop-up window closing gestures
+- Optimize test node sorting
+- Optimized magnet switch
+- Optimize pop-up window closing animation
+- Fixed toast text error
+- Removed full screen node display support
+- Try to add more ACG content
+
+[Download link](https://github.com/YumeYucca/YumeBox/releases/tag/v0.3.10)
+</Update>
+
+<Update label="2026-2-22" tags={["optimization"]} description="v0.3.9">
+## Change
+
+  - NULL
+
+[Download link](https://github.com/YumeYucca/YumeBox/releases/tag/v0.3.9)
+</Update>
+
+<Update label="2026-2-19" tags={["Feature updates","optimization","repair"]} description="v0.3.9">
+## Change
+
+- Added custom theme color selection
+- Adjust color selection under dark theme
+-GuluGulu
+
+[Download link](https://github.com/YumeYucca/YumeBox/releases/tag/v0.3.8)
+</Update>
+
+<Update label="2026-2-11" tags={["Feature updates","optimization","repair"]} description="v0.3.7">
+## Change
+
+- Fix startup probability blocking
+- Fixed runtime status stuck
+- Added a pop-up window for quick setting nodes when clicked in the notification bar
+- Added node page selection method
+- Added setting node pop-up window height
+- Added Topbar blur effect
+- Optimize synchronization nodes
+- Optimize recovery of selected nodes
+- Optimize the performance of several components
+- Improve application stability
+- Follow upstream kernel
+
+[Download link](https://github.com/YumeYucca/YumeBox/releases/tag/v0.3.7)
+</Update>
+
+<Update label="2026-1-22" tags={["Feature updates","optimization","repair"]} description="v0.3.6">
+## Change
+
+- Optimize component performance
+- Improve application stability and fault tolerance
+- Added `APP` initialization boot process
+- Extract regional flags from nodes and replace them with round flags
+- Support click delay testing agent group
+- Agent group supports `icon` display support, customizable icons
+- Fixed multi-language errors
+- Smoother page jump animation
+
+[Download link](https://github.com/YumeYucca/YumeBox/releases/tag/v0.3.6)
+</Update>
+
+<Update label="2026-1-21" tags={["Feature updates","optimization","repair"]} description="v0.3.5">
+## Change
+
+- Optimize component performance
+- Improve application stability and fault tolerance
+- Reconstruct the selection and switching method of node page
+- Remove node Tab scheme
+- Optimize the animation and interactive feedback of the startup agent button
+- Other details optimization and bug fixes
+- Optimize several...
+
+> Even if the cursed seed left by the ancients torments us once again.
+
+[Download link](https://github.com/YumeYucca/YumeBox/releases/tag/v0.3.5)
+</Update>
+
+<Update label="2026-1-2" tags={["Feature updates","optimization","repair"]} description="v0.3.4">
+## Change
+
+- Added configuration page to open external links
+- You can open the airport in the app and quickly import the configuration
+- Added configuration sorting function
+- Long press the configuration card to drag and sort
+- Optimize export sharing
+-Supports two sharing methods: configuration and link
+- Optimize some icons
+- Optimized for multiple languages
+- Follow upstream kernel build
+- Several...
+
+[Download link](https://github.com/YumeYucca/YumeBox/releases/tag/v0.3.4)
+</Update>
+
+<Update label="2025-12-25" tags={["optimization"]} description="v0.3.3">
+## Change
+
+- Optimize some content
+- Several...[Download link](https://github.com/YumeYucca/YumeBox/releases/tag/v0.3.3)
+</Update>
+
+<Update label="2025-12-24" tags={["Feature updates","optimization","repair"]} description="v0.3.2">
+## Change
+
+- Optimize the start button interaction experience
+- Optimize import configuration Error Toast prompt
+- Optimize the color selection of some buttons
+- Optimize link speed
+- Optimize window animation effects
+- Optimize navigation bar hiding logic
+- Added support for custom UA (default `ClashMetaForAndroid`)
+- ~~Fix~~.?Possible automatic agent group failure problem (cannot be reproduced stably)
+- Mihimo kernel regular updates
+- Smart Kernel Build
+- Several...[Download link](https://github.com/YumeYucca/YumeBox/releases/tag/v0.3.2)
+</Update>
+
+<Update label="2025-12-4" tags={["Feature updates","repair"]} description="v0.3.1">
+## Change
+
+- Added navigation bar function
+- Optimize continuous integration process
+- Introducing Intent handling and state persistence improvements [Download link](https://github.com/YumeYucca/YumeBox/releases/tag/v0.3.1)
+</Update>
+
+<Update label="2025-12-2" tags={["Important updates","optimization"]} description="v0.3.0">
+## Change
+
+### The package name has been changed. This version will not inherit the original data. Please uninstall the old version by yourself.
+
+- Optimize the scrolling performance of the node list Tab page (#21)
+- Improve agent startup speed (#20, #16)
+- The subscription name can be automatically obtained when the link is imported
+- Fixed the problem of long pressing the tile to enter the application (#17)
+- Added access control for application list (supports import/export from clipboard) (#22)
+- Added "Run" and "Manual Upload" operation buttons for external resources
+- Further optimize the packaged resource volume
+</Update>
+
+<Update label="2025-11-30" tags={["new features","optimization"]} description="v0.2.0">
+## Change
+
+- Added multi-language adaptation
+- Added "Adhere to one principle" switch (automatically enabled when the language is zh and cannot be turned off)
+- Added traffic statistics page
+- Added one-click update button
+- Added Scheme call to import subscriptions with one click #12
+- Added automatic reading of pasteboard import subscription #12
+- Added QR code to scan the code to add subscription #14
+- Optimize remote subscription name is no longer required #12
+- Optimize SubStore startup and automatic shutdown
+- Fixed the issue of unable to import subscriptions due to too long links #13
+- Fixed the problem of global direct connection mode of unadded rules
+- Fixed the problem that the selected node in the Web panel cannot be remembered
+- Fixed the problem that the notification service reload configuration name cannot be changed
+- Adjust the position of the Web panel to the upper left corner of the node page
+- The node page provides a more detailed and rich sorting method
+- Optimize color selection on some pages
+- Fixed some page margin layout and button position abnormalities
+- Other details optimization and repairs
+</Update>
+
+<Update label="2025-11-27" tags={["milestone","beta version"]} description="v0.1.0">
+## The first official version
+
+YumeBox 0.1.0 is officially released!
+
+### System support
+
+- Android 7.0 and above
+- Support armeabi-v7a, arm64-v8a, x86, x86\_64 architecture
+
+</Update>

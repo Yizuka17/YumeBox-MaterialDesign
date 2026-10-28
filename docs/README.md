@@ -19,7 +19,7 @@ YumeBox MD3 is a Material Design 3 / Material You fork based on [YumeBox](https:
 YumeBox MD3 currently only supports **Android 8.0 (API 26) and above systems**.
 
 - Download the arm64-v8a release APK: [GitHub Releases](https://github.com/Yizuka17/YumeBox-MaterialDesign/releases)
-- Website and changelog: [YumeBox](https://yumebox.oom-wg.dev/)
+- Project changelog: [YumeBox MD3](../website/en/update/history.mdx)
 - Override configuration syntax: [override document](https://yumebox.oom-wg.dev/override)
 - Daily Quote API and custom JSON format: [Daily Quote format guide](DailyQuote.md)
 
@@ -46,7 +46,7 @@ YumeBox MD3 keeps the core capabilities of the original project while continuing
 
 For the full changelog, APK assets, and version tags, see:
 
-- [Website changelog](https://yumebox.oom-wg.dev/update/history)
+- [Project changelog](../website/en/update/history.mdx)
 - [GitHub Releases](https://github.com/Yizuka17/YumeBox-MaterialDesign/releases)
 
 ## Roadmap
