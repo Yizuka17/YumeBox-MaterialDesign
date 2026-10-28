@@ -49,6 +49,7 @@ import androidx.fragment.app.FragmentActivity
 import androidx.navigation.compose.rememberNavController
 import com.github.yumelira.yumebox.common.runtime.StartupGate
 import com.github.yumelira.yumebox.common.util.AppLanguageManager
+import com.github.yumelira.yumebox.common.util.AppIconHelper
 import com.github.yumelira.yumebox.common.util.IntentController
 import com.github.yumelira.yumebox.common.util.ProxyAutoStartHelper
 import com.github.yumelira.yumebox.core.util.AutoStartSessionGate
@@ -155,6 +156,7 @@ class MainActivity : FragmentActivity() {
             }
             val invertOnPrimaryColors = appSettingsViewModel.invertOnPrimaryColors.state.collectAsState().value
             val excludeFromRecents = appSettingsViewModel.excludeFromRecents.state.collectAsState().value
+            val hideAppIcon by appSettingsViewModel.hideAppIcon.state.collectAsState()
             val pageScale = appSettingsViewModel.pageScale.state.collectAsState().value
             val screenshotProtectionEnabled = appSettingsViewModel.screenshotProtectionEnabled.state.collectAsState().value
             val biometricUnlockEnabled by appSettingsViewModel.biometricUnlockEnabled.state.collectAsState()
@@ -166,6 +168,10 @@ class MainActivity : FragmentActivity() {
 
             LaunchedEffect(excludeFromRecents) {
                 this@MainActivity.applyExcludeFromRecents(excludeFromRecents)
+            }
+
+            LaunchedEffect(hideAppIcon) {
+                AppIconHelper.toggleIcon(this@MainActivity, hideAppIcon)
             }
 
             LaunchedEffect(screenshotProtectionEnabled) {
