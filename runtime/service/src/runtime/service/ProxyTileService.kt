@@ -55,7 +55,7 @@ class ProxyTileService : TileService() {
         NetworkSettingsStore(MMKVProvider().getMMKV("network_settings"))
     }
     private val tileLabelText: String by lazy {
-        applicationInfo.loadLabel(packageManager).toString().ifBlank { "YumeBox" }
+        getString(R.string.tile_proxy_label)
     }
 
     private val scope = CoroutineScope(Dispatchers.Main + Job())
