@@ -400,11 +400,12 @@ private fun ProxySurfboardContent(
         }
     }
 
-    Box(
+    BoxWithConstraints(
         modifier = Modifier
             .fillMaxSize()
             .padding(top = innerPadding.calculateTopPadding()),
     ) {
+        val scrollModeSelector = maxHeight - mainInnerPadding.calculateBottomPadding() < 160.dp
         HorizontalPager(
             state = pagerState,
             modifier = Modifier.fillMaxSize(),
@@ -425,12 +426,21 @@ private fun ProxySurfboardContent(
                 contentPadding = PaddingValues(
                     start = UiDp.dp12,
                     end = UiDp.dp12,
-                    top = UiDp.dp64,
+                    top = if (scrollModeSelector) UiDp.dp8 else UiDp.dp64,
                     bottom = mainInnerPadding.calculateBottomPadding() + spacing.space12,
                 ),
                 horizontalArrangement = Arrangement.spacedBy(UiDp.dp12),
                 verticalItemSpacing = UiDp.dp12,
             ) {
+                if (scrollModeSelector) {
+                    item(span = StaggeredGridItemSpan.FullLine) {
+                        ProxyModeSelector(
+                            currentMode = tunnelMode,
+                            onModeSelected = onTunnelModeSelected,
+                            modifier = Modifier.fillMaxWidth(),
+                        )
+                    }
+                }
                 item(span = StaggeredGridItemSpan.FullLine) {
                     ProxyGroupTabSection(
                         groups = tabGroups,
@@ -511,7 +521,7 @@ private fun ProxySurfboardContent(
             }
         }
 
-        Box(
+        if (!scrollModeSelector) Box(
             modifier = Modifier
                 .fillMaxWidth()
                 .padding(top = UiDp.dp8, start = UiDp.dp12, end = UiDp.dp12),

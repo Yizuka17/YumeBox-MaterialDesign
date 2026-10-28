@@ -31,7 +31,9 @@ import androidx.compose.material3.CenterAlignedTopAppBar as MaterialCenterAligne
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.unit.Dp
+import androidx.compose.ui.unit.dp
 import com.github.yumelira.yumebox.presentation.theme.UiDp
 
 @Composable
@@ -59,6 +61,7 @@ fun TopBar(
     }
 
     MaterialTopAppBar(
+        expandedHeight = if (LocalConfiguration.current.screenHeightDp < 400) 48.dp else TopAppBarDefaults.TopAppBarExpandedHeight,
         title = {
             Text(
                 text = title,
@@ -98,6 +101,7 @@ fun SmallTopBar(
     }
 
     MaterialCenterAlignedTopAppBar(
+        expandedHeight = if (LocalConfiguration.current.screenHeightDp < 400) 48.dp else TopAppBarDefaults.TopAppBarExpandedHeight,
         title = {
             Text(
                 text = title,
