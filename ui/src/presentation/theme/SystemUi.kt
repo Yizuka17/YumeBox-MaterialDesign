@@ -27,14 +27,17 @@ import android.os.Build
 import android.view.WindowInsetsController
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
-import androidx.compose.runtime.SideEffect
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.platform.LocalView
 import androidx.core.view.WindowCompat
 
 private val AndroidSystemUiEffect: @Composable (Boolean) -> Unit = { isDarkMode ->
     val view = LocalView.current
+    val configuration = LocalConfiguration.current
     if (!view.isInEditMode) {
-        SideEffect {
+        // Android reapplies system-bar appearance when uiMode changes, even for a fixed app theme.
+        LaunchedEffect(view, isDarkMode, configuration.uiMode) {
             val window = (view.context as Activity).window
             WindowCompat.setDecorFitsSystemWindows(window, false)
 
