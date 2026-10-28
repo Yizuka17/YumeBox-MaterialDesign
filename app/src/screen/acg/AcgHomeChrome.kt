@@ -51,6 +51,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.*
 import androidx.compose.ui.graphics.vector.ImageVector
+import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
@@ -220,11 +221,11 @@ internal fun AcgProfileModeBadge(
         shape = RoundedCornerShape(50),
         modifier = modifier
             .wrapContentWidth(Alignment.Start)
-            .height(componentSizes.statusCapsuleHeight),
+            .heightIn(min = componentSizes.statusCapsuleHeight),
     ) {
         Row(
             verticalAlignment = Alignment.CenterVertically,
-            modifier = Modifier.padding(horizontal = spacing.space12),
+            modifier = Modifier.padding(horizontal = spacing.space12, vertical = 4.dp),
             horizontalArrangement = Arrangement.spacedBy(spacing.space8),
         ) {
             MdText(
@@ -343,7 +344,7 @@ internal fun AcgLaunchButton(
                 scaleY = pressScale
                 alpha = containerAlpha
             }
-            .width(AcgUi.Button.fixedWidth)
+            .widthIn(min = AcgUi.Button.fixedWidth)
             .clip(AcgUi.Shape.launchButton)
             .background(background, AcgUi.Shape.launchButton)
             .clickable(
@@ -376,7 +377,7 @@ internal fun AcgLaunchButton(
             )
             Box(
                 modifier = Modifier
-                    .height(22.dp),
+                    .heightIn(min = 22.dp),
                 contentAlignment = Alignment.CenterStart,
             ) {
                 AnimatedContent(
@@ -426,6 +427,8 @@ internal fun AcgLaunchButton(
                         fontWeight = FontWeight.SemiBold,
                         fontSize = 16.sp,
                         softWrap = false,
+                        maxLines = 1,
+                        overflow = TextOverflow.Ellipsis,
                     )
                 }
             }
@@ -440,28 +443,15 @@ internal fun AcgTrafficStrip(
     uploadSpeed: Long,
     modifier: Modifier = Modifier,
 ) {
-    Row(
-        modifier = modifier,
-        horizontalArrangement = Arrangement.spacedBy(AcgUi.Hero.trafficRowGap),
-        verticalAlignment = Alignment.CenterVertically,
-    ) {
-        Box(
-            modifier = Modifier.weight(1f),
-            contentAlignment = Alignment.CenterStart,
+    BoxWithConstraints(modifier = modifier.fillMaxWidth()) {
+        val stackLabel = maxWidth < 240.dp * LocalDensity.current.fontScale
+        FlowRow(
+            modifier = Modifier.fillMaxWidth(),
+            horizontalArrangement = Arrangement.SpaceBetween,
+            verticalArrangement = Arrangement.spacedBy(8.dp),
         ) {
-            AcgTrafficItem(
-                label = MLang.Home.Traffic.UpShort,
-                speed = uploadSpeed,
-            )
-        }
-        Box(
-            modifier = Modifier.weight(1f),
-            contentAlignment = Alignment.CenterEnd,
-        ) {
-            AcgTrafficItem(
-                label = MLang.Home.Traffic.DownShort,
-                speed = downloadSpeed,
-            )
+            AcgTrafficItem(label = MLang.Home.Traffic.UpShort, speed = uploadSpeed, stackLabel = stackLabel)
+            AcgTrafficItem(label = MLang.Home.Traffic.DownShort, speed = downloadSpeed, stackLabel = stackLabel)
         }
     }
 }
@@ -470,37 +460,54 @@ internal fun AcgTrafficStrip(
 private fun AcgTrafficItem(
     label: String,
     speed: Long,
+    stackLabel: Boolean,
 ) {
     val (value, unit) = formatBytesForDisplay(speed)
     val onSurface = MiuixTheme.colorScheme.onSurface
-    Row(
-        horizontalArrangement = Arrangement.spacedBy(AcgUi.Traffic.itemGap),
-        verticalAlignment = Alignment.Bottom,
-    ) {
-        Text(
-            text = label,
-            color = onSurface.copy(alpha = 0.62f),
-            style = MiuixTheme.textStyles.footnote1,
-            fontSize = 11.sp,
-            fontWeight = FontWeight.Bold,
-            letterSpacing = 0.8.sp,
-            modifier = Modifier.padding(bottom = AcgUi.Traffic.labelBottomPadding),
-        )
-        Text(
-            text = value,
-            color = onSurface,
-            style = MiuixTheme.textStyles.title1,
-            fontWeight = FontWeight.SemiBold,
-            fontSize = 24.sp,
-        )
-        Text(
-            text = unit,
-            color = onSurface.copy(alpha = 0.55f),
-            style = MiuixTheme.textStyles.footnote1,
-            fontSize = 12.sp,
-            modifier = Modifier.padding(bottom = AcgUi.Traffic.labelBottomPadding),
-        )
+    Column {
+        if (stackLabel) AcgTrafficLabel(label)
+        Row(
+            horizontalArrangement = Arrangement.spacedBy(AcgUi.Traffic.itemGap),
+            verticalAlignment = Alignment.Bottom,
+        ) {
+            if (!stackLabel) AcgTrafficLabel(label)
+            Text(
+                text = value,
+                color = onSurface,
+                style = MiuixTheme.textStyles.title1,
+                fontWeight = FontWeight.SemiBold,
+                fontSize = 24.sp,
+                modifier = Modifier.weight(1f, fill = false),
+                maxLines = 1,
+                softWrap = false,
+                overflow = TextOverflow.Ellipsis,
+            )
+            Text(
+                text = unit,
+                color = onSurface.copy(alpha = 0.55f),
+                style = MiuixTheme.textStyles.footnote1,
+                fontSize = 12.sp,
+                maxLines = 1,
+                softWrap = false,
+                modifier = Modifier.padding(bottom = AcgUi.Traffic.labelBottomPadding),
+            )
+        }
     }
+}
+
+@Composable
+private fun AcgTrafficLabel(label: String) {
+    Text(
+        text = label,
+        color = MiuixTheme.colorScheme.onSurface.copy(alpha = 0.62f),
+        style = MiuixTheme.textStyles.footnote1,
+        fontSize = 11.sp,
+        fontWeight = FontWeight.Bold,
+        letterSpacing = 0.8.sp,
+        maxLines = 1,
+        softWrap = false,
+        modifier = Modifier.padding(bottom = AcgUi.Traffic.labelBottomPadding),
+    )
 }
 
 @Composable
@@ -581,7 +588,7 @@ internal fun AcgHomeInfoPanel(
             AcgInfoBlock(
                 value = resolvedPing,
                 modifier = Modifier
-                    .width(AcgUi.Hero.delayWidth)
+                    .widthIn(max = AcgUi.Hero.delayWidth)
                     .padding(top = 1.dp),
                 valueColor = when {
                     serverPing < 500 -> AppTheme.colors.acg.pingExcellent
@@ -626,14 +633,15 @@ private fun AcgInfoBlock(
             leading?.invoke()
             Text(
                 text = value,
+                modifier = Modifier.weight(1f, fill = !alignEnd),
                 color = valueColor,
                 style = MiuixTheme.textStyles.body1,
                 fontWeight = FontWeight.Medium,
                 fontFamily = valueFontFamily,
                 maxLines = 1,
-                overflow = TextOverflow.Clip,
+                overflow = TextOverflow.Ellipsis,
             )
-                    }
+        }
         if (!supportingValue.isNullOrBlank()) {
             Row(
                 horizontalArrangement = Arrangement.spacedBy(6.dp),
@@ -657,6 +665,7 @@ private fun AcgInfoBlock(
                 }
                 Text(
                     text = supportingValue,
+                    modifier = Modifier.weight(1f, fill = false),
                     color = supportingValueColor,
                     style = MiuixTheme.textStyles.footnote1,
                     fontWeight = FontWeight.Medium,

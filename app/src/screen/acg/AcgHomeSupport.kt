@@ -22,15 +22,17 @@ package com.github.yumelira.yumebox.screen.acg
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.interaction.collectIsPressedAsState
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.BoxWithConstraints
 import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.Spacer
-import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
@@ -163,27 +165,30 @@ internal fun AcgSidebarRail(
     icons: List<AcgSidebarIconItem>,
     modifier: Modifier = Modifier,
 ) {
-    Column(
-        modifier = modifier,
-        horizontalAlignment = Alignment.CenterHorizontally,
-    ) {
-        Spacer(modifier = Modifier.height(AcgUi.Sidebar.topInset))
-
-        AcgSidebarValueStack(
-            topValue = topValue,
-            bottomValue = bottomValue,
-        )
-
-        AcgSidebarModeText(
-            mode = proxyMode.toAcgDisplayName(),
-            modifier = Modifier.padding(top = AcgUi.Sidebar.modeTopGap),
-        )
-
-        Spacer(modifier = Modifier.weight(1f))
-
-        AcgSidebarIconRail(icons = icons)
-
-        Spacer(modifier = Modifier.height(AcgUi.Sidebar.bottomInset))
+    BoxWithConstraints(modifier = modifier) {
+        Column(
+            modifier = Modifier
+                .verticalScroll(rememberScrollState())
+                .heightIn(min = maxHeight)
+                .padding(
+                    top = minOf(AcgUi.Sidebar.topInset, maxHeight * 0.15f),
+                    bottom = AcgUi.Sidebar.bottomInset,
+                ),
+            horizontalAlignment = Alignment.CenterHorizontally,
+            verticalArrangement = Arrangement.SpaceBetween,
+        ) {
+            Column(
+                horizontalAlignment = Alignment.CenterHorizontally,
+                modifier = Modifier.padding(bottom = AcgUi.Sidebar.iconSpacing),
+            ) {
+                AcgSidebarValueStack(topValue = topValue, bottomValue = bottomValue)
+                AcgSidebarModeText(
+                    mode = proxyMode.toAcgDisplayName(),
+                    modifier = Modifier.padding(top = AcgUi.Sidebar.modeTopGap),
+                )
+            }
+            AcgSidebarIconRail(icons = icons)
+        }
     }
 }
 

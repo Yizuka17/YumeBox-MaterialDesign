@@ -34,6 +34,8 @@ import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.gestures.detectTapGestures
 import androidx.compose.foundation.isSystemInDarkTheme
+import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.runtime.*
@@ -47,6 +49,7 @@ import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.hapticfeedback.HapticFeedbackType
 import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.layout.onSizeChanged
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.platform.LocalHapticFeedback
@@ -58,7 +61,6 @@ import androidx.lifecycle.compose.LocalLifecycleOwner
 import com.github.panpf.sketch.rememberAsyncImagePainter
 import com.github.panpf.sketch.request.ImageRequest
 import com.github.panpf.sketch.resize.Precision
-import com.github.panpf.sketch.resize.Scale
 import com.github.yumelira.yumebox.common.util.toast
 import com.github.yumelira.yumebox.core.util.PollingTimerSpecs
 import com.github.yumelira.yumebox.core.util.PollingTimers
@@ -273,13 +275,11 @@ fun AcgHomePage(
     }
 
     BoxWithConstraints(modifier = Modifier.fillMaxSize()) {
-        val sidebarWidth = maxWidth * AcgUi.Sidebar.Fraction
+        val sidebarWidth = (maxWidth * AcgUi.Sidebar.Fraction).coerceAtLeast(88.dp)
         val contentStart = (sidebarWidth - AcgUi.Sidebar.contentOverlap).coerceAtLeast(UiDp.dp0)
         val collapsedVisibleWidth = AcgUi.Sidebar.collapsedVisibleWidth
         val heroHeight = maxHeight * 0.66f
         val heroMaxWidth = maxWidth - (AcgUi.Hero.containerHorizontalInset * 2)
-        val profileModeBadgeMaxWidth = maxWidth -
-            (AcgUi.Hero.containerHorizontalInset + AcgUi.Hero.contentHorizontalInset) * 2
         val heroBottomBlendSolidHeight = 56.dp
         val heroBottomBlendGradientHeight = 90.dp
         val heroBottomBlendTotalHeight = heroBottomBlendSolidHeight + heroBottomBlendGradientHeight
@@ -352,137 +352,138 @@ fun AcgHomePage(
                 }
                 .background(contentSurface),
         ) {
-            Box(
-                modifier = Modifier
-                    .align(Alignment.TopStart)
-                    .fillMaxWidth()
-                    .padding(
-                        start = AcgUi.Hero.containerHorizontalInset,
-                        end = AcgUi.Hero.containerHorizontalInset,
-                        top = statusBarTop,
-                    )
-                    .fillMaxHeight(0.66f)
-                    .background(contentSurface)
-                    .pointerInput(Unit) {
-                        detectTapGestures(
-                            onDoubleTap = {
-                                appSettingsViewModel.onAcgSidebarExpandedChange(!sidebarExpanded)
-                            },
-                        )
-                    }
-                    .graphicsLayer {
-                        shape = AcgUi.Shape.hero
-                        clip = true
-                    }
-            ) {
-                AcgWallpaperBackground(
-                    wallpaperUri = wallpaperUri,
-                    wallpaperZoom = wallpaperZoom,
-                    wallpaperBiasX = wallpaperBiasX,
-                    wallpaperBiasY = wallpaperBiasY,
-                    qualityMode = AcgWallpaperQualityMode.Foreground,
-                    stableRequestWidth = heroMaxWidth,
-                    stableRequestHeight = heroHeight,
-                    foregroundMotionScale = heroImageScale,
-                    modifier = Modifier.matchParentSize(),
-                )
-
-                Box(
-                    modifier = Modifier
-                        .align(Alignment.BottomStart)
-                        .fillMaxWidth()
-                        .height(heroBottomBlendTotalHeight)
-                        .background(
-                            brush = Brush.verticalGradient(
-                                colorStops = arrayOf(
-                                    0.0f to Color.Transparent,
-                                    0.03f to heroBlendColor.copy(alpha = 0.03f),
-                                    0.08f to heroBlendColor.copy(alpha = 0.10f),
-                                    0.14f to heroBlendColor.copy(alpha = 0.22f),
-                                    0.22f to heroBlendColor.copy(alpha = 0.42f),
-                                    0.32f to heroBlendColor.copy(alpha = 0.60f),
-                                    0.44f to heroBlendColor.copy(alpha = 0.70f),
-                                    0.58f to heroBlendColor.copy(alpha = 0.80f),
-                                    0.74f to heroBlendColor.copy(alpha = 0.90f),
-                                    0.88f to heroBlendColor.copy(alpha = 0.97f),
-                                    0.96f to heroBlendColor.copy(alpha = 0.995f),
-                                    1.0f to contentSurface,
-                                )
-                            )
-                        )
-                )
-
-                AnimatedVisibility(
-                    visible = isRunning || hasDisplayableExternalIp,
-                    modifier = Modifier
-                        .align(Alignment.BottomStart)
-                        .fillMaxWidth()
-                        .padding(
-                            start = AcgUi.Hero.contentHorizontalInset,
-                            end = AcgUi.Hero.contentHorizontalInset,
-                            bottom = AcgUi.Hero.trafficBottomInset,
-                        ),
-                    enter = fadeIn() + slideInVertically(initialOffsetY = { it / 3 }),
-                    exit = fadeOut() + slideOutVertically(targetOffsetY = { it / 3 }),
-                ) {
-                    Column(
-                        verticalArrangement = Arrangement.spacedBy(AcgUi.Hero.runtimeInfoTopGap),
-                    ) {
-                        AcgTrafficStrip(
-                            downloadSpeed = trafficData.download,
-                            uploadSpeed = trafficData.upload,
-                        )
-                        AcgHomeInfoPanel(
-                            serverName = selectedServerName.takeIf { isRunning },
-                            serverPing = selectedServerPing.takeIf { isRunning },
-                            ipMonitoringState = ipMonitoringState,
-                            modifier = Modifier.fillMaxWidth(),
-                        )
-                    }
-                }
-            }
-
-            AnimatedVisibility(
-                visible = isRunning,
-                modifier = Modifier
-                    .align(Alignment.TopStart)
-                    .padding(
-                        start = AcgUi.Hero.containerHorizontalInset + AcgUi.Hero.contentHorizontalInset,
-                        end = AcgUi.Hero.containerHorizontalInset + AcgUi.Hero.contentHorizontalInset,
-                        top = statusBarTop + heroHeight - 31.dp,
-                    ),
-                enter = fadeIn() + slideInVertically(initialOffsetY = { it / 3 }),
-                exit = fadeOut() + slideOutVertically(targetOffsetY = { it / 3 }),
-            ) {
-                AcgProfileModeBadge(
-                    profileName = currentProfile?.name,
-                    tunnelMode = tunnelMode,
-                    modifier = Modifier.widthIn(max = profileModeBadgeMaxWidth),
-                )
-            }
-
+            var actionsHeight by remember { mutableStateOf(0.dp) }
+            var runtimeInfoHeight by remember { mutableStateOf(0.dp) }
             Column(
                 modifier = Modifier
-                    .align(Alignment.TopStart)
-                    .fillMaxWidth()
-                    .padding(
-                        start = AcgUi.Hero.containerHorizontalInset + AcgUi.Hero.contentHorizontalInset,
-                        end = AcgUi.Hero.containerHorizontalInset + AcgUi.Hero.contentHorizontalInset,
-                        top = statusBarTop + heroHeight + AcgUi.Hero.belowHeroTopGap,
-                    ),
-                horizontalAlignment = Alignment.Start,
-                verticalArrangement = Arrangement.spacedBy(AcgUi.Hero.belowHeroContentGap),
+                    .fillMaxSize()
+                    .padding(top = statusBarTop, bottom = actionsHeight + 12.dp)
+                    .verticalScroll(rememberScrollState()),
             ) {
-                AcgQuoteText(
-                    quote = quote,
-                    color = YumeMiuixTheme.colorScheme.onBackground,
-                    modifier = Modifier.fillMaxWidth(),
-                )
+                Box(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(horizontal = AcgUi.Hero.containerHorizontalInset)
+                        .background(contentSurface)
+                        .pointerInput(sidebarExpanded) {
+                            detectTapGestures(
+                                onDoubleTap = {
+                                    appSettingsViewModel.onAcgSidebarExpandedChange(!sidebarExpanded)
+                                },
+                            )
+                        }
+                        .graphicsLayer {
+                            shape = AcgUi.Shape.hero
+                            clip = true
+                        }
+                ) {
+                    AcgWallpaperBackground(
+                        wallpaperUri = wallpaperUri,
+                        wallpaperZoom = wallpaperZoom,
+                        wallpaperBiasX = wallpaperBiasX,
+                        wallpaperBiasY = wallpaperBiasY,
+                        qualityMode = AcgWallpaperQualityMode.Foreground,
+                        stableRequestWidth = heroMaxWidth,
+                        stableRequestHeight = heroHeight,
+                        foregroundMotionScale = heroImageScale,
+                        modifier = Modifier.matchParentSize(),
+                    )
+
+                    Box(
+                        modifier = Modifier
+                            .align(Alignment.BottomStart)
+                            .fillMaxWidth()
+                            .height(maxOf(heroBottomBlendTotalHeight, runtimeInfoHeight + 48.dp))
+                            .background(
+                                brush = Brush.verticalGradient(
+                                    colorStops = arrayOf(
+                                        0.0f to Color.Transparent,
+                                        0.03f to heroBlendColor.copy(alpha = 0.03f),
+                                        0.08f to heroBlendColor.copy(alpha = 0.10f),
+                                        0.14f to heroBlendColor.copy(alpha = 0.22f),
+                                        0.22f to heroBlendColor.copy(alpha = 0.42f),
+                                        0.32f to heroBlendColor.copy(alpha = 0.60f),
+                                        0.44f to heroBlendColor.copy(alpha = 0.70f),
+                                        0.58f to heroBlendColor.copy(alpha = 0.80f),
+                                        0.74f to heroBlendColor.copy(alpha = 0.90f),
+                                        0.88f to heroBlendColor.copy(alpha = 0.97f),
+                                        0.96f to heroBlendColor.copy(alpha = 0.995f),
+                                        1.0f to contentSurface,
+                                    )
+                                )
+                            )
+                    )
+
+                    // Measure the information as one flow. The hero may grow in short windows;
+                    // no row is positioned independently over another row.
+                    Column(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .heightIn(min = heroHeight)
+                            .padding(
+                                start = AcgUi.Hero.contentHorizontalInset,
+                                end = AcgUi.Hero.contentHorizontalInset,
+                                top = 24.dp,
+                                bottom = AcgUi.Hero.trafficBottomInset,
+                            ),
+                        verticalArrangement = Arrangement.Bottom,
+                    ) {
+                        AnimatedVisibility(
+                            visible = isRunning || hasDisplayableExternalIp,
+                            modifier = Modifier.onSizeChanged { size ->
+                                runtimeInfoHeight = with(density) { size.height.toDp() }
+                            },
+                            enter = fadeIn() + slideInVertically(initialOffsetY = { it / 3 }),
+                            exit = fadeOut() + slideOutVertically(targetOffsetY = { it / 3 }),
+                        ) {
+                            Column(
+                                verticalArrangement = Arrangement.spacedBy(AcgUi.Hero.runtimeInfoTopGap),
+                            ) {
+                                AcgTrafficStrip(
+                                    downloadSpeed = trafficData.download,
+                                    uploadSpeed = trafficData.upload,
+                                )
+                                AcgHomeInfoPanel(
+                                    serverName = selectedServerName.takeIf { isRunning },
+                                    serverPing = selectedServerPing.takeIf { isRunning },
+                                    ipMonitoringState = ipMonitoringState,
+                                    modifier = Modifier.fillMaxWidth(),
+                                )
+                                AnimatedVisibility(visible = isRunning) {
+                                    AcgProfileModeBadge(
+                                        profileName = currentProfile?.name,
+                                        tunnelMode = tunnelMode,
+                                    )
+                                }
+                            }
+                        }
+                    }
+                }
+
+                Column(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(
+                            start = AcgUi.Hero.containerHorizontalInset + AcgUi.Hero.contentHorizontalInset,
+                            end = AcgUi.Hero.containerHorizontalInset + AcgUi.Hero.contentHorizontalInset,
+                            top = AcgUi.Hero.belowHeroTopGap,
+                        ),
+                    horizontalAlignment = Alignment.Start,
+                    verticalArrangement = Arrangement.spacedBy(AcgUi.Hero.belowHeroContentGap),
+                ) {
+                    AcgQuoteText(
+                        quote = quote,
+                        color = YumeMiuixTheme.colorScheme.onBackground,
+                        modifier = Modifier.fillMaxWidth(),
+                    )
+                }
+
             }
 
             Row(
                 modifier = Modifier
                     .align(Alignment.BottomCenter)
+                    .onSizeChanged { size -> actionsHeight = with(density) { size.height.toDp() } }
                     .fillMaxWidth()
                     .padding(
                         start = UiDp.dp12,
@@ -597,29 +598,15 @@ private fun AcgWallpaperBackground(
         val requestBaseHeightPx = maxOf(containerHeightPx, stableHeightPx)
         val targetRequestWidth = kotlin.math.ceil(requestBaseWidthPx * sampleMultiplier).toInt().coerceAtLeast(1)
         val targetRequestHeight = kotlin.math.ceil(requestBaseHeightPx * sampleMultiplier).toInt().coerceAtLeast(1)
-        var maxRequestWidth by remember(model, qualityMode) { mutableIntStateOf(targetRequestWidth) }
-        var maxRequestHeight by remember(model, qualityMode) { mutableIntStateOf(targetRequestHeight) }
-
-        SideEffect {
-            if (targetRequestWidth > maxRequestWidth) {
-                maxRequestWidth = targetRequestWidth
-            }
-            if (targetRequestHeight > maxRequestHeight) {
-                maxRequestHeight = targetRequestHeight
+        val request = remember(context, model, targetRequestWidth, targetRequestHeight) {
+            ImageRequest(context, model) {
+                size(targetRequestWidth, targetRequestHeight)
+                // Keep the source aspect ratio. EXACTLY pre-crops the bitmap and loses
+                // pixels needed when the viewport changes between portrait and landscape.
+                precision(Precision.LESS_PIXELS)
             }
         }
-
-        val painter = rememberAsyncImagePainter(
-            request = ImageRequest(context, model) {
-                scale(Scale.CENTER_CROP)
-                size(maxRequestWidth, maxRequestHeight)
-                if (qualityMode == AcgWallpaperQualityMode.BackgroundBlur) {
-                    precision(Precision.LESS_PIXELS)
-                } else {
-                    precision(Precision.EXACTLY)
-                }
-            }
-        )
+        val painter = rememberAsyncImagePainter(request = request)
 
         val intrinsic = painter.intrinsicSize
         val imageWidthPx = intrinsic.width.takeIf { it > 0f && it.isFinite() }
