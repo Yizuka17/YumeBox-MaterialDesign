@@ -29,6 +29,7 @@ import androidx.compose.foundation.interaction.collectIsPressedAsState
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.BoxWithConstraints
+import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
@@ -46,6 +47,7 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.graphics.vector.ImageVector
+import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
@@ -164,7 +166,13 @@ internal fun AcgSidebarRail(
     proxyMode: RunMode,
     icons: List<AcgSidebarIconItem>,
     modifier: Modifier = Modifier,
+    tabletMode: Boolean = false,
+    duration: String = "",
 ) {
+    if (tabletMode) {
+        AcgTabletSidebar(duration, proxyMode, icons, modifier)
+        return
+    }
     BoxWithConstraints(modifier = modifier) {
         Column(
             modifier = Modifier
@@ -188,6 +196,25 @@ internal fun AcgSidebarRail(
                 )
             }
             AcgSidebarIconRail(icons = icons)
+        }
+    }
+}
+
+@Composable
+private fun AcgTabletSidebar(duration: String, mode: RunMode, icons: List<AcgSidebarIconItem>, modifier: Modifier) {
+    BoxWithConstraints(modifier) {
+        Column(
+            Modifier.verticalScroll(rememberScrollState()).heightIn(min = maxHeight).padding(top = 36.dp, bottom = 16.dp),
+            verticalArrangement = Arrangement.SpaceBetween,
+        ) {
+            Column(Modifier.fillMaxWidth().padding(bottom = 24.dp), verticalArrangement = Arrangement.spacedBy(12.dp)) {
+                Text(MLang.AppSettings.Wallpaper.Duration, color = MiuixTheme.colorScheme.onSurface.copy(alpha = 0.68f), style = MiuixTheme.textStyles.footnote1)
+                Text(duration, color = MiuixTheme.colorScheme.onSurface, fontSize = 28.sp, maxLines = 1, softWrap = false, overflow = TextOverflow.Ellipsis)
+                AcgSidebarModeText(mode.toAcgDisplayName())
+            }
+            Column(verticalArrangement = Arrangement.spacedBy(12.dp)) {
+                icons.forEach { AcgSidebarIconItemView(it, showLabel = true) }
+            }
         }
     }
 }
@@ -231,6 +258,7 @@ private fun AcgSidebarIconRail(
 @Composable
 private fun AcgSidebarIconItemView(
     item: AcgSidebarIconItem,
+    showLabel: Boolean = false,
 ) {
     val interactionSource = remember { MutableInteractionSource() }
     val isPressed by interactionSource.collectIsPressedAsState()
@@ -244,7 +272,7 @@ private fun AcgSidebarIconItemView(
 
     Box(
         modifier = Modifier
-            .size(AcgUi.Sidebar.iconContainerSize)
+            .then(if (showLabel) Modifier.fillMaxWidth().heightIn(min = 48.dp) else Modifier.size(AcgUi.Sidebar.iconContainerSize))
             .graphicsLayer {
                 scaleX = if (isPressed) 0.94f else 1f
                 scaleY = if (isPressed) 0.94f else 1f
@@ -258,12 +286,14 @@ private fun AcgSidebarIconItemView(
             ),
         contentAlignment = Alignment.Center,
     ) {
-        Icon(
-            imageVector = item.icon,
-            contentDescription = null,
-            tint = iconTint,
-            modifier = Modifier.size(AcgUi.Sidebar.iconSize),
-        )
+        if (showLabel) {
+            Row(Modifier.fillMaxWidth().padding(horizontal = 8.dp), horizontalArrangement = Arrangement.spacedBy(12.dp), verticalAlignment = Alignment.CenterVertically) {
+                Icon(item.icon, null, tint = iconTint, modifier = Modifier.size(AcgUi.Sidebar.iconSize))
+                Text(item.label, modifier = Modifier.weight(1f), color = iconTint, style = MiuixTheme.textStyles.body1, maxLines = 1, overflow = TextOverflow.Ellipsis)
+            }
+        } else {
+            Icon(item.icon, item.label, tint = iconTint, modifier = Modifier.size(AcgUi.Sidebar.iconSize))
+        }
     }
 }
 
@@ -331,6 +361,7 @@ internal fun calculateHomeVisibility(
 
 internal data class AcgSidebarIconItem(
     val icon: ImageVector,
+    val label: String = "",
     val onClick: () -> Unit,
 )
 

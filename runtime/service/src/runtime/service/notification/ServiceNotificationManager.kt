@@ -217,7 +217,7 @@ class ServiceNotificationManager(
         running: NotificationPresentation.Running,
         promote: Boolean,
     ): Notification {
-        val notification = buildNotification(running)
+        val notification = buildNotification(running, resumeTask = true)
         HyperOsIsland.applyExtras(service, notification, running, smallIconRes(), promote)
         return notification
     }
@@ -230,14 +230,17 @@ class ServiceNotificationManager(
         }
     }
 
-    private fun buildNotification(presentation: NotificationPresentation): Notification {
+    private fun buildNotification(presentation: NotificationPresentation, resumeTask: Boolean = false): Notification {
         val contentIntent =
             PendingIntent.getActivity(
                 service,
                 0,
                 Intent().apply {
                     component = Components.MAIN_ACTIVITY
-                    action = Components.ACTION_OPEN_HOME
+                    // Launcher semantics bring the existing task to the foreground without
+                    // resetting Compose navigation to Home when the island is tapped.
+                    action = if (resumeTask) Intent.ACTION_MAIN else Components.ACTION_OPEN_HOME
+                    if (resumeTask) addCategory(Intent.CATEGORY_LAUNCHER)
                     addFlags(
                         Intent.FLAG_ACTIVITY_NEW_TASK or
                             Intent.FLAG_ACTIVITY_SINGLE_TOP or

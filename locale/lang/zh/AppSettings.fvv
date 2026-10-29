@@ -122,6 +122,7 @@ AppSettings = {
     }
 
     ServiceSection = {
+        BatteryOptimizationAlreadyDisabled = "电池优化已关闭"
         TrafficNotificationTitle = "显示流量通知"
         TrafficNotificationSummary = "在通知栏中显示流量使用情况"
         SingleNodeTestTitle = "单节点测试"
@@ -161,5 +162,39 @@ AppSettings = {
 
     Button = {
         Apply = "应用"
+    }
+
+    Wallpaper = {
+        Title = "ACG 壁纸设置"
+        TabletMode = "平板模式"
+        TabletSummary = "为平板和宽窗口调整 ACG 首页"
+        Daily = "每日 ACG 壁纸"
+        DailySummary = "每天更换，可手动刷新"
+        Manual = "选择单个壁纸"
+        ManualSummary = "竖屏和平板分别设置与裁切"
+        Portrait = "竖屏模式"
+        Tablet = "平板模式"
+        Api = "壁纸 API"
+        ApiEdit = "编辑壁纸 API"
+        ApiInvalid = "请输入有效的 HTTP 或 HTTPS 地址"
+        Pool = "自定义壁纸轮播"
+        PoolSummary = "管理图片池"
+        PoolEmpty = "还没有图片，点击添加"
+        Add = "添加图片"
+        Remove = "移除图片"
+        Preview = "预览壁纸"
+        SaveFailed = "无法保存，请重试"
+        Importing = "正在导入…"
+        Refresh = "刷新壁纸"
+        Refreshing = "正在获取…"
+        Offline = "暂时无法获取，已保留原壁纸"
+        Cached = "已更新或使用本地缓存"
+        Reset = "恢复默认壁纸"
+        TabletDisabled = "开启平板模式后可设置"
+        Sources = "API 与图片池同时开启时，按 75% / 25% 选取"
+        Duration = "连接时长"
+        TestNode = "节点测速"
+        ChoosePortrait = "选择竖屏壁纸"
+        ChooseTablet = "选择平板壁纸"
     }
 }

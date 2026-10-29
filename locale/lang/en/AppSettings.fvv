@@ -122,6 +122,7 @@ AppSettings = {
     }
 
     ServiceSection = {
+        BatteryOptimizationAlreadyDisabled = "Battery optimization is already disabled"
         TrafficNotificationTitle = "Show Traffic Notification"
         TrafficNotificationSummary = "Display traffic usage in notification bar"
         SingleNodeTestTitle = "Single Node Test"
@@ -161,5 +162,39 @@ AppSettings = {
 
     Button = {
         Apply = "Apply"
+    }
+
+    Wallpaper = {
+        Title = "ACG wallpapers"
+        TabletMode = "Tablet mode"
+        TabletSummary = "Adapt ACG Home to tablets and wide windows"
+        Daily = "Daily ACG wallpaper"
+        DailySummary = "Changes daily; refresh whenever you like"
+        Manual = "Choose a single wallpaper"
+        ManualSummary = "Choose and crop separately for portrait and tablet"
+        Portrait = "Portrait"
+        Tablet = "Tablet"
+        Api = "Wallpaper API"
+        ApiEdit = "Edit wallpaper API"
+        ApiInvalid = "Enter a valid HTTP or HTTPS URL"
+        Pool = "Custom wallpaper rotation"
+        PoolSummary = "Manage image pool"
+        PoolEmpty = "No images yet. Add some below."
+        Add = "Add images"
+        Remove = "Remove image"
+        Preview = "Preview wallpaper"
+        SaveFailed = "Could not save. Please try again."
+        Importing = "Importing…"
+        Refresh = "Refresh wallpaper"
+        Refreshing = "Fetching…"
+        Offline = "Could not fetch an image. Your wallpaper is unchanged."
+        Cached = "Updated or using a cached image"
+        Reset = "Restore default wallpaper"
+        TabletDisabled = "Enable tablet mode to configure"
+        Sources = "When both sources are enabled: 75% API, 25% image pool"
+        Duration = "Connected for"
+        TestNode = "Test node"
+        ChoosePortrait = "Choose portrait wallpaper"
+        ChooseTablet = "Choose tablet wallpaper"
     }
 }

@@ -25,9 +25,6 @@ import android.content.Intent
 import android.net.Uri
 import android.os.SystemClock
 import android.provider.Settings
-import androidx.activity.compose.rememberLauncherForActivityResult
-import androidx.activity.result.PickVisualMediaRequest
-import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
@@ -70,8 +67,8 @@ import com.github.yumelira.yumebox.presentation.util.OverrideStructuredEditorSto
 import com.github.yumelira.yumebox.screen.settings.component.ThemeColorPickerItem
 import com.ramcosta.composedestinations.annotation.Destination
 import com.ramcosta.composedestinations.annotation.RootGraph
+import com.ramcosta.composedestinations.generated.destinations.AcgWallpaperConfigScreenDestination
 import com.ramcosta.composedestinations.generated.destinations.AcgQuoteConfigScreenDestination
-import com.ramcosta.composedestinations.generated.destinations.AcgWallpaperCropScreenDestination
 import com.ramcosta.composedestinations.generated.destinations.OverrideConfigPreviewRouteDestination
 import com.ramcosta.composedestinations.navigation.DestinationsNavigator
 import dev.oom_wg.purejoy.mlang.MLang
@@ -154,6 +151,7 @@ private fun AppInterfaceSettingsSection(viewModel: AppSettingsViewModel) {
     val bottomBarAutoHide by viewModel.bottomBarAutoHide.state.collectAsState()
     val bottomBarUseLegacyStyle by viewModel.bottomBarUseLegacyStyle.state.collectAsState()
     val pageScale by viewModel.pageScale.state.collectAsState()
+    val tabletMode by viewModel.acgTabletModeEnabled.state.collectAsState()
 
     Title(MLang.AppSettings.Interface.ColorThemeTitle)
     Card {
@@ -212,6 +210,12 @@ private fun AppInterfaceSettingsSection(viewModel: AppSettingsViewModel) {
     }
     Title(MLang.AppSettings.Section.Interface)
     Card {
+        PreferenceSwitchItem(
+            title = MLang.AppSettings.Wallpaper.TabletMode,
+            summary = MLang.AppSettings.Wallpaper.TabletSummary,
+            checked = tabletMode,
+            onCheckedChange = viewModel.acgTabletModeEnabled::set,
+        )
         PreferenceEnumItem(
             title = MLang.AppSettings.Interface.LanguageTitle,
             summary = MLang.AppSettings.Interface.LanguageSummary,
@@ -367,11 +371,6 @@ private fun AppHomeSettingsSection(
     val acgDailyQuoteApiEnabled by viewModel.acgDailyQuoteEnabled.state.collectAsState()
     val acgCustomQuoteEnabled by viewModel.acgCustomQuoteEnabled.state.collectAsState()
     val acgSidebarExpanded by viewModel.acgSidebarExpanded.state.collectAsState()
-    val acgWallpaperUri by viewModel.acgWallpaperUri.state.collectAsState()
-    val acgWallpaperZoom by viewModel.acgWallpaperZoom.state.collectAsState()
-    val acgWallpaperBiasX by viewModel.acgWallpaperBiasX.state.collectAsState()
-    val acgWallpaperBiasY by viewModel.acgWallpaperBiasY.state.collectAsState()
-    val context = LocalContext.current
     Title(MLang.AppSettings.Section.Home)
     Card {
         PreferenceSwitchItem(
@@ -400,27 +399,10 @@ private fun AppHomeSettingsSection(
                 }
             },
         )
-        AcgWallpaperPreferenceItem(
-            navigator = navigator,
-            wallpaperZoom = acgWallpaperZoom,
-            wallpaperBiasX = acgWallpaperBiasX,
-            wallpaperBiasY = acgWallpaperBiasY,
-        )
-        PreferenceValueItem(
-            title = MLang.AppSettings.Experimental.ResetWallpaperTitle,
-            summary = MLang.AppSettings.Experimental.ResetWallpaperSummary,
-            onClick = {
-                if (acgWallpaperUri.isNotBlank()) {
-                    runCatching {
-                        context.contentResolver.releasePersistableUriPermission(
-                            acgWallpaperUri.toUri(),
-                            Intent.FLAG_GRANT_READ_URI_PERMISSION,
-                        )
-                    }
-                }
-                viewModel.clearAcgWallpaperUri()
-                context.toast(MLang.AppSettings.Experimental.ResetWallpaperSuccess)
-            },
+        PreferenceArrowItem(
+            title = MLang.AppSettings.Experimental.WallpaperTitle,
+            summary = MLang.AppSettings.Wallpaper.ManualSummary,
+            onClick = { navigator.navigate(AcgWallpaperConfigScreenDestination) { launchSingleTop = true } },
         )
     }
 }
@@ -682,41 +664,6 @@ private fun AcgTextEditorPreferenceItem(
     )
 }
 
-@Composable
-private fun AcgWallpaperPreferenceItem(
-    navigator: DestinationsNavigator,
-    wallpaperZoom: Float,
-    wallpaperBiasX: Float,
-    wallpaperBiasY: Float,
-) {
-    val context = LocalContext.current
-    val wallpaperPickerLauncher = rememberLauncherForActivityResult(
-        contract = ActivityResultContracts.PickVisualMedia(),
-    ) { uri ->
-        uri ?: return@rememberLauncherForActivityResult
-        navigator.navigate(
-            AcgWallpaperCropScreenDestination(
-                wallpaperUri = uri.toString(),
-                initialZoom = wallpaperZoom,
-                initialBiasX = wallpaperBiasX,
-                initialBiasY = wallpaperBiasY,
-            ),
-        ) {
-            launchSingleTop = true
-        }
-    }
-
-    PreferenceArrowItem(
-        title = MLang.AppSettings.Experimental.WallpaperTitle,
-        summary = MLang.AppSettings.Experimental.WallpaperSummary,
-        onClick = {
-            wallpaperPickerLauncher.launch(
-                PickVisualMediaRequest(ActivityResultContracts.PickVisualMedia.ImageOnly),
-            )
-        },
-    )
-}
-
 private fun requestBiometricConfirmation(
     context: android.content.Context,
     title: String,
@@ -753,53 +700,16 @@ private fun requestBiometricConfirmation(
 private fun openBatteryOptimizationSettings(
     context: android.content.Context,
 ): Boolean {
-    val packageName = context.packageName
-    val packageUri = "package:$packageName".toUri()
-    val appLabel = runCatching {
-        context.applicationInfo.loadLabel(context.packageManager).toString()
-    }.getOrDefault(packageName)
-
-    val intents = buildList {
-        add(
-            Intent("android.settings.APP_BATTERY_USAGE_SETTINGS").apply {
-                data = packageUri
-                putExtra(Settings.EXTRA_APP_PACKAGE, packageName)
-                addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
-            },
-        )
-        add(
-            Intent("android.settings.APP_BATTERY_SETTINGS").apply {
-                data = packageUri
-                putExtra(Settings.EXTRA_APP_PACKAGE, packageName)
-                addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
-            },
-        )
-        add(
-            Intent("miui.intent.action.POWER_HIDE_MODE_APP_CONFIG").apply {
-                putExtra("package_name", packageName)
-                putExtra("package_label", appLabel)
-                addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
-            },
-        )
-        add(
-            Intent(Settings.ACTION_APPLICATION_DETAILS_SETTINGS).apply {
-                data = Uri.fromParts("package", packageName, null)
-                addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
-            },
-        )
-        add(
-            Intent(Settings.ACTION_IGNORE_BATTERY_OPTIMIZATION_SETTINGS).apply {
-                addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
-            },
-        )
+    val power = context.getSystemService(android.os.PowerManager::class.java)
+    if (power?.isIgnoringBatteryOptimizations(context.packageName) == true) {
+        context.toast(MLang.AppSettings.ServiceSection.BatteryOptimizationAlreadyDisabled)
+        return true
     }
-
-    intents.forEach { intent ->
-        if (runCatching { context.startActivity(intent) }.isSuccess) {
-            return true
-        }
-    }
-    return false
+    return runCatching {
+        context.startActivity(Intent(Settings.ACTION_REQUEST_IGNORE_BATTERY_OPTIMIZATIONS).apply {
+            data = "package:${context.packageName}".toUri()
+        })
+    }.isSuccess
 }
 
 @Composable

@@ -78,6 +78,8 @@ class AppSettingsViewModel(
     val bottomBarAutoHide: Preference<Boolean> = settings.bottomBarAutoHide
     val bottomBarUseLegacyStyle: Preference<Boolean> = settings.bottomBarUseLegacyStyle
     val acgMainUiEnabled: Preference<Boolean> = settings.acgMainUiEnabled
+    val acgTabletModeEnabled = settings.acgTabletModeEnabled
+    val acgDailyWallpaperEnabled = settings.acgDailyWallpaperEnabled
     val acgWallpaperUri: Preference<String> = settings.acgWallpaperUri
     val acgWallpaperZoom: Preference<Float> = settings.acgWallpaperZoom
     val acgWallpaperBiasX: Preference<Float> = settings.acgWallpaperBiasX

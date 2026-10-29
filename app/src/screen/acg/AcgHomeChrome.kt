@@ -153,6 +153,8 @@ internal fun AcgSidebarContent(
     proxyMode: RunMode,
     icons: List<AcgSidebarIconItem>,
     visibleWidth: Dp,
+    tabletMode: Boolean = false,
+    duration: String = "",
 ) {
     Box(modifier = Modifier.fillMaxSize()) {
         AcgSidebarRail(
@@ -160,10 +162,10 @@ internal fun AcgSidebarContent(
             bottomValue = bottomValue,
             proxyMode = proxyMode,
             icons = icons,
-            modifier = Modifier
-                .fillMaxHeight()
-                .width(AcgUi.Sidebar.statsWidth)
-                .offset(x = calculateAcgSidebarLaneStart(visibleWidth)),
+            tabletMode = tabletMode,
+            duration = duration,
+            modifier = if (tabletMode) Modifier.fillMaxHeight().width((visibleWidth - 12.dp).coerceAtLeast(0.dp))
+                else Modifier.fillMaxHeight().width(AcgUi.Sidebar.statsWidth).offset(x = calculateAcgSidebarLaneStart(visibleWidth)),
         )
     }
 }

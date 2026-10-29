@@ -71,7 +71,7 @@ class GlobalBackupController(
 ) {
     private val lock = Mutex()
     private val json = Json { ignoreUnknownKeys = true; encodeDefaults = true }
-    private val roots = listOf("imported", "overrides", "acg_wallpaper", "acg", "Sub-Store/data", "logs", "profileInstalled")
+    private val roots = listOf("imported", "overrides", "acg_wallpaper", "acg_wallpapers", "acg", "Sub-Store/data", "logs", "profileInstalled")
     private val globalFiles = setOf("settings.json", "profiles.json", "statistics.json", "updates.json")
 
     suspend fun exportTo(uri: Uri) = withContext(Dispatchers.IO) {

@@ -85,6 +85,7 @@ import com.github.yumelira.yumebox.miuix.YumeMiuixTheme
 import com.github.yumelira.yumebox.miuix.rememberYumeMiuixLayerBackdrop
 import com.github.yumelira.yumebox.miuix.yumeMiuixLayerBackdrop
 import org.koin.androidx.compose.koinViewModel
+import org.koin.compose.koinInject
 
 @Composable
 fun AcgHomePage(
@@ -99,6 +100,11 @@ fun AcgHomePage(
 ) {
     val homeViewModel = koinViewModel<HomeViewModel>()
     val appSettingsViewModel = koinViewModel<AppSettingsViewModel>()
+    val wallpapers = koinInject<AcgWallpaperManager>()
+    val wallpaperOptions by wallpapers.options.collectAsState()
+    val tabletEnabled by appSettingsViewModel.acgTabletModeEnabled.state.collectAsState()
+    val pageScale by appSettingsViewModel.pageScale.state.collectAsState()
+    val dailyWallpaper by appSettingsViewModel.acgDailyWallpaperEnabled.state.collectAsState()
     val context: Context = LocalContext.current
     val hapticFeedback = LocalHapticFeedback.current
     val scope = rememberCoroutineScope()
@@ -228,13 +234,13 @@ fun AcgHomePage(
     val handlePageChange = LocalHandlePageChange.current
     val sidebarIcons = remember(handlePageChange, homeViewModel) {
         listOf(
-            AcgSidebarIconItem(AppMd3Icons.Action.SpeedTest) {
+            AcgSidebarIconItem(AppMd3Icons.Action.SpeedTest, MLang.AppSettings.Wallpaper.TestNode) {
                 hapticFeedback.performHapticFeedback(HapticFeedbackType.VirtualKey)
                 homeViewModel.testCurrentNodeDelay()
             },
-            AcgSidebarIconItem(ShellIcons.OpenProxy) { handlePageChange(1) },
-            AcgSidebarIconItem(AppMd3Icons.Shell.OpenProfileConfig) { handlePageChange(2) },
-            AcgSidebarIconItem(ShellIcons.OpenSettings) { handlePageChange(3) },
+            AcgSidebarIconItem(ShellIcons.OpenProxy, MLang.Component.BottomBar.Proxy) { handlePageChange(1) },
+            AcgSidebarIconItem(AppMd3Icons.Shell.OpenProfileConfig, MLang.Component.BottomBar.Config) { handlePageChange(2) },
+            AcgSidebarIconItem(ShellIcons.OpenSettings, MLang.Component.BottomBar.Setting) { handlePageChange(3) },
         )
     }
     val dailyQuoteEnabled = acgDailyQuoteApiEnabled || acgCustomQuoteEnabled
@@ -275,7 +281,28 @@ fun AcgHomePage(
     }
 
     BoxWithConstraints(modifier = Modifier.fillMaxSize()) {
-        val sidebarWidth = (maxWidth * AcgUi.Sidebar.Fraction).coerceAtLeast(88.dp)
+        // The window breakpoint must not flip when the app's "100%" slider stores
+        // a fractional scale such as 1.001. Keep enough usable width for the rail.
+        val windowWidthDp = kotlin.math.round(maxWidth.value * pageScale).toInt()
+        val tabletMode = tabletEnabled && maxWidth >= 480.dp &&
+            (windowWidthDp >= 600 || maxWidth / maxHeight >= 0.85f)
+        val wallpaperProfile = if (tabletMode) WallpaperProfile.Tablet else WallpaperProfile.Portrait
+        val wallpaperOption = wallpaperOptions.getValue(wallpaperProfile)
+        val activeWallpaperUri = wallpapers.displayUri(wallpaperProfile, dailyWallpaper)
+        val useProfileCrop = wallpapers.fileUri(wallpaperOption.staticImage) != null
+        val showingDailyImage = dailyWallpaper && wallpapers.fileUri(wallpaperOption.current) != null && wallpaperOption.current != wallpaperOption.staticImage
+        val legacyCrop = wallpaperProfile == WallpaperProfile.Portrait
+        val activeWallpaperZoom = if (showingDailyImage) 1f else if (useProfileCrop) wallpaperOption.zoom else if (legacyCrop) wallpaperZoom else 1f
+        val activeWallpaperBiasX = if (showingDailyImage) 0f else if (useProfileCrop) wallpaperOption.biasX else if (legacyCrop) wallpaperBiasX else 0f
+        val activeWallpaperBiasY = if (showingDailyImage) 0f else if (useProfileCrop) wallpaperOption.biasY else if (legacyCrop) wallpaperBiasY else 0f
+        LaunchedEffect(wallpaperProfile, dailyWallpaper, isActive, wallpaperOption.apiEnabled, wallpaperOption.apiUrl, wallpaperOption.poolEnabled, wallpaperOption.pool) {
+            while (isActive && dailyWallpaper) {
+                wallpapers.refresh(wallpaperProfile)
+                kotlinx.coroutines.delay(60_000L)
+            }
+        }
+        val sidebarWidth = if (tabletMode) (maxWidth * 0.28f).coerceIn(208.dp, 260.dp)
+            else (maxWidth * AcgUi.Sidebar.Fraction).coerceAtLeast(88.dp)
         val contentStart = (sidebarWidth - AcgUi.Sidebar.contentOverlap).coerceAtLeast(UiDp.dp0)
         val collapsedVisibleWidth = AcgUi.Sidebar.collapsedVisibleWidth
         val heroHeight = maxHeight * 0.66f
@@ -308,10 +335,10 @@ fun AcgHomePage(
         }
 
         AcgWallpaperBackground(
-            wallpaperUri = wallpaperUri,
-            wallpaperZoom = wallpaperZoom,
-            wallpaperBiasX = wallpaperBiasX,
-            wallpaperBiasY = wallpaperBiasY,
+            wallpaperUri = activeWallpaperUri,
+            wallpaperZoom = activeWallpaperZoom,
+            wallpaperBiasX = activeWallpaperBiasX,
+            wallpaperBiasY = activeWallpaperBiasY,
             qualityMode = AcgWallpaperQualityMode.BackgroundBlur,
             modifier = Modifier
                 .matchParentSize()
@@ -337,6 +364,8 @@ fun AcgHomePage(
                     proxyMode = proxyMode,
                     icons = sidebarIcons,
                     visibleWidth = sidebarVisibleWidth,
+                    tabletMode = tabletMode,
+                    duration = java.lang.String.format(java.util.Locale.ROOT, "%02d:%02d:%02d", elapsedMillis / 3_600_000, elapsedMillis / 60_000 % 60, elapsedMillis / 1_000 % 60),
                 )
             }
         )
@@ -378,10 +407,10 @@ fun AcgHomePage(
                         }
                 ) {
                     AcgWallpaperBackground(
-                        wallpaperUri = wallpaperUri,
-                        wallpaperZoom = wallpaperZoom,
-                        wallpaperBiasX = wallpaperBiasX,
-                        wallpaperBiasY = wallpaperBiasY,
+                        wallpaperUri = activeWallpaperUri,
+                        wallpaperZoom = activeWallpaperZoom,
+                        wallpaperBiasX = activeWallpaperBiasX,
+                        wallpaperBiasY = activeWallpaperBiasY,
                         qualityMode = AcgWallpaperQualityMode.Foreground,
                         stableRequestWidth = heroMaxWidth,
                         stableRequestHeight = heroHeight,
@@ -600,6 +629,7 @@ private fun AcgWallpaperBackground(
         val targetRequestHeight = kotlin.math.ceil(requestBaseHeightPx * sampleMultiplier).toInt().coerceAtLeast(1)
         val request = remember(context, model, targetRequestWidth, targetRequestHeight) {
             ImageRequest(context, model) {
+                crossfade(true)
                 size(targetRequestWidth, targetRequestHeight)
                 // Keep the source aspect ratio. EXACTLY pre-crops the bitmap and loses
                 // pixels needed when the viewport changes between portrait and landscape.

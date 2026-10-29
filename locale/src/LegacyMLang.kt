@@ -208,6 +208,7 @@ object MLang {
         "AppSettings.Section.Network" to "Network",
         "AppSettings.Section.Privacy" to "Privacy",
         "AppSettings.Section.Service" to "Service",
+        "AppSettings.ServiceSection.BatteryOptimizationAlreadyDisabled" to "Battery optimization is already disabled",
         "AppSettings.ServiceSection.BatteryOptimizationTitle" to "Unrestricted Battery",
         "AppSettings.ServiceSection.ExitUiWhenBackgroundSummary" to "Release the activity UI when the app is fully hidden in background while keeping the proxy service running",
         "AppSettings.ServiceSection.ExitUiWhenBackgroundTitle" to "Release UI In Background",
@@ -216,6 +217,37 @@ object MLang {
         "AppSettings.ServiceSection.TrafficNotificationSummary" to "Display traffic usage in notification bar",
         "AppSettings.ServiceSection.TrafficNotificationTitle" to "Show Traffic Notification",
         "AppSettings.Title" to "App Settings",
+        "AppSettings.Wallpaper.Add" to "Add images",
+        "AppSettings.Wallpaper.Api" to "Wallpaper API",
+        "AppSettings.Wallpaper.ApiEdit" to "Edit wallpaper API",
+        "AppSettings.Wallpaper.ApiInvalid" to "Enter a valid HTTP or HTTPS URL",
+        "AppSettings.Wallpaper.Cached" to "Updated or using a cached image",
+        "AppSettings.Wallpaper.ChoosePortrait" to "Choose portrait wallpaper",
+        "AppSettings.Wallpaper.ChooseTablet" to "Choose tablet wallpaper",
+        "AppSettings.Wallpaper.Daily" to "Daily ACG wallpaper",
+        "AppSettings.Wallpaper.DailySummary" to "Changes daily; refresh whenever you like",
+        "AppSettings.Wallpaper.Duration" to "Connected for",
+        "AppSettings.Wallpaper.Importing" to "Importing…",
+        "AppSettings.Wallpaper.Manual" to "Choose a single wallpaper",
+        "AppSettings.Wallpaper.ManualSummary" to "Choose and crop separately for portrait and tablet",
+        "AppSettings.Wallpaper.Offline" to "Could not fetch an image. Your wallpaper is unchanged.",
+        "AppSettings.Wallpaper.Pool" to "Custom wallpaper rotation",
+        "AppSettings.Wallpaper.PoolEmpty" to "No images yet. Add some below.",
+        "AppSettings.Wallpaper.PoolSummary" to "Manage image pool",
+        "AppSettings.Wallpaper.Portrait" to "Portrait",
+        "AppSettings.Wallpaper.Preview" to "Preview wallpaper",
+        "AppSettings.Wallpaper.Refresh" to "Refresh wallpaper",
+        "AppSettings.Wallpaper.Refreshing" to "Fetching…",
+        "AppSettings.Wallpaper.Remove" to "Remove image",
+        "AppSettings.Wallpaper.Reset" to "Restore default wallpaper",
+        "AppSettings.Wallpaper.SaveFailed" to "Could not save. Please try again.",
+        "AppSettings.Wallpaper.Sources" to "When both sources are enabled: 75% API, 25% image pool",
+        "AppSettings.Wallpaper.Tablet" to "Tablet",
+        "AppSettings.Wallpaper.TabletDisabled" to "Enable tablet mode to configure",
+        "AppSettings.Wallpaper.TabletMode" to "Tablet mode",
+        "AppSettings.Wallpaper.TabletSummary" to "Adapt ACG Home to tablets and wide windows",
+        "AppSettings.Wallpaper.TestNode" to "Test node",
+        "AppSettings.Wallpaper.Title" to "ACG wallpapers",
         "AppSettings.WarningDialog.HideIconMsg1" to "Please make sure you can access this app's settings before hiding!",
         "AppSettings.WarningDialog.HideIconMsg2" to "For HyperOS, please enable Auto-start and Background Pop-up permissions to receive dialer codes!",
         "AppSettings.WarningDialog.Title" to "Warning",
@@ -1410,6 +1442,7 @@ object MLang {
         "AppSettings.Section.Network" to "网络",
         "AppSettings.Section.Privacy" to "隐私",
         "AppSettings.Section.Service" to "服务",
+        "AppSettings.ServiceSection.BatteryOptimizationAlreadyDisabled" to "电池优化已关闭",
         "AppSettings.ServiceSection.BatteryOptimizationTitle" to "电池优化无限制",
         "AppSettings.ServiceSection.ExitUiWhenBackgroundSummary" to "应用退到后台且界面不可见时主动释放 UI，仅保留运行中的代理服务",
         "AppSettings.ServiceSection.ExitUiWhenBackgroundTitle" to "后台隐藏时释放界面",
@@ -1418,6 +1451,37 @@ object MLang {
         "AppSettings.ServiceSection.TrafficNotificationSummary" to "在通知栏中显示流量使用情况",
         "AppSettings.ServiceSection.TrafficNotificationTitle" to "显示流量通知",
         "AppSettings.Title" to "应用设置",
+        "AppSettings.Wallpaper.Add" to "添加图片",
+        "AppSettings.Wallpaper.Api" to "壁纸 API",
+        "AppSettings.Wallpaper.ApiEdit" to "编辑壁纸 API",
+        "AppSettings.Wallpaper.ApiInvalid" to "请输入有效的 HTTP 或 HTTPS 地址",
+        "AppSettings.Wallpaper.Cached" to "已更新或使用本地缓存",
+        "AppSettings.Wallpaper.ChoosePortrait" to "选择竖屏壁纸",
+        "AppSettings.Wallpaper.ChooseTablet" to "选择平板壁纸",
+        "AppSettings.Wallpaper.Daily" to "每日 ACG 壁纸",
+        "AppSettings.Wallpaper.DailySummary" to "每天更换，可手动刷新",
+        "AppSettings.Wallpaper.Duration" to "连接时长",
+        "AppSettings.Wallpaper.Importing" to "正在导入…",
+        "AppSettings.Wallpaper.Manual" to "选择单个壁纸",
+        "AppSettings.Wallpaper.ManualSummary" to "竖屏和平板分别设置与裁切",
+        "AppSettings.Wallpaper.Offline" to "暂时无法获取，已保留原壁纸",
+        "AppSettings.Wallpaper.Pool" to "自定义壁纸轮播",
+        "AppSettings.Wallpaper.PoolEmpty" to "还没有图片，点击添加",
+        "AppSettings.Wallpaper.PoolSummary" to "管理图片池",
+        "AppSettings.Wallpaper.Portrait" to "竖屏模式",
+        "AppSettings.Wallpaper.Preview" to "预览壁纸",
+        "AppSettings.Wallpaper.Refresh" to "刷新壁纸",
+        "AppSettings.Wallpaper.Refreshing" to "正在获取…",
+        "AppSettings.Wallpaper.Remove" to "移除图片",
+        "AppSettings.Wallpaper.Reset" to "恢复默认壁纸",
+        "AppSettings.Wallpaper.SaveFailed" to "无法保存，请重试",
+        "AppSettings.Wallpaper.Sources" to "API 与图片池同时开启时，按 75% / 25% 选取",
+        "AppSettings.Wallpaper.Tablet" to "平板模式",
+        "AppSettings.Wallpaper.TabletDisabled" to "开启平板模式后可设置",
+        "AppSettings.Wallpaper.TabletMode" to "平板模式",
+        "AppSettings.Wallpaper.TabletSummary" to "为平板和宽窗口调整 ACG 首页",
+        "AppSettings.Wallpaper.TestNode" to "节点测速",
+        "AppSettings.Wallpaper.Title" to "ACG 壁纸设置",
         "AppSettings.WarningDialog.HideIconMsg1" to "请在隐藏之前确认你能够访问本应用的设置界面！",
         "AppSettings.WarningDialog.HideIconMsg2" to "对于 HyperOS, 请开启 自启动 和 后台弹出界面 权限，以接受拨号界面代码！",
         "AppSettings.WarningDialog.Title" to "警告",
@@ -2612,6 +2676,7 @@ object MLang {
         "AppSettings.Section.Network" to "網路",
         "AppSettings.Section.Privacy" to "隱私",
         "AppSettings.Section.Service" to "服務",
+        "AppSettings.ServiceSection.BatteryOptimizationAlreadyDisabled" to "電池最佳化已關閉",
         "AppSettings.ServiceSection.BatteryOptimizationTitle" to "電池最佳化無限制",
         "AppSettings.ServiceSection.ExitUiWhenBackgroundSummary" to "應用程式切到背景且介面不可見時主動釋放 UI，僅保留執行中的代理服務",
         "AppSettings.ServiceSection.ExitUiWhenBackgroundTitle" to "背景隱藏時釋放介面",
@@ -2620,6 +2685,37 @@ object MLang {
         "AppSettings.ServiceSection.TrafficNotificationSummary" to "在通知欄中顯示流量使用情況",
         "AppSettings.ServiceSection.TrafficNotificationTitle" to "顯示流量通知",
         "AppSettings.Title" to "應用程式設定",
+        "AppSettings.Wallpaper.Add" to "新增圖片",
+        "AppSettings.Wallpaper.Api" to "桌布 API",
+        "AppSettings.Wallpaper.ApiEdit" to "編輯桌布 API",
+        "AppSettings.Wallpaper.ApiInvalid" to "請輸入有效的 HTTP 或 HTTPS 網址",
+        "AppSettings.Wallpaper.Cached" to "已更新或使用本機快取",
+        "AppSettings.Wallpaper.ChoosePortrait" to "選擇直向桌布",
+        "AppSettings.Wallpaper.ChooseTablet" to "選擇平板桌布",
+        "AppSettings.Wallpaper.Daily" to "每日 ACG 桌布",
+        "AppSettings.Wallpaper.DailySummary" to "每天更換，可手動重新整理",
+        "AppSettings.Wallpaper.Duration" to "連線時間",
+        "AppSettings.Wallpaper.Importing" to "正在匯入…",
+        "AppSettings.Wallpaper.Manual" to "選擇單張桌布",
+        "AppSettings.Wallpaper.ManualSummary" to "直向與平板分別設定與裁切",
+        "AppSettings.Wallpaper.Offline" to "暫時無法取得，已保留原桌布",
+        "AppSettings.Wallpaper.Pool" to "自訂桌布輪播",
+        "AppSettings.Wallpaper.PoolEmpty" to "尚無圖片，點選新增",
+        "AppSettings.Wallpaper.PoolSummary" to "管理圖片池",
+        "AppSettings.Wallpaper.Portrait" to "直向模式",
+        "AppSettings.Wallpaper.Preview" to "預覽桌布",
+        "AppSettings.Wallpaper.Refresh" to "重新整理桌布",
+        "AppSettings.Wallpaper.Refreshing" to "正在取得…",
+        "AppSettings.Wallpaper.Remove" to "移除圖片",
+        "AppSettings.Wallpaper.Reset" to "還原預設桌布",
+        "AppSettings.Wallpaper.SaveFailed" to "無法儲存，請重試",
+        "AppSettings.Wallpaper.Sources" to "API 與圖片池同時開啟時，依 75% / 25% 選取",
+        "AppSettings.Wallpaper.Tablet" to "平板模式",
+        "AppSettings.Wallpaper.TabletDisabled" to "開啟平板模式後可設定",
+        "AppSettings.Wallpaper.TabletMode" to "平板模式",
+        "AppSettings.Wallpaper.TabletSummary" to "為平板和寬視窗調整 ACG 首頁",
+        "AppSettings.Wallpaper.TestNode" to "節點測速",
+        "AppSettings.Wallpaper.Title" to "ACG 桌布設定",
         "AppSettings.WarningDialog.HideIconMsg1" to "請在隱藏之前確認你能夠存取本應用程式的設定介面！",
         "AppSettings.WarningDialog.HideIconMsg2" to "對於 HyperOS, 請開啟 自啟動 和 背景彈出介面 權限，以接受撥號介面程式碼！",
         "AppSettings.WarningDialog.Title" to "警告",
@@ -3863,6 +3959,7 @@ object MLang {
             val Service: String get() = text("AppSettings.Section.Service")
         }
         object ServiceSection {
+            val BatteryOptimizationAlreadyDisabled: String get() = text("AppSettings.ServiceSection.BatteryOptimizationAlreadyDisabled")
             val BatteryOptimizationTitle: String get() = text("AppSettings.ServiceSection.BatteryOptimizationTitle")
             val ExitUiWhenBackgroundSummary: String get() = text("AppSettings.ServiceSection.ExitUiWhenBackgroundSummary")
             val ExitUiWhenBackgroundTitle: String get() = text("AppSettings.ServiceSection.ExitUiWhenBackgroundTitle")
@@ -3872,6 +3969,39 @@ object MLang {
             val TrafficNotificationTitle: String get() = text("AppSettings.ServiceSection.TrafficNotificationTitle")
         }
         val Title: String get() = text("AppSettings.Title")
+        object Wallpaper {
+            val Add: String get() = text("AppSettings.Wallpaper.Add")
+            val Api: String get() = text("AppSettings.Wallpaper.Api")
+            val ApiEdit: String get() = text("AppSettings.Wallpaper.ApiEdit")
+            val ApiInvalid: String get() = text("AppSettings.Wallpaper.ApiInvalid")
+            val Cached: String get() = text("AppSettings.Wallpaper.Cached")
+            val ChoosePortrait: String get() = text("AppSettings.Wallpaper.ChoosePortrait")
+            val ChooseTablet: String get() = text("AppSettings.Wallpaper.ChooseTablet")
+            val Daily: String get() = text("AppSettings.Wallpaper.Daily")
+            val DailySummary: String get() = text("AppSettings.Wallpaper.DailySummary")
+            val Duration: String get() = text("AppSettings.Wallpaper.Duration")
+            val Importing: String get() = text("AppSettings.Wallpaper.Importing")
+            val Manual: String get() = text("AppSettings.Wallpaper.Manual")
+            val ManualSummary: String get() = text("AppSettings.Wallpaper.ManualSummary")
+            val Offline: String get() = text("AppSettings.Wallpaper.Offline")
+            val Pool: String get() = text("AppSettings.Wallpaper.Pool")
+            val PoolEmpty: String get() = text("AppSettings.Wallpaper.PoolEmpty")
+            val PoolSummary: String get() = text("AppSettings.Wallpaper.PoolSummary")
+            val Portrait: String get() = text("AppSettings.Wallpaper.Portrait")
+            val Preview: String get() = text("AppSettings.Wallpaper.Preview")
+            val Refresh: String get() = text("AppSettings.Wallpaper.Refresh")
+            val Refreshing: String get() = text("AppSettings.Wallpaper.Refreshing")
+            val Remove: String get() = text("AppSettings.Wallpaper.Remove")
+            val Reset: String get() = text("AppSettings.Wallpaper.Reset")
+            val SaveFailed: String get() = text("AppSettings.Wallpaper.SaveFailed")
+            val Sources: String get() = text("AppSettings.Wallpaper.Sources")
+            val Tablet: String get() = text("AppSettings.Wallpaper.Tablet")
+            val TabletDisabled: String get() = text("AppSettings.Wallpaper.TabletDisabled")
+            val TabletMode: String get() = text("AppSettings.Wallpaper.TabletMode")
+            val TabletSummary: String get() = text("AppSettings.Wallpaper.TabletSummary")
+            val TestNode: String get() = text("AppSettings.Wallpaper.TestNode")
+            val Title: String get() = text("AppSettings.Wallpaper.Title")
+        }
         object WarningDialog {
             val HideIconMsg1: String get() = text("AppSettings.WarningDialog.HideIconMsg1")
             val HideIconMsg2: String get() = text("AppSettings.WarningDialog.HideIconMsg2")

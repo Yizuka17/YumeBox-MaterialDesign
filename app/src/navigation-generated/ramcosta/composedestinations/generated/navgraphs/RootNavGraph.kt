@@ -94,6 +94,7 @@ public data object RootNavGraph : BaseRoute(), DirectionNavHostGraphSpec {
 		AboutScreenDestination,
 		AccessControlScreenDestination,
 		AcgQuoteConfigScreenDestination,
+		AcgWallpaperConfigScreenDestination,
 		AcgWallpaperCropScreenDestination,
 		ActivationWizardScreenDestination,
 		AppDataManagementScreenDestination,

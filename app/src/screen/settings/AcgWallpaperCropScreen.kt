@@ -28,6 +28,7 @@ import android.graphics.Color as AndroidColor
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.gestures.detectDragGestures
+import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.BoxWithConstraints
 import androidx.compose.foundation.layout.WindowInsets
@@ -46,6 +47,8 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableFloatStateOf
 import androidx.compose.runtime.produceState
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
@@ -71,6 +74,11 @@ import com.ramcosta.composedestinations.annotation.RootGraph
 import com.ramcosta.composedestinations.navigation.DestinationsNavigator
 import dev.oom_wg.purejoy.mlang.MLang
 import org.koin.androidx.compose.koinViewModel
+import com.github.yumelira.yumebox.screen.acg.AcgWallpaperManager
+import com.github.yumelira.yumebox.screen.acg.WallpaperProfile
+import org.koin.compose.koinInject
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import kotlin.math.max
@@ -83,8 +91,13 @@ fun AcgWallpaperCropScreen(
     initialZoom: Float = 1f,
     initialBiasX: Float = 0f,
     initialBiasY: Float = 0f,
+    profile: String = "portrait",
 ) {
     val viewModel = koinViewModel<AppSettingsViewModel>()
+    val manager = koinInject<AcgWallpaperManager>()
+    val targetProfile = WallpaperProfile.entries.firstOrNull { it.key == profile } ?: WallpaperProfile.Portrait
+    val scope = rememberCoroutineScope()
+    var saving by remember { mutableStateOf(false) }
     val context = LocalContext.current
     var biasX by remember(wallpaperUri, initialBiasX) {
         mutableFloatStateOf(initialBiasX.coerceIn(-1f, 1f))
@@ -129,8 +142,10 @@ fun AcgWallpaperCropScreen(
             .fillMaxSize()
             .background(Color.Black),
     ) {
-            val containerWidthPx = with(density) { maxWidth.toPx() }.coerceAtLeast(1f)
-            val containerHeightPx = with(density) { maxHeight.toPx() }.coerceAtLeast(1f)
+            val canvasWidth = if (targetProfile == WallpaperProfile.Tablet) minOf(maxWidth, (maxHeight - UiDp.dp100).coerceAtLeast(UiDp.dp1) * 1.6f) else maxWidth
+            val canvasHeight = if (targetProfile == WallpaperProfile.Tablet) canvasWidth / 1.6f else maxHeight
+            val containerWidthPx = with(density) { canvasWidth.toPx() }.coerceAtLeast(1f)
+            val containerHeightPx = with(density) { canvasHeight.toPx() }.coerceAtLeast(1f)
             val painterIntrinsic = painter.intrinsicSize
             val imageWidthPx = painterIntrinsic.width.takeIf { it > 0f && it.isFinite() }
                 ?: imageBounds?.first?.toFloat()
@@ -148,7 +163,8 @@ fun AcgWallpaperCropScreen(
 
             Box(
                 modifier = Modifier
-                    .fillMaxSize()
+                    .align(Alignment.Center)
+                    .size(canvasWidth, canvasHeight)
                     .pointerInput(viewportLayout.maxShiftX, viewportLayout.maxShiftY) {
                         detectDragGestures { change, dragAmount ->
                             change.consume()
@@ -205,19 +221,21 @@ fun AcgWallpaperCropScreen(
                     containerColor = MaterialTheme.colorScheme.primary,
                     contentColor = MaterialTheme.colorScheme.onPrimary,
                 ),
+                enabled = !saving,
                 onClick = {
-                    runCatching {
-                        viewModel.applyAcgWallpaper(wallpaperUri)
-                    }.onSuccess {
-                        viewModel.onAcgWallpaperSeedColorChange(wallpaperSeedColorArgb)
-                        viewModel.onAcgWallpaperCropChange(
-                            zoom = 1f,
-                            biasX = viewportLayout.biasX,
-                            biasY = viewportLayout.biasY,
-                        )
-                        navigator.popBackStack()
-                    }.onFailure { throwable ->
-                        context.toast(throwable.message ?: MLang.Util.Error.UnknownError)
+                    saving = true
+                    scope.launch {
+                        try {
+                            val uri = manager.setStatic(targetProfile, wallpaperUri, 1f, viewportLayout.biasX, viewportLayout.biasY)
+                            if (targetProfile == WallpaperProfile.Portrait) {
+                                viewModel.onAcgWallpaperUriChange(uri)
+                                viewModel.onAcgWallpaperCropChange(1f, viewportLayout.biasX, viewportLayout.biasY)
+                            }
+                            viewModel.onAcgWallpaperSeedColorChange(wallpaperSeedColorArgb)
+                            navigator.popBackStack()
+                        } catch (cancel: CancellationException) { throw cancel }
+                        catch (_: Exception) { context.toast(MLang.AppSettings.Wallpaper.SaveFailed) }
+                        finally { saving = false }
                     }
                 },
             ) {
@@ -229,7 +247,7 @@ fun AcgWallpaperCropScreen(
     }
 }
 
-private fun extractDominantWallpaperColorArgb(
+internal fun extractDominantWallpaperColorArgb(
     context: android.content.Context,
     wallpaperUri: String,
 ): Long? = runCatching {

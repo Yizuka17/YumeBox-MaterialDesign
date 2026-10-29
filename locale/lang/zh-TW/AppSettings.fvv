@@ -122,6 +122,7 @@ AppSettings = {
     }
 
     ServiceSection = {
+        BatteryOptimizationAlreadyDisabled = "電池最佳化已關閉"
         TrafficNotificationTitle = "顯示流量通知"
         TrafficNotificationSummary = "在通知欄中顯示流量使用情況"
         SingleNodeTestTitle = "單節點測試"
@@ -161,5 +162,39 @@ AppSettings = {
 
     Button = {
         Apply = "套用"
+    }
+
+    Wallpaper = {
+        Title = "ACG 桌布設定"
+        TabletMode = "平板模式"
+        TabletSummary = "為平板和寬視窗調整 ACG 首頁"
+        Daily = "每日 ACG 桌布"
+        DailySummary = "每天更換，可手動重新整理"
+        Manual = "選擇單張桌布"
+        ManualSummary = "直向與平板分別設定與裁切"
+        Portrait = "直向模式"
+        Tablet = "平板模式"
+        Api = "桌布 API"
+        ApiEdit = "編輯桌布 API"
+        ApiInvalid = "請輸入有效的 HTTP 或 HTTPS 網址"
+        Pool = "自訂桌布輪播"
+        PoolSummary = "管理圖片池"
+        PoolEmpty = "尚無圖片，點選新增"
+        Add = "新增圖片"
+        Remove = "移除圖片"
+        Preview = "預覽桌布"
+        SaveFailed = "無法儲存，請重試"
+        Importing = "正在匯入…"
+        Refresh = "重新整理桌布"
+        Refreshing = "正在取得…"
+        Offline = "暫時無法取得，已保留原桌布"
+        Cached = "已更新或使用本機快取"
+        Reset = "還原預設桌布"
+        TabletDisabled = "開啟平板模式後可設定"
+        Sources = "API 與圖片池同時開啟時，依 75% / 25% 選取"
+        Duration = "連線時間"
+        TestNode = "節點測速"
+        ChoosePortrait = "選擇直向桌布"
+        ChooseTablet = "選擇平板桌布"
     }
 }

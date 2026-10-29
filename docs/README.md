@@ -40,7 +40,8 @@ YumeBox MD3 keeps the core capabilities of the original project while continuing
 - **Complete backups**: exports and restores profiles, overrides and bindings, wallpapers, statistics and other data; supports existing JSON settings backups.
 - **Node cards and latency checks**: natural-height masonry cards with consistent spacing, plus concurrent latency checks while scrolling.
 - **Bundled Sub-Store engine**: no separate engine extension required, with timed service shutdown.
-- **HyperOS Super Island**: displays proxy status and live traffic; tapping the island or proxy notification opens the home page.
+- **Tablets and daily wallpapers**: a horizontal connection timer and labeled sidebar controls, with separate portrait/tablet APIs, custom image pools, daily rotation and cached fallbacks.
+- **HyperOS Super Island**: displays proxy status and live traffic; tapping the island resumes the previous page, while the proxy notification opens Home.
 
 ## Changelog
 
