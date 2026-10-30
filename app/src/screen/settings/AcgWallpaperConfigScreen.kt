@@ -200,10 +200,6 @@ fun AcgWallpaperConfigScreen(navigator: DestinationsNavigator) {
                             enabled = !daily,
                             onClick = { if (tablet) manualDialog = true else chooseSingle(WallpaperProfile.Portrait) },
                         )
-                    }
-                }
-                item {
-                    Card {
                         PreferenceValueItem(title = MLang.AppSettings.Wallpaper.Reset,
                             onClick = { scope.launch { manager.resetDefaults(); context.toast(MLang.AppSettings.Experimental.ResetWallpaperSuccess) } })
                     }
