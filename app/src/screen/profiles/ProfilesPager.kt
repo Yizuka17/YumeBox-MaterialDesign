@@ -28,6 +28,11 @@ import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyListState
 import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.lazy.staggeredgrid.LazyVerticalStaggeredGrid
+import androidx.compose.foundation.lazy.staggeredgrid.StaggeredGridCells
+import androidx.compose.foundation.lazy.staggeredgrid.items
+import androidx.compose.ui.platform.LocalConfiguration
+import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.Scaffold
@@ -58,6 +63,7 @@ import org.koin.androidx.compose.koinViewModel
 import org.koin.compose.koinInject
 import sh.calvin.reorderable.ReorderableItem
 import sh.calvin.reorderable.rememberReorderableLazyListState
+import sh.calvin.reorderable.rememberReorderableLazyStaggeredGridState
 
 @SuppressLint("UseKtx")
 @Composable
@@ -78,6 +84,10 @@ fun ProfilesPager(
     val systemPresets by overrideConfigViewModel.systemPresets.collectAsState()
     val userConfigs by overrideConfigViewModel.userConfigs.collectAsState()
     val context = LocalContext.current
+    val tabletLayout = rememberTabletLayout()
+    val configuration = LocalConfiguration.current
+    val profileGridState = rememberRetainedStaggeredGridState("main_profiles_grid",
+        "${configuration.screenWidthDp}:${configuration.screenHeightDp}:${configuration.fontScale}")
 
     val showAddBottomSheet = remember { mutableStateOf(false) }
     var isDeleteDialogVisible by remember { mutableStateOf(false) }
@@ -116,22 +126,71 @@ fun ProfilesPager(
 
     val scope = rememberCoroutineScope()
 
-    Box(modifier = Modifier.fillMaxSize()) {
+    val updateAllProfiles: () -> Unit = {
+        urlProfiles.filter { it.uuid !in updatingProfileIds }.forEach { profilesViewModel.updateProfile(it.uuid) }
+    }
+    val addProfile: () -> Unit = { profileToEdit = null; showAddBottomSheet.value = true }
+    val renderProfile: @Composable (Profile, Modifier) -> Unit = { profile, cardModifier ->
+        ProfileCard(
+            profile = profile,
+            workDir = App.instance.filesDir.resolve("imported"),
+            isDownloading = false,
+            isUpdating = profile.uuid in updatingProfileIds,
+            modifier = cardModifier,
+            onExport = { profile ->
+                if (profile.uuid !in updatingProfileIds) {
+                    profileToShare = profile
+                    showShareDialog.value = true
+                }
+            },
+            onUpdate = { profile ->
+                if (profile.uuid !in updatingProfileIds) {
+                    profilesViewModel.updateProfile(profile.uuid)
+                }
+            },
+            onDelete = { profile ->
+                if (profile.uuid !in updatingProfileIds) {
+                    showDeleteDialog = profile
+                    isDeleteDialogVisible = true
+                }
+            },
+            onEdit = { profile ->
+                if (profile.uuid !in updatingProfileIds) {
+                    showEditOptionsDialog = profile
+                    isEditOptionsDialogVisible = true
+                }
+            },
+            onToggleEnabled = { profile ->
+                if (profile.active) {
+                    profilesViewModel.cancelProfileUpdateAndRestore(profile.uuid)
+                }
+                scope.launch {
+                    if (profile.active && isRunning) {
+                        homeViewModel.stopProxy()
+                    }
+                    profilesViewModel.toggleProfileEnabled(profile.uuid)
+                }
+            },
+        )
+    }
+
+    Row(modifier = Modifier.fillMaxSize()) {
+        if (tabletLayout) TabletPageSidebar(MLang.ProfilesPage.Title,
+            Modifier.padding(bottom = mainInnerPadding.calculateBottomPadding())) {
+            TabletSidebarAction(MLang.ProfilesPage.Action.UpdateAll, ShellIcons.UpdateProfiles,
+                enabled = hasUpdatableProfiles, onClick = updateAllProfiles)
+            TabletSidebarAction(MLang.ProfilesPage.Action.AddProfile, ShellIcons.AddProfile, onClick = addProfile)
+        }
         Scaffold(
+        modifier = Modifier.weight(1f).fillMaxHeight(),
         topBar = {
-            TopBar(
+            if (!tabletLayout) TopBar(
                 title = MLang.ProfilesPage.Title,
                 actions = {
                     IconButton(
                         modifier = Modifier.padding(end = UiDp.dp12),
                         enabled = hasUpdatableProfiles,
-                        onClick = {
-                                urlProfiles.forEach { p ->
-                                if (p.uuid !in updatingProfileIds) {
-                                    profilesViewModel.updateProfile(p.uuid)
-                                }
-                            }
-                        }
+                        onClick = updateAllProfiles
                     ) {
                         Icon(
                             ShellIcons.UpdateProfiles,
@@ -140,10 +199,7 @@ fun ProfilesPager(
                     }
 
                     IconButton(
-                        onClick = {
-                            profileToEdit = null
-                            showAddBottomSheet.value = true
-                        }
+                        onClick = addProfile
                     ) {
                         Icon(
                             ShellIcons.AddProfile,
@@ -159,6 +215,30 @@ fun ProfilesPager(
                 firstLine = MLang.ProfilesPage.Empty.NoProfiles,
                 secondLine = MLang.ProfilesPage.Empty.Hint
             )
+        } else if (tabletLayout) {
+            val reorderableGridState = rememberReorderableLazyStaggeredGridState(profileGridState) { from, to ->
+                profilesViewModel.reorderProfiles(from.index, to.index)
+            }
+            LazyVerticalStaggeredGrid(
+                columns = StaggeredGridCells.Adaptive(300.dp * LocalDensity.current.fontScale.coerceAtLeast(1f)),
+                state = profileGridState, modifier = Modifier.fillMaxSize(),
+                contentPadding = PaddingValues(
+                    top = innerPadding.calculateTopPadding() + 20.dp,
+                    bottom = mainInnerPadding.calculateBottomPadding() + 12.dp,
+                ), verticalItemSpacing = 12.dp,
+            ) {
+                items(profiles, key = { it.uuid.toString() }) { profile ->
+                    ReorderableItem(reorderableGridState, key = profile.uuid.toString()) { isDragging ->
+                        val dragInteractionSource = remember { MutableInteractionSource() }
+                        renderProfile(profile, Modifier.fillMaxWidth().appPressSink(
+                            interactionSource = dragInteractionSource, enabled = true,
+                            pressedScale = 0.98f, pressedTranslationY = UiDp.dp1,
+                            minimumVisibleMillis = 0L, forcePressed = isDragging,
+                        ).longPressDraggableHandle(interactionSource = dragInteractionSource)
+                            .alpha(if (isDragging) 0.9f else 1f))
+                    }
+                }
+            }
         } else {
             val reorderableLazyListState =
                 rememberReorderableLazyListState(lazyListState) { from, to ->
@@ -179,12 +259,7 @@ fun ProfilesPager(
                         key = profile.uuid.toString()
                     ) { isDragging ->
                         val dragInteractionSource = remember { MutableInteractionSource() }
-                        ProfileCard(
-                            profile = profile,
-                            workDir = App.instance.filesDir.resolve("imported"),
-                            isDownloading = false,
-                            isUpdating = profile.uuid in updatingProfileIds,
-                            modifier = Modifier
+                        renderProfile(profile, Modifier
                                 .appPressSink(
                                     interactionSource = dragInteractionSource,
                                     enabled = true,
@@ -194,42 +269,7 @@ fun ProfilesPager(
                                     forcePressed = isDragging,
                                 )
                                 .longPressDraggableHandle(interactionSource = dragInteractionSource)
-                                .alpha(if (isDragging) 0.9f else 1f),
-                            onExport = { profile ->
-                                if (profile.uuid !in updatingProfileIds) {
-                                    profileToShare = profile
-                                    showShareDialog.value = true
-                                }
-                            },
-                            onUpdate = { profile ->
-                                if (profile.uuid !in updatingProfileIds) {
-                                    profilesViewModel.updateProfile(profile.uuid)
-                                }
-                            },
-                            onDelete = { profile ->
-                                if (profile.uuid !in updatingProfileIds) {
-                                    showDeleteDialog = profile
-                                    isDeleteDialogVisible = true
-                                }
-                            },
-                            onEdit = { profile ->
-                                if (profile.uuid !in updatingProfileIds) {
-                                    showEditOptionsDialog = profile
-                                    isEditOptionsDialogVisible = true
-                                }
-                            },
-                            onToggleEnabled = { profile ->
-                                if (profile.active) {
-                                    profilesViewModel.cancelProfileUpdateAndRestore(profile.uuid)
-                                }
-                                scope.launch {
-                                    if (profile.active && isRunning) {
-                                        homeViewModel.stopProxy()
-                                    }
-                                    profilesViewModel.toggleProfileEnabled(profile.uuid)
-                                }
-                            },
-                        )
+                                .alpha(if (isDragging) 0.9f else 1f))
                     }
                 }
             }

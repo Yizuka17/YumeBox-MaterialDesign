@@ -43,8 +43,6 @@ import androidx.compose.foundation.lazy.staggeredgrid.StaggeredGridItemSpan
 import androidx.compose.foundation.lazy.staggeredgrid.LazyStaggeredGridState
 import androidx.compose.foundation.lazy.staggeredgrid.LazyVerticalStaggeredGrid
 import androidx.compose.foundation.lazy.staggeredgrid.items
-import androidx.compose.foundation.pager.HorizontalPager
-import androidx.compose.foundation.pager.rememberPagerState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.Icon as MdIcon
 import androidx.compose.material3.IconButton as MdIconButton
@@ -77,6 +75,9 @@ import com.github.yumelira.yumebox.presentation.component.Md3ELoading
 import com.github.yumelira.yumebox.presentation.component.LocalBottomBarScrollBehavior
 import com.github.yumelira.yumebox.presentation.component.SmallTopBar
 import com.github.yumelira.yumebox.presentation.component.rememberRetainedStaggeredGridState
+import com.github.yumelira.yumebox.presentation.component.rememberTabletLayout
+import com.github.yumelira.yumebox.presentation.component.TabletPageSidebar
+import com.github.yumelira.yumebox.presentation.component.TabletSidebarAction
 import com.github.yumelira.yumebox.presentation.icon.AppMd3Icons
 import com.github.yumelira.yumebox.presentation.screen.node.NodeCard
 import com.github.yumelira.yumebox.presentation.screen.node.NodeGroupCard
@@ -115,6 +116,8 @@ fun ProxyPager(
     val tunnelMode by proxyViewModel.tunnelMode.collectAsState()
     var displayTunnelMode by remember { mutableStateOf(tunnelMode) }
     val singleNodeTest by proxyViewModel.singleNodeTest.collectAsState()
+    val tabletLayout = rememberTabletLayout()
+    val configuration = LocalConfiguration.current
     val groupScrollBehavior = MiuixScrollBehavior(snapAnimationSpec = null)
 
     var showSortPopup by remember { mutableStateOf(false) }
@@ -158,7 +161,8 @@ fun ProxyPager(
         pendingTestProxyName?.let { testingProxyNames + it } ?: testingProxyNames
     }
     val gridState = rememberRetainedStaggeredGridState(
-        "main_proxy_${displayTunnelMode.name}_${effectiveSelectedGroupName.orEmpty()}"
+        "main_proxy_${displayTunnelMode.name}_${effectiveSelectedGroupName.orEmpty()}",
+        layoutKey = "${configuration.screenWidthDp}:${configuration.screenHeightDp}:${configuration.fontScale}:$tabletLayout",
     )
     val modes = remember { listOf(TunnelState.Mode.Rule, TunnelState.Mode.Global, TunnelState.Mode.Direct) }
 
@@ -214,7 +218,7 @@ fun ProxyPager(
 
     Scaffold(
         topBar = {
-            ProxyTopBar(
+            if (!tabletLayout) ProxyTopBar(
                 title = MLang.Proxy.Title,
                 scrollBehavior = groupScrollBehavior,
                 onNavigateToProviders = onNavigateToProviders,
@@ -227,11 +231,31 @@ fun ProxyPager(
             )
         },
     ) { innerPadding ->
-        Box(
+        Row(
             modifier = Modifier
                 .fillMaxSize()
                 .background(MaterialTheme.colorScheme.surface)
         ) {
+            if (tabletLayout) TabletPageSidebar(MLang.Proxy.Title,
+                Modifier.padding(bottom = mainInnerPadding.calculateBottomPadding())) {
+                if (onNavigateToProviders != null) TabletSidebarAction(MLang.Providers.Title, AppMd3Icons.Proxy.Profiles, onClick = onNavigateToProviders)
+                if (onOpenPanel != null) TabletSidebarAction(MLang.Proxy.Action.Panel, AppMd3Icons.Proxy.Panel, onClick = onOpenPanel)
+                TabletSidebarAction(MLang.Proxy.Action.Test, AppMd3Icons.Action.SpeedTest,
+                    enabled = effectiveSelectedGroupName != null && !isViewingZako, onClick = onTestDelayAction)
+                Box {
+                    TabletSidebarAction(MLang.Proxy.Action.Sort, AppMd3Icons.Action.Sort, onClick = { showSortPopup = true })
+                    NodeSortPopup(show = showSortPopup, onDismiss = { showSortPopup = false },
+                        sortMode = sortMode, onSortSelected = proxyViewModel::setSortMode)
+                }
+                androidx.compose.material3.HorizontalDivider(Modifier.padding(vertical = 8.dp))
+                modes.forEach { mode ->
+                    TabletSidebarAction(mode.displayName(), selected = displayTunnelMode == mode,
+                        role = androidx.compose.ui.semantics.Role.RadioButton, onClick = {
+                        displayTunnelMode = mode; proxyViewModel.setTunnelMode(mode)
+                    })
+                }
+            }
+            Box(Modifier.weight(1f).fillMaxHeight()) {
             ProxySurfboardContent(
                 proxyGroups = proxyGroups,
                 selectedGroup = selectedGroup,
@@ -239,7 +263,7 @@ fun ProxyPager(
                 testingGroupNames = effectiveTestingGroupNames,
                 testingProxyNames = effectiveTestingProxyNames,
                 gridState = gridState,
-                modes = modes,
+                tabletLayout = tabletLayout,
                 tunnelMode = displayTunnelMode,
                 onTunnelModeSelected = { mode ->
                     displayTunnelMode = mode
@@ -268,6 +292,7 @@ fun ProxyPager(
                 },
                 singleNodeTestEnabled = singleNodeTest,
             )
+            }
         }
     }
 }
@@ -340,7 +365,7 @@ private fun ProxySurfboardContent(
     testingGroupNames: Set<String>,
     testingProxyNames: Set<String>,
     gridState: LazyStaggeredGridState,
-    modes: List<TunnelState.Mode>,
+    tabletLayout: Boolean,
     tunnelMode: TunnelState.Mode,
     onTunnelModeSelected: (TunnelState.Mode) -> Unit,
     innerPadding: PaddingValues,
@@ -377,8 +402,6 @@ private fun ProxySurfboardContent(
         }
     }
     val isTesting = !isZakoPage && selectedName?.let(testingGroupNames::contains) == true
-    val currentPage = modes.indexOf(tunnelMode).coerceAtLeast(0)
-    val pagerState = rememberPagerState(initialPage = currentPage, pageCount = { modes.size })
     val bottomBarScrollBehavior = LocalBottomBarScrollBehavior.current
     val isGridAtTop by remember(gridState) {
         derivedStateOf {
@@ -406,15 +429,10 @@ private fun ProxySurfboardContent(
             .fillMaxSize()
             .padding(top = innerPadding.calculateTopPadding()),
     ) {
-        val scrollModeSelector = LocalConfiguration.current.screenHeightDp < 400 ||
-            maxHeight - mainInnerPadding.calculateBottomPadding() < 160.dp
-        HorizontalPager(
-            state = pagerState,
-            modifier = Modifier.fillMaxSize(),
-            userScrollEnabled = false,
-        ) {
+        val scrollModeSelector = !tabletLayout && (LocalConfiguration.current.screenHeightDp < 400 ||
+            maxHeight - mainInnerPadding.calculateBottomPadding() < 160.dp)
             LazyVerticalStaggeredGrid(
-                columns = StaggeredGridCells.Fixed(2),
+                columns = if (tabletLayout) StaggeredGridCells.Adaptive(190.dp * LocalDensity.current.fontScale.coerceAtLeast(1f)) else StaggeredGridCells.Fixed(2),
                 state = gridState,
                 modifier = Modifier
                     .fillMaxSize()
@@ -428,7 +446,7 @@ private fun ProxySurfboardContent(
                 contentPadding = PaddingValues(
                     start = UiDp.dp12,
                     end = UiDp.dp12,
-                    top = if (scrollModeSelector) UiDp.dp8 else UiDp.dp64,
+                    top = if (scrollModeSelector || tabletLayout) UiDp.dp8 else UiDp.dp64,
                     bottom = mainInnerPadding.calculateBottomPadding() + spacing.space12,
                 ),
                 horizontalArrangement = Arrangement.spacedBy(UiDp.dp12),
@@ -521,9 +539,7 @@ private fun ProxySurfboardContent(
                     }
                 }
             }
-        }
-
-        if (!scrollModeSelector) Box(
+        if (!tabletLayout && !scrollModeSelector) Box(
             modifier = Modifier
                 .fillMaxWidth()
                 .padding(top = UiDp.dp8, start = UiDp.dp12, end = UiDp.dp12),

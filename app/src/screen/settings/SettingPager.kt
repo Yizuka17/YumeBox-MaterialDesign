@@ -150,7 +150,7 @@ fun SettingPager(
             TopBar(title = MLang.Settings.Title)
         },
     ) { innerPadding ->
-        ScreenLazyColumn(
+        ScreenSectionGrid(
             innerPadding = combinePaddingValues(innerPadding, mainInnerPadding),
             lazyListState = lazyListState,
         ) {

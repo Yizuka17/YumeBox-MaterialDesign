@@ -90,7 +90,7 @@ fun FeatureContent(
         },
     ) { innerPadding ->
         val mainLikePadding = rememberStandalonePageMainPadding()
-        ScreenLazyColumn(
+        ScreenSectionGrid(
             innerPadding = combinePaddingValues(innerPadding, mainLikePadding),
         ) {
             item {

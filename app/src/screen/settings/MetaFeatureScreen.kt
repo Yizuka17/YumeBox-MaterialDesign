@@ -105,7 +105,7 @@ fun MetaFeatureScreen(navigator: DestinationsNavigator) {
         },
     ) { innerPadding ->
         val mainLikePadding = rememberStandalonePageMainPadding()
-        ScreenLazyColumn(
+        ScreenSectionGrid(
             innerPadding = combinePaddingValues(innerPadding, mainLikePadding),
         ) {
             item {

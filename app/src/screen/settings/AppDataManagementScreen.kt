@@ -59,7 +59,7 @@ import com.github.yumelira.yumebox.presentation.component.AppConfirmDialog
 import com.github.yumelira.yumebox.presentation.component.Card
 import com.github.yumelira.yumebox.presentation.component.PreferenceArrowItem
 import com.github.yumelira.yumebox.presentation.component.PreferenceListItem
-import com.github.yumelira.yumebox.presentation.component.ScreenLazyColumn
+import com.github.yumelira.yumebox.presentation.component.ScreenSectionGrid
 import com.github.yumelira.yumebox.presentation.component.Title
 import com.github.yumelira.yumebox.presentation.component.TopBar
 import com.github.yumelira.yumebox.presentation.component.combinePaddingValues
@@ -96,7 +96,7 @@ fun AppDataManagementScreen() {
     Scaffold(
         topBar = { TopBar(title = MLang.AppDataManagement.Title) },
     ) { innerPadding ->
-        ScreenLazyColumn(
+        ScreenSectionGrid(
             innerPadding = combinePaddingValues(innerPadding, rememberStandalonePageMainPadding()),
         ) {
             item {

@@ -44,7 +44,7 @@ import com.github.yumelira.yumebox.presentation.component.Card
 import com.github.yumelira.yumebox.presentation.component.PreferenceArrowItem
 import com.github.yumelira.yumebox.presentation.component.PreferenceEnumItem
 import com.github.yumelira.yumebox.presentation.component.PreferenceSwitchItem
-import com.github.yumelira.yumebox.presentation.component.ScreenLazyColumn
+import com.github.yumelira.yumebox.presentation.component.ScreenSectionGrid
 import com.github.yumelira.yumebox.presentation.component.Title
 import com.github.yumelira.yumebox.presentation.component.combinePaddingValues
 import com.github.yumelira.yumebox.presentation.component.rememberStandalonePageMainPadding
@@ -94,7 +94,7 @@ fun NetworkSettingsScreen(
         },
     ) { innerPadding ->
         val mainLikePadding = rememberStandalonePageMainPadding()
-        ScreenLazyColumn(
+        ScreenSectionGrid(
             innerPadding = combinePaddingValues(innerPadding, mainLikePadding),
         ) {
             item { NetworkUserAgentSettingsSection(appSettingsViewModel) }

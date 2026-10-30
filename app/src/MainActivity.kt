@@ -158,6 +158,7 @@ class MainActivity : FragmentActivity() {
             val excludeFromRecents = appSettingsViewModel.excludeFromRecents.state.collectAsState().value
             val hideAppIcon by appSettingsViewModel.hideAppIcon.state.collectAsState()
             val pageScale = appSettingsViewModel.pageScale.state.collectAsState().value
+            val tabletModeEnabled by appSettingsViewModel.acgTabletModeEnabled.state.collectAsState()
             val screenshotProtectionEnabled = appSettingsViewModel.screenshotProtectionEnabled.state.collectAsState().value
             val biometricUnlockEnabled by appSettingsViewModel.biometricUnlockEnabled.state.collectAsState()
 
@@ -183,7 +184,8 @@ class MainActivity : FragmentActivity() {
                 val scaledDensity = remember(systemDensity, pageScale) {
                     Density(systemDensity.density * pageScale, systemDensity.fontScale)
                 }
-                CompositionLocalProvider(LocalDensity provides scaledDensity) {
+                CompositionLocalProvider(LocalDensity provides scaledDensity,
+                    com.github.yumelira.yumebox.presentation.component.LocalTabletModeEnabled provides tabletModeEnabled) {
                     YumeTheme(
                         themeMode = themeMode,
                         colorTheme = colorTheme,

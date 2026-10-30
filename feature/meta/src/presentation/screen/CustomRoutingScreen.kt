@@ -43,7 +43,7 @@ import com.github.yumelira.yumebox.data.util.*
 import com.github.yumelira.yumebox.feature.meta.presentation.viewmodel.CustomRoutingViewModel
 import com.github.yumelira.yumebox.presentation.component.Card
 import com.github.yumelira.yumebox.presentation.component.RoutingSwitchCard
-import com.github.yumelira.yumebox.presentation.component.ScreenLazyColumn
+import com.github.yumelira.yumebox.presentation.component.ScreenSectionGrid
 import com.github.yumelira.yumebox.presentation.component.TopBar
 import com.github.yumelira.yumebox.presentation.component.combinePaddingValues
 import com.github.yumelira.yumebox.presentation.component.rememberStandalonePageMainPadding
@@ -171,7 +171,7 @@ fun CustomRoutingScreen(
         },
     ) { paddingValues ->
         val mainLikePadding = rememberStandalonePageMainPadding()
-        ScreenLazyColumn(
+        ScreenSectionGrid(
             scrollBehavior = scrollBehavior,
             innerPadding = combinePaddingValues(paddingValues, mainLikePadding),
         ) {

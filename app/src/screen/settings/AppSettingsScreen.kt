@@ -56,7 +56,7 @@ import com.github.yumelira.yumebox.presentation.component.PreferenceArrowItem
 import com.github.yumelira.yumebox.presentation.component.PreferenceEnumItem
 import com.github.yumelira.yumebox.presentation.component.PreferenceSwitchItem
 import com.github.yumelira.yumebox.presentation.component.PreferenceValueItem
-import com.github.yumelira.yumebox.presentation.component.ScreenLazyColumn
+import com.github.yumelira.yumebox.presentation.component.ScreenSectionGrid
 import com.github.yumelira.yumebox.presentation.component.TextEditBottomSheet
 import com.github.yumelira.yumebox.presentation.component.Title
 import com.github.yumelira.yumebox.presentation.component.TopBar
@@ -90,7 +90,7 @@ fun AppSettingsScreen(
         },
     ) { innerPadding ->
         val mainLikePadding = rememberStandalonePageMainPadding()
-        ScreenLazyColumn(
+        ScreenSectionGrid(
             innerPadding = combinePaddingValues(innerPadding, mainLikePadding),
         ) {
             item {
@@ -99,6 +99,7 @@ fun AppSettingsScreen(
                     navigator = navigator,
                 )
             }
+            item { AppThemeSettingsSection(viewModel) }
             item { AppInterfaceSettingsSection(viewModel) }
             item { AppServiceSettingsSection(viewModel) }
             item { AppBehaviorSettingsSection(viewModel) }
@@ -142,16 +143,11 @@ private fun AppBehaviorSettingsSection(viewModel: AppSettingsViewModel) {
 }
 
 @Composable
-private fun AppInterfaceSettingsSection(viewModel: AppSettingsViewModel) {
+private fun AppThemeSettingsSection(viewModel: AppSettingsViewModel) {
     val themeMode by viewModel.themeMode.state.collectAsState()
     val colorTheme by viewModel.colorTheme.state.collectAsState()
-    val appLanguage by viewModel.appLanguage.state.collectAsState()
     val themeSeedColorArgb by viewModel.themeSeedColorArgb.state.collectAsState()
     val invertOnPrimaryColors by viewModel.invertOnPrimaryColors.state.collectAsState()
-    val bottomBarAutoHide by viewModel.bottomBarAutoHide.state.collectAsState()
-    val bottomBarUseLegacyStyle by viewModel.bottomBarUseLegacyStyle.state.collectAsState()
-    val pageScale by viewModel.pageScale.state.collectAsState()
-    val tabletMode by viewModel.acgTabletModeEnabled.state.collectAsState()
 
     Title(MLang.AppSettings.Interface.ColorThemeTitle)
     Card {
@@ -208,6 +204,15 @@ private fun AppInterfaceSettingsSection(viewModel: AppSettingsViewModel) {
             onCheckedChange = viewModel::onInvertOnPrimaryColorsChange,
         )
     }
+}
+
+@Composable
+private fun AppInterfaceSettingsSection(viewModel: AppSettingsViewModel) {
+    val appLanguage by viewModel.appLanguage.state.collectAsState()
+    val bottomBarAutoHide by viewModel.bottomBarAutoHide.state.collectAsState()
+    val bottomBarUseLegacyStyle by viewModel.bottomBarUseLegacyStyle.state.collectAsState()
+    val pageScale by viewModel.pageScale.state.collectAsState()
+    val tabletMode by viewModel.acgTabletModeEnabled.state.collectAsState()
     Title(MLang.AppSettings.Section.Interface)
     Card {
         PreferenceSwitchItem(
@@ -426,7 +431,7 @@ fun AcgQuoteConfigScreen(
         },
     ) { innerPadding ->
         val mainLikePadding = rememberStandalonePageMainPadding()
-        ScreenLazyColumn(
+        ScreenSectionGrid(
             innerPadding = combinePaddingValues(innerPadding, mainLikePadding),
         ) {
             item {

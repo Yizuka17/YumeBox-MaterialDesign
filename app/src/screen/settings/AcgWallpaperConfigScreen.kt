@@ -37,7 +37,7 @@ import com.github.yumelira.yumebox.presentation.component.HapticSwitch
 import com.github.yumelira.yumebox.presentation.component.PreferenceArrowItem
 import com.github.yumelira.yumebox.presentation.component.PreferenceSwitchItem
 import com.github.yumelira.yumebox.presentation.component.PreferenceValueItem
-import com.github.yumelira.yumebox.presentation.component.ScreenLazyColumn
+import com.github.yumelira.yumebox.presentation.component.ScreenSectionGrid
 import com.github.yumelira.yumebox.presentation.component.Title
 import com.github.yumelira.yumebox.presentation.component.TopBar
 import com.github.yumelira.yumebox.presentation.component.combinePaddingValues
@@ -187,7 +187,7 @@ fun AcgWallpaperConfigScreen(navigator: DestinationsNavigator) {
                 }
             }
         } else {
-            ScreenLazyColumn(innerPadding = insets, lazyListState = settingsListState) {
+            ScreenSectionGrid(innerPadding = insets, lazyListState = settingsListState) {
                 item {
                     Title(MLang.AppSettings.Experimental.WallpaperTitle)
                     Card {
