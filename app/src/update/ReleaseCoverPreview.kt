@@ -32,11 +32,15 @@ import com.github.panpf.sketch.AsyncImage
 import com.github.panpf.sketch.rememberAsyncImageState
 import com.github.panpf.sketch.request.LoadState
 import com.github.yumelira.yumebox.common.util.toast
+import com.github.yumelira.yumebox.presentation.component.AppDialog
+import com.github.yumelira.yumebox.presentation.component.PreferenceValueItem
+import dev.oom_wg.purejoy.mlang.MLang
 import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.launch
 
 @Composable
-fun ReleaseCoverPreview(source: String, onDismiss: () -> Unit) {
+fun ReleaseCoverPreview(source: String, onDismiss: () -> Unit, localImage: Boolean = false,
+    description: String = "更新封面预览", saveTitle: String = "保存封面", onDelete: (() -> Unit)? = null) {
     val context = LocalContext.current
     val scope = rememberCoroutineScope()
     var scale by remember(source) { mutableFloatStateOf(1f) }
@@ -61,12 +65,35 @@ fun ReleaseCoverPreview(source: String, onDismiss: () -> Unit) {
         }
     }
 
+    fun saveImage() {
+        if (saving) return
+        scope.launch {
+            saving = true
+            try {
+                val cover = if (localImage) ReleaseCoverFiles.localImage(context, source) else ReleaseCoverFiles.download(context, source)
+                if (Build.VERSION.SDK_INT >= 29) {
+                    ReleaseCoverFiles.saveToGallery(context, cover)
+                    context.toast("已保存到 图片/YumeBox")
+                } else {
+                    pendingDocument = cover
+                    createDocument.launch(Intent(Intent.ACTION_CREATE_DOCUMENT).apply {
+                        type = cover.mimeType
+                        addCategory(Intent.CATEGORY_OPENABLE)
+                        putExtra(Intent.EXTRA_TITLE, cover.name)
+                    })
+                }
+            } catch (e: CancellationException) { throw e }
+            catch (e: Exception) { context.toast(e.message ?: "保存图片失败，请重试") }
+            finally { saving = false }
+        }
+    }
+
     Dialog(onDismissRequest = onDismiss, properties = DialogProperties(usePlatformDefaultWidth = false, decorFitsSystemWindows = false)) {
         Box(Modifier.fillMaxSize().background(Color.Black).windowInsetsPadding(WindowInsets.safeDrawing)) {
             AsyncImage(
                 uri = source,
                 state = imageState,
-                contentDescription = "更新封面预览",
+                contentDescription = description,
                 contentScale = ContentScale.Fit,
                 modifier = Modifier.fillMaxSize()
                     .onSizeChanged { bounds = it }
@@ -99,40 +126,27 @@ fun ReleaseCoverPreview(source: String, onDismiss: () -> Unit) {
                 .background(Color.Black.copy(alpha = 0.55f), MaterialTheme.shapes.extraLarge)) {
                 Icon(Icons.Default.Close, contentDescription = "关闭预览", tint = Color.White)
             }
+            if (localImage) TextButton(onClick = { saveImage() }, enabled = !saving,
+                modifier = Modifier.align(Alignment.TopEnd).padding(8.dp),
+                colors = ButtonDefaults.textButtonColors(contentColor = Color.White)) { Text(saveTitle) }
             if (saving) CircularProgressIndicator(Modifier.align(Alignment.Center))
         }
 
-        if (showSave) {
-            AlertDialog(
+        AppDialog(
+                show = showSave,
                 onDismissRequest = { showSave = false },
-                title = { Text("保存封面") },
-                text = { Text("将原图保存到相册") },
-                dismissButton = { TextButton(onClick = { showSave = false }) { Text("取消") } },
-                confirmButton = {
-                    TextButton(enabled = !saving, onClick = {
+                title = if (onDelete != null) MLang.AppSettings.Wallpaper.ImageActions else saveTitle,
+        ) {
+                Column {
+                    PreferenceValueItem(title = MLang.AppSettings.Wallpaper.SaveImage, enabled = !saving, onClick = {
                         showSave = false
-                        if (!saving) scope.launch {
-                            saving = true
-                            try {
-                                val cover = ReleaseCoverFiles.download(context, source)
-                                if (Build.VERSION.SDK_INT >= 29) {
-                                    ReleaseCoverFiles.saveToGallery(context, cover)
-                                    context.toast("已保存到 图片/YumeBox")
-                                } else {
-                                    pendingDocument = cover
-                                    createDocument.launch(Intent(Intent.ACTION_CREATE_DOCUMENT).apply {
-                                        type = cover.mimeType
-                                        addCategory(Intent.CATEGORY_OPENABLE)
-                                        putExtra(Intent.EXTRA_TITLE, cover.name)
-                                    })
-                                }
-                            } catch (e: CancellationException) { throw e }
-                            catch (e: Exception) { context.toast(e.message ?: "保存图片失败，请重试") }
-                            finally { saving = false }
-                        }
-                    }) { Text("保存图片") }
-                },
-            )
+                        saveImage()
+                    })
+                    if (onDelete != null) PreferenceValueItem(title = MLang.AppSettings.Wallpaper.Remove, onClick = {
+                        showSave = false
+                        onDelete()
+                    })
+                }
         }
     }
 }

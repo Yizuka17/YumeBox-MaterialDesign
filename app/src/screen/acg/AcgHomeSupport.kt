@@ -268,7 +268,7 @@ private fun AcgSidebarIconItemView(
     } else {
         Color.Transparent
     }
-    val iconTint = colorScheme.onSurface.copy(alpha = AcgUi.Sidebar.IconAlpha)
+    val iconTint = colorScheme.onSurface.copy(alpha = if (item.enabled) AcgUi.Sidebar.IconAlpha else 0.38f)
 
     Box(
         modifier = Modifier
@@ -280,6 +280,7 @@ private fun AcgSidebarIconItemView(
             .clip(AcgUi.Shape.sidebarIconButton)
             .background(containerColor)
             .clickable(
+                enabled = item.enabled,
                 interactionSource = interactionSource,
                 indication = null,
                 onClick = item.onClick,
@@ -288,11 +289,11 @@ private fun AcgSidebarIconItemView(
     ) {
         if (showLabel) {
             Row(Modifier.fillMaxWidth().padding(horizontal = 8.dp), horizontalArrangement = Arrangement.spacedBy(12.dp), verticalAlignment = Alignment.CenterVertically) {
-                Icon(item.icon, null, tint = iconTint, modifier = Modifier.size(AcgUi.Sidebar.iconSize))
+                Icon(item.icon, null, tint = iconTint, modifier = Modifier.size(AcgUi.Sidebar.iconSize).padding(item.iconInset))
                 Text(item.label, modifier = Modifier.weight(1f), color = iconTint, style = MiuixTheme.textStyles.body1, maxLines = 1, overflow = TextOverflow.Ellipsis)
             }
         } else {
-            Icon(item.icon, item.label, tint = iconTint, modifier = Modifier.size(AcgUi.Sidebar.iconSize))
+            Icon(item.icon, item.label, tint = iconTint, modifier = Modifier.size(AcgUi.Sidebar.iconSize).padding(item.iconInset))
         }
     }
 }
@@ -362,6 +363,8 @@ internal fun calculateHomeVisibility(
 internal data class AcgSidebarIconItem(
     val icon: ImageVector,
     val label: String = "",
+    val enabled: Boolean = true,
+    val iconInset: Dp = 0.dp,
     val onClick: () -> Unit,
 )
 

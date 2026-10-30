@@ -10,6 +10,7 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.grid.GridCells
+import androidx.compose.foundation.lazy.grid.GridItemSpan
 import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
 import androidx.compose.foundation.lazy.grid.items
 import androidx.compose.foundation.lazy.grid.rememberLazyGridState
@@ -35,6 +36,7 @@ import com.github.yumelira.yumebox.presentation.component.Card
 import com.github.yumelira.yumebox.presentation.component.HapticSwitch
 import com.github.yumelira.yumebox.presentation.component.PreferenceArrowItem
 import com.github.yumelira.yumebox.presentation.component.PreferenceSwitchItem
+import com.github.yumelira.yumebox.presentation.component.PreferenceValueItem
 import com.github.yumelira.yumebox.presentation.component.ScreenLazyColumn
 import com.github.yumelira.yumebox.presentation.component.Title
 import com.github.yumelira.yumebox.presentation.component.TopBar
@@ -44,6 +46,7 @@ import com.github.yumelira.yumebox.presentation.icon.AppMd3Icons
 import com.github.yumelira.yumebox.screen.acg.AcgWallpaperManager
 import com.github.yumelira.yumebox.screen.acg.WallpaperOptions
 import com.github.yumelira.yumebox.screen.acg.WallpaperProfile
+import com.github.yumelira.yumebox.update.ReleaseCoverPreview
 import com.ramcosta.composedestinations.annotation.Destination
 import com.ramcosta.composedestinations.annotation.RootGraph
 import com.ramcosta.composedestinations.generated.destinations.AcgWallpaperCropScreenDestination
@@ -65,6 +68,7 @@ fun AcgWallpaperConfigScreen(navigator: DestinationsNavigator) {
     val context = LocalContext.current
     val scope = rememberCoroutineScope()
     var galleryKey by rememberSaveable { mutableStateOf<String?>(null) }
+    var galleryIsCache by rememberSaveable { mutableStateOf(false) }
     val gallery = WallpaperProfile.entries.firstOrNull { it.key == galleryKey }
     var manualDialog by remember { mutableStateOf(false) }
     var pickProfile by rememberSaveable { mutableStateOf(WallpaperProfile.Portrait.key) }
@@ -103,9 +107,16 @@ fun AcgWallpaperConfigScreen(navigator: DestinationsNavigator) {
         singlePicker.launch(PickVisualMediaRequest(ActivityResultContracts.PickVisualMedia.ImageOnly))
     }
     fun refresh(profile: WallpaperProfile) {
+        if (profile in manager.refreshing.value) return
         scope.launch {
-            val success = manager.refresh(profile, force = true)
-            context.toast(if (success) MLang.AppSettings.Wallpaper.Cached else MLang.AppSettings.Wallpaper.Offline)
+            manager.refresh(profile, force = true)
+        }
+    }
+    fun removePreview(path: String) {
+        val profile = gallery ?: return
+        scope.launch {
+            if (galleryIsCache) manager.removeFromCache(profile, path) else manager.removeFromPool(profile, path)
+            preview = null
         }
     }
 
@@ -120,7 +131,7 @@ fun AcgWallpaperConfigScreen(navigator: DestinationsNavigator) {
         containerColor = MaterialTheme.colorScheme.surface,
         topBar = {
             TopBar(
-                title = if (gallery == null) MLang.AppSettings.Wallpaper.Title else profileTitle(gallery),
+                title = if (gallery == null) MLang.AppSettings.Wallpaper.Title else if (galleryIsCache) "${profileTitle(gallery)} · ${MLang.AppSettings.Wallpaper.ApiCache}" else profileTitle(gallery),
                 navigationIcon = {
                     IconButton(onClick = { if (gallery != null) galleryKey = null else navigator.popBackStack() }) {
                         Icon(AppMd3Icons.Navigation.Back, MLang.Component.Navigation.Back)
@@ -132,39 +143,46 @@ fun AcgWallpaperConfigScreen(navigator: DestinationsNavigator) {
         val insets = combinePaddingValues(innerPadding, rememberStandalonePageMainPadding())
         if (gallery != null) {
             val option = options.getValue(gallery)
+            val pictures = if (galleryIsCache) option.history.filter { manager.fileUri(it) != null } else option.pool
             LazyVerticalGrid(
-                columns = GridCells.Adaptive(112.dp),
+                columns = GridCells.Adaptive(if (gallery == WallpaperProfile.Tablet) 176.dp else 112.dp),
                 state = if (gallery == WallpaperProfile.Tablet) tabletGridState else portraitGridState,
                 modifier = Modifier.fillMaxSize().padding(insets).padding(horizontal = 12.dp),
                 contentPadding = PaddingValues(vertical = 12.dp),
                 horizontalArrangement = Arrangement.spacedBy(12.dp),
                 verticalArrangement = Arrangement.spacedBy(12.dp),
             ) {
-                items(option.pool, key = { it }) { path ->
+                if (galleryIsCache && pictures.isEmpty()) {
+                    item(span = { GridItemSpan(maxLineSpan) }) { Text(MLang.AppSettings.Wallpaper.CacheEmpty, Modifier.padding(24.dp)) }
+                }
+                items(pictures, key = { it }) { path ->
                     Box(Modifier.fillMaxWidth().aspectRatio(if (gallery == WallpaperProfile.Tablet) 16f / 9f else 3f / 4f)
                         .clip(RoundedCornerShape(16.dp)).background(MaterialTheme.colorScheme.surfaceContainer)
                         .clickable(enabled = !busy) { preview = path }) {
                         WallpaperThumbnail(manager.fileUri(path), Modifier.fillMaxSize())
-                        IconButton(
+                        if (!galleryIsCache) IconButton(
                             onClick = { scope.launch { manager.removeFromPool(gallery, path) } },
                             modifier = Modifier.align(Alignment.TopEnd).background(MaterialTheme.colorScheme.surface.copy(alpha = 0.85f), RoundedCornerShape(24.dp)),
                             enabled = !busy,
                         ) { Icon(AppMd3Icons.Action.Delete, MLang.AppSettings.Wallpaper.Remove) }
                     }
                 }
-                item(key = "add") {
-                    Column(
-                        modifier = Modifier.fillMaxWidth().aspectRatio(if (gallery == WallpaperProfile.Tablet) 16f / 9f else 3f / 4f)
-                            .clip(RoundedCornerShape(16.dp)).background(MaterialTheme.colorScheme.secondaryContainer)
-                            .clickable(enabled = !busy) {
-                                pickProfile = gallery.key
-                                poolPicker.launch(PickVisualMediaRequest(ActivityResultContracts.PickVisualMedia.ImageOnly))
-                            },
-                        verticalArrangement = Arrangement.Center, horizontalAlignment = Alignment.CenterHorizontally,
-                    ) {
-                        if (busy) CircularProgressIndicator(Modifier.size(28.dp))
-                        else Icon(AppMd3Icons.Action.Add, null, Modifier.size(32.dp))
-                        Text(if (busy) MLang.AppSettings.Wallpaper.Importing else MLang.AppSettings.Wallpaper.Add, Modifier.padding(8.dp))
+                if (!galleryIsCache) item(key = "add") {
+                    BoxWithConstraints(Modifier.fillMaxWidth()) {
+                        val minimumHeight = if (gallery == WallpaperProfile.Tablet) maxOf(104.dp, maxWidth * 9f / 16f) else maxWidth * 4f / 3f
+                        Column(
+                            modifier = Modifier.fillMaxWidth().heightIn(min = minimumHeight)
+                                .clip(RoundedCornerShape(16.dp)).background(MaterialTheme.colorScheme.secondaryContainer)
+                                .clickable(enabled = !busy) {
+                                    pickProfile = gallery.key
+                                    poolPicker.launch(PickVisualMediaRequest(ActivityResultContracts.PickVisualMedia.ImageOnly))
+                                }.padding(horizontal = 8.dp, vertical = 12.dp),
+                            verticalArrangement = Arrangement.Center, horizontalAlignment = Alignment.CenterHorizontally,
+                        ) {
+                            if (busy) CircularProgressIndicator(Modifier.size(28.dp))
+                            else Icon(AppMd3Icons.Action.Add, null, Modifier.size(32.dp))
+                            Text(if (busy) MLang.AppSettings.Wallpaper.Importing else MLang.AppSettings.Wallpaper.Add, Modifier.padding(8.dp))
+                        }
                     }
                 }
             }
@@ -184,17 +202,23 @@ fun AcgWallpaperConfigScreen(navigator: DestinationsNavigator) {
                         )
                     }
                 }
+                item {
+                    Card {
+                        PreferenceValueItem(title = MLang.AppSettings.Wallpaper.Reset,
+                            onClick = { scope.launch { manager.resetDefaults(); context.toast(MLang.AppSettings.Experimental.ResetWallpaperSuccess) } })
+                    }
+                }
                 WallpaperProfile.entries.forEach { profile ->
                     item {
                         val enabled = profile == WallpaperProfile.Portrait || tablet
                         Title(profileTitle(profile))
                         WallpaperProfileSection(
                             profile, options.getValue(profile), enabled, daily, profile in refreshing,
-                            manager, onOpenPool = { galleryKey = profile.key }, onRefresh = { refresh(profile) },
+                            manager, onOpenPool = { galleryIsCache = false; galleryKey = profile.key },
+                            onOpenCache = { galleryIsCache = true; galleryKey = profile.key }, onRefresh = { refresh(profile) },
                         )
                     }
                 }
-                item { Text(MLang.AppSettings.Wallpaper.Sources, Modifier.padding(24.dp), style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant) }
             }
         }
     }
@@ -205,15 +229,19 @@ fun AcgWallpaperConfigScreen(navigator: DestinationsNavigator) {
             PreferenceArrowItem(MLang.AppSettings.Wallpaper.ChooseTablet, enabled = tablet, onClick = { chooseSingle(WallpaperProfile.Tablet) })
         }
     }
-    AppDialog(show = preview != null, title = MLang.AppSettings.Wallpaper.Preview, onDismissRequest = { preview = null }) {
-        WallpaperThumbnail(preview?.let(manager::fileUri), Modifier.fillMaxWidth().heightIn(max = 420.dp).aspectRatio(1f), ContentScale.Fit)
+    preview?.let { path ->
+        manager.fileUri(path)?.let { uri ->
+            ReleaseCoverPreview(uri, onDismiss = { preview = null }, localImage = true,
+                description = MLang.AppSettings.Wallpaper.Preview, saveTitle = MLang.AppSettings.Wallpaper.SaveImage,
+                onDelete = { removePreview(path) })
+        }
     }
 }
 
 @Composable
 private fun WallpaperProfileSection(
     profile: WallpaperProfile, option: WallpaperOptions, enabled: Boolean, daily: Boolean, refreshing: Boolean,
-    manager: AcgWallpaperManager, onOpenPool: () -> Unit, onRefresh: () -> Unit,
+    manager: AcgWallpaperManager, onOpenPool: () -> Unit, onOpenCache: () -> Unit, onRefresh: () -> Unit,
 ) {
     var edit by remember { mutableStateOf(false) }
     var draft by remember(option.apiUrl) { mutableStateOf(option.apiUrl) }
@@ -234,20 +262,13 @@ private fun WallpaperProfileSection(
                 endActions = { HapticSwitch(checked = option.poolEnabled, enabled = enabled, onCheckedChange = { manager.setPoolEnabled(profile, it) }) },
             )
             PreferenceArrowItem(
+                title = MLang.AppSettings.Wallpaper.ApiCache,
+                summary = "${option.history.count { manager.fileUri(it) != null }}",
+                onClick = onOpenCache,
+            )
+            PreferenceValueItem(
                 title = if (refreshing) MLang.AppSettings.Wallpaper.Refreshing else MLang.AppSettings.Wallpaper.Refresh,
                 enabled = enabled && daily && !refreshing, onClick = onRefresh,
-            )
-            PreferenceArrowItem(
-                title = MLang.AppSettings.Wallpaper.Reset, enabled = enabled && !daily,
-                onClick = {
-                    manager.clearStatic(profile)
-                    if (profile == WallpaperProfile.Portrait) {
-                        manager.settings.acgWallpaperUri.set("")
-                        manager.settings.acgWallpaperZoom.set(1f)
-                        manager.settings.acgWallpaperBiasX.set(0f); manager.settings.acgWallpaperBiasY.set(0f)
-                    }
-                    context.toast(MLang.AppSettings.Experimental.ResetWallpaperSuccess)
-                },
             )
         }
     }

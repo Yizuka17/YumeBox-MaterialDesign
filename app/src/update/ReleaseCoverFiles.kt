@@ -53,10 +53,23 @@ internal object ReleaseCoverFiles {
                 temporary.delete()
             }
         }
+        try { describe(file, "YumeBox-cover") }
+        catch (e: Exception) { file.delete(); throw e }
+    }
+
+    suspend fun localImage(context: Context, source: String): DownloadedCover = withContext(Dispatchers.IO) {
+        val uri = Uri.parse(source)
+        require(uri.scheme == "file")
+        val file = File(checkNotNull(uri.path)).canonicalFile
+        val root = File(context.filesDir, "acg_wallpapers").canonicalFile
+        require(file.path.startsWith(root.path + File.separator) && file.isFile && file.length() <= MAX_BYTES)
+        describe(file, "YumeBox-wallpaper")
+    }
+
+    private fun describe(file: File, prefix: String): DownloadedCover {
         val info = BitmapFactory.Options().apply { inJustDecodeBounds = true }
         BitmapFactory.decodeFile(file.path, info)
         if (info.outWidth <= 0 || info.outHeight <= 0) {
-            file.delete()
             error("下载的文件不是可保存的图片")
         }
         val mime = info.outMimeType ?: "image/jpeg"
@@ -68,7 +81,7 @@ internal object ReleaseCoverFiles {
             "image/avif" -> "avif"
             else -> "jpg"
         }
-        DownloadedCover(file, mime, "YumeBox-cover-${System.currentTimeMillis()}.$extension")
+        return DownloadedCover(file, mime, "$prefix-${System.currentTimeMillis()}.$extension")
     }
 
     suspend fun saveToGallery(context: Context, cover: DownloadedCover) = withContext(Dispatchers.IO) {

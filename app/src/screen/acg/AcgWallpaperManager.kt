@@ -4,6 +4,7 @@ import android.content.Context
 import android.graphics.BitmapFactory
 import androidx.core.net.toUri
 import com.github.yumelira.yumebox.data.store.AppSettingsStore
+import com.github.yumelira.yumebox.presentation.theme.DEFAULT_ACG_WALLPAPER_THEME_SEED_ARGB
 import kotlinx.coroutines.*
 import kotlinx.coroutines.flow.*
 import kotlinx.coroutines.sync.Mutex
@@ -120,6 +121,30 @@ class AcgWallpaperManager(private val context: Context, val settings: AppSetting
         file(previous)?.delete()
     }
 
+    suspend fun resetDefaults() = withContext(Dispatchers.IO) {
+        settings.acgDailyWallpaperEnabled.set(false)
+        WallpaperProfile.entries.forEach(::clearStatic)
+        settings.acgWallpaperUri.set("")
+        settings.acgWallpaperZoom.set(1f)
+        settings.acgWallpaperBiasX.set(0f)
+        settings.acgWallpaperBiasY.set(0f)
+        settings.acgWallpaperSeedColorArgb.set(DEFAULT_ACG_WALLPAPER_THEME_SEED_ARGB)
+        WallpaperProfile.entries.forEach { resetRotation(it) }
+    }
+
+    private suspend fun resetRotation(profile: WallpaperProfile) = withContext(Dispatchers.IO) {
+        val removed = synchronized(stateLock) {
+            val old = readOptions().getValue(profile)
+            update(profile) {
+                WallpaperOptions(apiUrl = profile.defaultApi, staticImage = it.staticImage,
+                    zoom = it.zoom, biasX = it.biasX, biasY = it.biasY)
+            }
+            (old.pool + old.history + old.current).distinct()
+        }
+        removed.filter { it.startsWith("${profile.key}/pool/") || it.startsWith("${profile.key}/history/") }
+            .forEach { file(it)?.delete() }
+    }
+
     suspend fun addToPool(profile: WallpaperProfile, uris: List<String>) = withContext(Dispatchers.IO) {
         require(options.value.getValue(profile).pool.size + uris.size <= 100) { "图片池最多保存 100 张图片" }
         val staged = mutableListOf<String>()
@@ -138,6 +163,13 @@ class AcgWallpaperManager(private val context: Context, val settings: AppSetting
     suspend fun removeFromPool(profile: WallpaperProfile, path: String) = withContext(Dispatchers.IO) {
         update(profile) { it.copy(pool = it.pool - path, current = it.current.takeUnless { value -> value == path }.orEmpty(), day = "") }
         if (path.startsWith("${profile.key}/pool/")) file(path)?.delete()
+    }
+
+    suspend fun removeFromCache(profile: WallpaperProfile, path: String) = withContext(Dispatchers.IO) {
+        if (!path.startsWith("${profile.key}/history/")) return@withContext
+        update(profile) { it.copy(history = it.history - path,
+            current = it.current.takeUnless { value -> value == path }.orEmpty(), day = "") }
+        file(path)?.delete()
     }
 
     /** Exactly one selection per profile/day; simultaneous lifecycle/settings refreshes share a lock. */
@@ -168,7 +200,8 @@ class AcgWallpaperManager(private val context: Context, val settings: AppSetting
                 val published = synchronized(stateLock) {
                     val latest = readOptions().getValue(profile)
                     if (!settings.acgDailyWallpaperEnabled.value || latest.apiUrl != option.apiUrl ||
-                        latest.apiEnabled != option.apiEnabled || latest.poolEnabled != option.poolEnabled || latest.pool != option.pool) {
+                        latest.apiEnabled != option.apiEnabled || latest.poolEnabled != option.poolEnabled || latest.pool != option.pool ||
+                        latest.history != option.history || latest.current != option.current) {
                         false
                     } else {
                         update(profile) { current ->

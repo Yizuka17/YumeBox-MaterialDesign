@@ -401,7 +401,7 @@ private fun AppHomeSettingsSection(
         )
         PreferenceArrowItem(
             title = MLang.AppSettings.Experimental.WallpaperTitle,
-            summary = MLang.AppSettings.Wallpaper.ManualSummary,
+            summary = MLang.AppSettings.Experimental.WallpaperSummary,
             onClick = { navigator.navigate(AcgWallpaperConfigScreenDestination) { launchSingleTop = true } },
         )
     }

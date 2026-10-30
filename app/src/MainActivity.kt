@@ -290,6 +290,7 @@ class MainActivity : FragmentActivity() {
         intent?.let { safeIntent ->
             if (safeIntent.action == com.github.yumelira.yumebox.runtime.api.Components.ACTION_OPEN_HOME) {
                 openHomeRequest++
+                safeIntent.action = Intent.ACTION_MAIN
             }
             if (safeIntent.getBooleanExtra(EXTRA_EXIT_UI_WHEN_BACKGROUND, false)) {
                 finishAndRemoveTask()

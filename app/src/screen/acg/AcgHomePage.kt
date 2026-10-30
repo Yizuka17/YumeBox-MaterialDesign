@@ -46,6 +46,9 @@ import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.TransformOrigin
 import androidx.compose.ui.graphics.graphicsLayer
+import androidx.compose.ui.graphics.vector.ImageVector
+import androidx.compose.ui.res.vectorResource
+import com.github.yumelira.yumebox.runtime.service.util.ServiceLogoIcons
 import androidx.compose.ui.hapticfeedback.HapticFeedbackType
 import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.layout.ContentScale
@@ -102,6 +105,8 @@ fun AcgHomePage(
     val appSettingsViewModel = koinViewModel<AppSettingsViewModel>()
     val wallpapers = koinInject<AcgWallpaperManager>()
     val wallpaperOptions by wallpapers.options.collectAsState()
+    val wallpaperRefreshing by wallpapers.refreshing.collectAsState()
+    val refreshWallpaperIcon = ImageVector.vectorResource(ServiceLogoIcons.resId())
     val tabletEnabled by appSettingsViewModel.acgTabletModeEnabled.state.collectAsState()
     val pageScale by appSettingsViewModel.pageScale.state.collectAsState()
     val dailyWallpaper by appSettingsViewModel.acgDailyWallpaperEnabled.state.collectAsState()
@@ -232,17 +237,6 @@ fun AcgHomePage(
     }
     val heroBlendColor = contentSurface
     val handlePageChange = LocalHandlePageChange.current
-    val sidebarIcons = remember(handlePageChange, homeViewModel) {
-        listOf(
-            AcgSidebarIconItem(AppMd3Icons.Action.SpeedTest, MLang.AppSettings.Wallpaper.TestNode) {
-                hapticFeedback.performHapticFeedback(HapticFeedbackType.VirtualKey)
-                homeViewModel.testCurrentNodeDelay()
-            },
-            AcgSidebarIconItem(ShellIcons.OpenProxy, MLang.Component.BottomBar.Proxy) { handlePageChange(1) },
-            AcgSidebarIconItem(AppMd3Icons.Shell.OpenProfileConfig, MLang.Component.BottomBar.Config) { handlePageChange(2) },
-            AcgSidebarIconItem(ShellIcons.OpenSettings, MLang.Component.BottomBar.Setting) { handlePageChange(3) },
-        )
-    }
     val dailyQuoteEnabled = acgDailyQuoteApiEnabled || acgCustomQuoteEnabled
     val quote = if (dailyQuoteEnabled) {
         AcgQuote(
@@ -287,6 +281,28 @@ fun AcgHomePage(
         val tabletMode = tabletEnabled && maxWidth >= 480.dp &&
             (windowWidthDp >= 600 || maxWidth / maxHeight >= 0.85f)
         val wallpaperProfile = if (tabletMode) WallpaperProfile.Tablet else WallpaperProfile.Portrait
+        val sidebarIcons = remember(handlePageChange, homeViewModel, wallpaperProfile, dailyWallpaper, wallpaperRefreshing, refreshWallpaperIcon) {
+            listOfNotNull(
+                if (dailyWallpaper) AcgSidebarIconItem(
+                    refreshWallpaperIcon, MLang.AppSettings.Wallpaper.Refresh,
+                    enabled = wallpaperProfile !in wallpaperRefreshing, iconInset = 1.dp,
+                ) {
+                    hapticFeedback.performHapticFeedback(HapticFeedbackType.VirtualKey)
+                    if (wallpaperProfile !in wallpapers.refreshing.value) {
+                        scope.launch {
+                            wallpapers.refresh(wallpaperProfile, force = true)
+                        }
+                    }
+                } else null,
+                AcgSidebarIconItem(AppMd3Icons.Action.SpeedTest, MLang.AppSettings.Wallpaper.TestNode) {
+                    hapticFeedback.performHapticFeedback(HapticFeedbackType.VirtualKey)
+                    homeViewModel.testCurrentNodeDelay()
+                },
+                AcgSidebarIconItem(ShellIcons.OpenProxy, MLang.Component.BottomBar.Proxy) { handlePageChange(1) },
+                AcgSidebarIconItem(AppMd3Icons.Shell.OpenProfileConfig, MLang.Component.BottomBar.Config) { handlePageChange(2) },
+                AcgSidebarIconItem(ShellIcons.OpenSettings, MLang.Component.BottomBar.Setting) { handlePageChange(3) },
+            )
+        }
         val wallpaperOption = wallpaperOptions.getValue(wallpaperProfile)
         val activeWallpaperUri = wallpapers.displayUri(wallpaperProfile, dailyWallpaper)
         val useProfileCrop = wallpapers.fileUri(wallpaperOption.staticImage) != null

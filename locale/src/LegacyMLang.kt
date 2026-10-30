@@ -219,14 +219,17 @@ object MLang {
         "AppSettings.Title" to "App Settings",
         "AppSettings.Wallpaper.Add" to "Add images",
         "AppSettings.Wallpaper.Api" to "Wallpaper API",
+        "AppSettings.Wallpaper.ApiCache" to "API cache",
         "AppSettings.Wallpaper.ApiEdit" to "Edit wallpaper API",
         "AppSettings.Wallpaper.ApiInvalid" to "Enter a valid HTTP or HTTPS URL",
+        "AppSettings.Wallpaper.CacheEmpty" to "No cached wallpapers yet",
         "AppSettings.Wallpaper.Cached" to "Updated or using a cached image",
         "AppSettings.Wallpaper.ChoosePortrait" to "Choose portrait wallpaper",
         "AppSettings.Wallpaper.ChooseTablet" to "Choose tablet wallpaper",
         "AppSettings.Wallpaper.Daily" to "Daily ACG wallpaper",
         "AppSettings.Wallpaper.DailySummary" to "Changes daily; refresh whenever you like",
         "AppSettings.Wallpaper.Duration" to "Connected for",
+        "AppSettings.Wallpaper.ImageActions" to "Image actions",
         "AppSettings.Wallpaper.Importing" to "Importing…",
         "AppSettings.Wallpaper.Manual" to "Choose a single wallpaper",
         "AppSettings.Wallpaper.ManualSummary" to "Choose and crop separately for portrait and tablet",
@@ -239,12 +242,13 @@ object MLang {
         "AppSettings.Wallpaper.Refresh" to "Refresh wallpaper",
         "AppSettings.Wallpaper.Refreshing" to "Fetching…",
         "AppSettings.Wallpaper.Remove" to "Remove image",
-        "AppSettings.Wallpaper.Reset" to "Restore default wallpaper",
+        "AppSettings.Wallpaper.Reset" to "Restore defaults",
         "AppSettings.Wallpaper.SaveFailed" to "Could not save. Please try again.",
+        "AppSettings.Wallpaper.SaveImage" to "Save image",
         "AppSettings.Wallpaper.Sources" to "When both sources are enabled: 75% API, 25% image pool",
         "AppSettings.Wallpaper.Tablet" to "Tablet",
         "AppSettings.Wallpaper.TabletDisabled" to "Enable tablet mode to configure",
-        "AppSettings.Wallpaper.TabletMode" to "Tablet mode",
+        "AppSettings.Wallpaper.TabletMode" to "Tablet layout optimization",
         "AppSettings.Wallpaper.TabletSummary" to "Adapt ACG Home to tablets and wide windows",
         "AppSettings.Wallpaper.TestNode" to "Test node",
         "AppSettings.Wallpaper.Title" to "ACG wallpapers",
@@ -1453,14 +1457,17 @@ object MLang {
         "AppSettings.Title" to "应用设置",
         "AppSettings.Wallpaper.Add" to "添加图片",
         "AppSettings.Wallpaper.Api" to "壁纸 API",
+        "AppSettings.Wallpaper.ApiCache" to "API 缓存池",
         "AppSettings.Wallpaper.ApiEdit" to "编辑壁纸 API",
         "AppSettings.Wallpaper.ApiInvalid" to "请输入有效的 HTTP 或 HTTPS 地址",
+        "AppSettings.Wallpaper.CacheEmpty" to "还没有缓存的壁纸",
         "AppSettings.Wallpaper.Cached" to "已更新或使用本地缓存",
         "AppSettings.Wallpaper.ChoosePortrait" to "选择竖屏壁纸",
         "AppSettings.Wallpaper.ChooseTablet" to "选择平板壁纸",
         "AppSettings.Wallpaper.Daily" to "每日 ACG 壁纸",
         "AppSettings.Wallpaper.DailySummary" to "每天更换，可手动刷新",
         "AppSettings.Wallpaper.Duration" to "连接时长",
+        "AppSettings.Wallpaper.ImageActions" to "图片操作",
         "AppSettings.Wallpaper.Importing" to "正在导入…",
         "AppSettings.Wallpaper.Manual" to "选择单个壁纸",
         "AppSettings.Wallpaper.ManualSummary" to "竖屏和平板分别设置与裁切",
@@ -1473,12 +1480,13 @@ object MLang {
         "AppSettings.Wallpaper.Refresh" to "刷新壁纸",
         "AppSettings.Wallpaper.Refreshing" to "正在获取…",
         "AppSettings.Wallpaper.Remove" to "移除图片",
-        "AppSettings.Wallpaper.Reset" to "恢复默认壁纸",
+        "AppSettings.Wallpaper.Reset" to "恢复默认",
         "AppSettings.Wallpaper.SaveFailed" to "无法保存，请重试",
+        "AppSettings.Wallpaper.SaveImage" to "保存图片",
         "AppSettings.Wallpaper.Sources" to "API 与图片池同时开启时，按 75% / 25% 选取",
         "AppSettings.Wallpaper.Tablet" to "平板模式",
-        "AppSettings.Wallpaper.TabletDisabled" to "开启平板模式后可设置",
-        "AppSettings.Wallpaper.TabletMode" to "平板模式",
+        "AppSettings.Wallpaper.TabletDisabled" to "开启平板模式优化后可设置",
+        "AppSettings.Wallpaper.TabletMode" to "平板模式优化",
         "AppSettings.Wallpaper.TabletSummary" to "为平板和宽窗口调整 ACG 首页",
         "AppSettings.Wallpaper.TestNode" to "节点测速",
         "AppSettings.Wallpaper.Title" to "ACG 壁纸设置",
@@ -2687,14 +2695,17 @@ object MLang {
         "AppSettings.Title" to "應用程式設定",
         "AppSettings.Wallpaper.Add" to "新增圖片",
         "AppSettings.Wallpaper.Api" to "桌布 API",
+        "AppSettings.Wallpaper.ApiCache" to "API 快取池",
         "AppSettings.Wallpaper.ApiEdit" to "編輯桌布 API",
         "AppSettings.Wallpaper.ApiInvalid" to "請輸入有效的 HTTP 或 HTTPS 網址",
+        "AppSettings.Wallpaper.CacheEmpty" to "尚無快取桌布",
         "AppSettings.Wallpaper.Cached" to "已更新或使用本機快取",
         "AppSettings.Wallpaper.ChoosePortrait" to "選擇直向桌布",
         "AppSettings.Wallpaper.ChooseTablet" to "選擇平板桌布",
         "AppSettings.Wallpaper.Daily" to "每日 ACG 桌布",
         "AppSettings.Wallpaper.DailySummary" to "每天更換，可手動重新整理",
         "AppSettings.Wallpaper.Duration" to "連線時間",
+        "AppSettings.Wallpaper.ImageActions" to "圖片操作",
         "AppSettings.Wallpaper.Importing" to "正在匯入…",
         "AppSettings.Wallpaper.Manual" to "選擇單張桌布",
         "AppSettings.Wallpaper.ManualSummary" to "直向與平板分別設定與裁切",
@@ -2707,12 +2718,13 @@ object MLang {
         "AppSettings.Wallpaper.Refresh" to "重新整理桌布",
         "AppSettings.Wallpaper.Refreshing" to "正在取得…",
         "AppSettings.Wallpaper.Remove" to "移除圖片",
-        "AppSettings.Wallpaper.Reset" to "還原預設桌布",
+        "AppSettings.Wallpaper.Reset" to "還原預設",
         "AppSettings.Wallpaper.SaveFailed" to "無法儲存，請重試",
+        "AppSettings.Wallpaper.SaveImage" to "儲存圖片",
         "AppSettings.Wallpaper.Sources" to "API 與圖片池同時開啟時，依 75% / 25% 選取",
         "AppSettings.Wallpaper.Tablet" to "平板模式",
-        "AppSettings.Wallpaper.TabletDisabled" to "開啟平板模式後可設定",
-        "AppSettings.Wallpaper.TabletMode" to "平板模式",
+        "AppSettings.Wallpaper.TabletDisabled" to "開啟平板模式最佳化後可設定",
+        "AppSettings.Wallpaper.TabletMode" to "平板模式最佳化",
         "AppSettings.Wallpaper.TabletSummary" to "為平板和寬視窗調整 ACG 首頁",
         "AppSettings.Wallpaper.TestNode" to "節點測速",
         "AppSettings.Wallpaper.Title" to "ACG 桌布設定",
@@ -3972,14 +3984,17 @@ object MLang {
         object Wallpaper {
             val Add: String get() = text("AppSettings.Wallpaper.Add")
             val Api: String get() = text("AppSettings.Wallpaper.Api")
+            val ApiCache: String get() = text("AppSettings.Wallpaper.ApiCache")
             val ApiEdit: String get() = text("AppSettings.Wallpaper.ApiEdit")
             val ApiInvalid: String get() = text("AppSettings.Wallpaper.ApiInvalid")
+            val CacheEmpty: String get() = text("AppSettings.Wallpaper.CacheEmpty")
             val Cached: String get() = text("AppSettings.Wallpaper.Cached")
             val ChoosePortrait: String get() = text("AppSettings.Wallpaper.ChoosePortrait")
             val ChooseTablet: String get() = text("AppSettings.Wallpaper.ChooseTablet")
             val Daily: String get() = text("AppSettings.Wallpaper.Daily")
             val DailySummary: String get() = text("AppSettings.Wallpaper.DailySummary")
             val Duration: String get() = text("AppSettings.Wallpaper.Duration")
+            val ImageActions: String get() = text("AppSettings.Wallpaper.ImageActions")
             val Importing: String get() = text("AppSettings.Wallpaper.Importing")
             val Manual: String get() = text("AppSettings.Wallpaper.Manual")
             val ManualSummary: String get() = text("AppSettings.Wallpaper.ManualSummary")
@@ -3994,6 +4009,7 @@ object MLang {
             val Remove: String get() = text("AppSettings.Wallpaper.Remove")
             val Reset: String get() = text("AppSettings.Wallpaper.Reset")
             val SaveFailed: String get() = text("AppSettings.Wallpaper.SaveFailed")
+            val SaveImage: String get() = text("AppSettings.Wallpaper.SaveImage")
             val Sources: String get() = text("AppSettings.Wallpaper.Sources")
             val Tablet: String get() = text("AppSettings.Wallpaper.Tablet")
             val TabletDisabled: String get() = text("AppSettings.Wallpaper.TabletDisabled")
