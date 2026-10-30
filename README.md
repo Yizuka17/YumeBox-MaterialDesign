@@ -18,7 +18,7 @@
 
 <img src="docs/images/app-overview.jpg" width="100%" alt="ACG 首页、代理、配置与设置">
 
-平板模式（16:10 窗口，类原生手机模拟平板比例实拍）：
+平板模式：
 
 <img src="docs/images/tablet-home.png" width="100%" alt="ACG 首页平板模式">
 
