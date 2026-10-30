@@ -307,7 +307,7 @@ fun AcgHomePage(
         val activeWallpaperUri = wallpapers.displayUri(wallpaperProfile, dailyWallpaper)
         val useProfileCrop = wallpapers.fileUri(wallpaperOption.staticImage) != null
         val showingDailyImage = dailyWallpaper && wallpapers.fileUri(wallpaperOption.current) != null && wallpaperOption.current != wallpaperOption.staticImage
-        val legacyCrop = wallpaperProfile == WallpaperProfile.Portrait
+        val legacyCrop = wallpaperProfile == WallpaperProfile.Portrait && wallpaperUri.isNotBlank() && activeWallpaperUri == wallpaperUri
         val activeWallpaperZoom = if (showingDailyImage) 1f else if (useProfileCrop) wallpaperOption.zoom else if (legacyCrop) wallpaperZoom else 1f
         val activeWallpaperBiasX = if (showingDailyImage) 0f else if (useProfileCrop) wallpaperOption.biasX else if (legacyCrop) wallpaperBiasX else 0f
         val activeWallpaperBiasY = if (showingDailyImage) 0f else if (useProfileCrop) wallpaperOption.biasY else if (legacyCrop) wallpaperBiasY else 0f

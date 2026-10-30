@@ -1,6 +1,6 @@
 ﻿<div align="center">
 
-**English** | [简体中文](README_ZH_HANS.md)
+**English** | [简体中文](../README.md)
 
 <img src="logo.webp" width="96" alt="YumeBox logo">
 
@@ -14,6 +14,14 @@ YumeBox MD3 is a Material Design 3 / Material You fork based on [YumeBox](https:
 
 </div>
 
+## Screenshots
+
+<img src="images/app-overview.jpg" width="100%" alt="ACG home, proxies, profiles and settings">
+
+Tablet mode (16:10 window, captured from the running app on a phone with a simulated tablet display):
+
+<img src="images/tablet-home.png" width="100%" alt="ACG home in tablet mode">
+
 ## Use
 
 YumeBox MD3 currently only supports **Android 8.0 (API 26) and above systems**.
@@ -21,7 +29,6 @@ YumeBox MD3 currently only supports **Android 8.0 (API 26) and above systems**.
 - Download the arm64-v8a release APK: [GitHub Releases](https://github.com/Yizuka17/YumeBox-MaterialDesign/releases)
 - Project changelog: [YumeBox MD3](../website/en/update/history.mdx)
 - Override configuration syntax: [override document](https://yumebox.oom-wg.dev/override)
-- Daily Quote API and custom JSON format: [Daily Quote format guide](DailyQuote.md)
 
 If this project is helpful to you, a Star is greatly appreciated.
 

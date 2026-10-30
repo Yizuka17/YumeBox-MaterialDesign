@@ -3,6 +3,7 @@ package com.github.yumelira.yumebox.screen.acg
 import android.content.Context
 import android.graphics.BitmapFactory
 import androidx.core.net.toUri
+import com.github.yumelira.yumebox.R
 import com.github.yumelira.yumebox.data.store.AppSettingsStore
 import com.github.yumelira.yumebox.presentation.theme.DEFAULT_ACG_WALLPAPER_THEME_SEED_ARGB
 import kotlinx.coroutines.*
@@ -20,9 +21,9 @@ import java.util.UUID
 import java.util.concurrent.TimeUnit
 import kotlin.random.Random
 
-enum class WallpaperProfile(val key: String, val defaultApi: String) {
-    Portrait("portrait", "https://www.loliapi.com/acg/pe/"),
-    Tablet("tablet", "https://www.loliapi.com/acg/pc/"),
+enum class WallpaperProfile(val key: String, val defaultApi: String, val defaultWallpaper: Int) {
+    Portrait("portrait", "https://www.loliapi.com/acg/pe/", R.drawable.wallpaper_mobile),
+    Tablet("tablet", "https://www.loliapi.com/acg/pc/", R.drawable.wallpaper_tablet),
 }
 
 data class WallpaperOptions(
@@ -37,6 +38,7 @@ data class WallpaperOptions(
     val zoom: Float = 1f,
     val biasX: Float = 0f,
     val biasY: Float = 0f,
+    val samplesInitialized: Boolean = false,
 )
 
 /** Files use paths relative to one backed-up directory, so restoration is portable. */
@@ -53,7 +55,26 @@ class AcgWallpaperManager(private val context: Context, val settings: AppSetting
         .readTimeout(12, TimeUnit.SECONDS).callTimeout(20, TimeUnit.SECONDS).build()
 
     init {
-        scope.launch { settings.acgWallpaperConfigJson.state.collect { synchronized(stateLock) { _options.value = readOptions() } } }
+        scope.launch {
+            settings.acgWallpaperConfigJson.state.collect {
+                synchronized(stateLock) { _options.value = readOptions() }
+                try { initializeSamples() }
+                catch (error: Exception) { android.util.Log.w("AcgWallpaper", "Unable to initialize wallpaper samples", error) }
+            }
+        }
+    }
+
+    private fun bundledSample(profile: WallpaperProfile): String =
+        context.resources.openRawResource(profile.defaultWallpaper).use { saveImage(profile, "pool", it) }
+
+    private fun initializeSamples() = synchronized(stateLock) {
+        WallpaperProfile.entries.forEach { profile ->
+            val old = readOptions().getValue(profile)
+            if (!old.samplesInitialized) {
+                val pool = old.pool.ifEmpty { listOf(bundledSample(profile)) }
+                update(profile) { it.copy(pool = pool, samplesInitialized = true) }
+            }
+        }
     }
 
     private fun readOptions(): Map<WallpaperProfile, WallpaperOptions> {
@@ -70,6 +91,7 @@ class AcgWallpaperManager(private val context: Context, val settings: AppSetting
                 zoom = obj.optDouble("zoom", 1.0).toFloat().takeIf { it.isFinite() }?.coerceIn(1f, 5f) ?: 1f,
                 biasX = obj.optDouble("biasX", 0.0).toFloat().takeIf { it.isFinite() }?.coerceIn(-1f, 1f) ?: 0f,
                 biasY = obj.optDouble("biasY", 0.0).toFloat().takeIf { it.isFinite() }?.coerceIn(-1f, 1f) ?: 0f,
+                samplesInitialized = obj.optBoolean("samplesInitialized", false),
             )
         }
     }
@@ -84,6 +106,7 @@ class AcgWallpaperManager(private val context: Context, val settings: AppSetting
                 put("pool", JSONArray(option.pool)); put("history", JSONArray(option.history))
                 put("current", option.current); put("day", option.day); put("staticImage", option.staticImage)
                 put("zoom", option.zoom); put("biasX", option.biasX); put("biasY", option.biasY)
+                put("samplesInitialized", option.samplesInitialized)
             })
         }
         settings.acgWallpaperConfigJson.set(json.toString())
@@ -104,7 +127,9 @@ class AcgWallpaperManager(private val context: Context, val settings: AppSetting
         if (daily) fileUri(option.current)?.let { return it }
         fileUri(option.staticImage)?.let { return it }
         // Old single-wallpaper settings remain a fallback for upgrades and legacy JSON restores.
-        return settings.acgWallpaperUri.value
+        return settings.acgWallpaperUri.value.ifBlank {
+            "android.resource://${context.packageName}/${profile.defaultWallpaper}"
+        }
     }
 
     suspend fun setStatic(profile: WallpaperProfile, uri: String, zoom: Float, x: Float, y: Float): String = withContext(Dispatchers.IO) {
@@ -133,10 +158,11 @@ class AcgWallpaperManager(private val context: Context, val settings: AppSetting
     }
 
     private suspend fun resetRotation(profile: WallpaperProfile) = withContext(Dispatchers.IO) {
+        val sample = bundledSample(profile)
         val removed = synchronized(stateLock) {
             val old = readOptions().getValue(profile)
             update(profile) {
-                WallpaperOptions(apiUrl = profile.defaultApi, staticImage = it.staticImage,
+                WallpaperOptions(apiUrl = profile.defaultApi, pool = listOf(sample), samplesInitialized = true, staticImage = it.staticImage,
                     zoom = it.zoom, biasX = it.biasX, biasY = it.biasY)
             }
             (old.pool + old.history + old.current).distinct()

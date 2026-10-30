@@ -14,6 +14,14 @@
 
 </div>
 
+## 界面展示
+
+<img src="images/app-overview.jpg" width="100%" alt="ACG 首页、代理、配置与设置">
+
+平板模式（16:10 窗口，类原生手机模拟平板比例实拍）：
+
+<img src="images/tablet-home.png" width="100%" alt="ACG 首页平板模式">
+
 ## 使用
 
 YumeBox MD3 目前仅支持 **Android 8.0（API 26）及以上系统**。
@@ -21,7 +29,6 @@ YumeBox MD3 目前仅支持 **Android 8.0（API 26）及以上系统**。
 - 下载 arm64-v8a release 安装包：[GitHub Releases](https://github.com/Yizuka17/YumeBox-MaterialDesign/releases)
 - 项目更新日志：[YumeBox MD3](../website/update/history.mdx)
 - 覆写配置语法：[override 文档](https://yumebox.oom-wg.dev/override)
-- 每日一言 API 与用户自定义 JSON 格式：[每日一言格式说明](DailyQuote_ZH_HANS.md)
 
 如果这个项目对你有帮助，欢迎点下 Star，这是持续更新的动力。
 
