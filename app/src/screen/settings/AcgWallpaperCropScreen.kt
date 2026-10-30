@@ -38,6 +38,8 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.navigationBars
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.systemGestures
+import androidx.compose.foundation.layout.statusBarsPadding
+import com.github.yumelira.yumebox.presentation.component.AppBackButton
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
@@ -199,6 +201,12 @@ fun AcgWallpaperCropScreen(
                         .fillMaxSize(),
                 )
             }
+
+            AppBackButton(
+                modifier = Modifier.align(Alignment.TopStart).statusBarsPadding()
+                    .padding(UiDp.dp12).background(MaterialTheme.colorScheme.surfaceContainer, RoundedCornerShape(UiDp.dp24)),
+                enabled = !saving,
+            )
 
             val bottomInsetPx = with(density) {
                 max(

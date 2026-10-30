@@ -24,6 +24,11 @@ package com.github.yumelira.yumebox.presentation.webview
 
 import android.app.Activity
 import androidx.activity.compose.BackHandler
+import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.padding
+import androidx.compose.material3.Scaffold
+import androidx.compose.ui.Modifier
+import com.github.yumelira.yumebox.presentation.component.TopBar
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.platform.LocalContext
 import com.github.yumelira.yumebox.presentation.theme.YumeTheme
@@ -41,6 +46,9 @@ fun WebViewScreen(
     }
 
     YumeTheme {
-        LocalWebView(initialUrl = initialUrl)
+        Scaffold(topBar = { TopBar(title = "YumeBox MD3") }) { innerPadding ->
+            LocalWebView(initialUrl = initialUrl,
+                modifier = Modifier.fillMaxSize().padding(innerPadding), applyWindowInsets = false)
+        }
     }
 }

@@ -21,7 +21,13 @@
 
 package com.github.yumelira.yumebox.presentation.component
 
+import androidx.activity.compose.LocalOnBackPressedDispatcherOwner
 import androidx.compose.foundation.layout.RowScope
+import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
+import androidx.compose.runtime.compositionLocalOf
+import com.github.yumelira.yumebox.presentation.icon.AppMd3Icons
+import dev.oom_wg.purejoy.mlang.MLang
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
@@ -35,6 +41,23 @@ import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import com.github.yumelira.yumebox.presentation.theme.UiDp
+
+/** Root tabs opt out; destination pages get the same action as the system Back gesture. */
+val LocalTopBarBackEnabled = compositionLocalOf { true }
+
+@Composable
+fun AppBackButton(modifier: Modifier = Modifier, enabled: Boolean = true) {
+    val dispatcher = LocalOnBackPressedDispatcherOwner.current?.onBackPressedDispatcher
+    IconButton(modifier = modifier, enabled = enabled && dispatcher != null,
+        onClick = { dispatcher?.onBackPressed() }) {
+        Icon(AppMd3Icons.Navigation.Back, contentDescription = MLang.Component.Navigation.Back)
+    }
+}
+
+@Composable
+private fun DefaultTopBarNavigation() {
+    if (LocalTopBarBackEnabled.current) AppBackButton()
+}
 
 @Composable
 private fun defaultTopBarContainerColor(): Color {
@@ -51,7 +74,7 @@ fun TopBar(
     @Suppress("UNUSED_PARAMETER") navigationIconPadding: Dp = UiDp.dp16,
     @Suppress("UNUSED_PARAMETER") actionIconPadding: Dp = UiDp.dp16,
     containerColor: Color = Color.Unspecified,
-    navigationIcon: @Composable () -> Unit = {},
+    navigationIcon: @Composable () -> Unit = { DefaultTopBarNavigation() },
     actions: @Composable RowScope.() -> Unit = {},
 ) {
     val resolvedContainerColor = if (containerColor == Color.Unspecified) {
@@ -91,7 +114,7 @@ fun SmallTopBar(
     @Suppress("UNUSED_PARAMETER") navigationIconPadding: Dp = UiDp.dp16,
     @Suppress("UNUSED_PARAMETER") actionIconPadding: Dp = UiDp.dp16,
     containerColor: Color = Color.Unspecified,
-    navigationIcon: @Composable () -> Unit = {},
+    navigationIcon: @Composable () -> Unit = { DefaultTopBarNavigation() },
     actions: @Composable RowScope.() -> Unit = {},
 ) {
     val resolvedContainerColor = if (containerColor == Color.Unspecified) {

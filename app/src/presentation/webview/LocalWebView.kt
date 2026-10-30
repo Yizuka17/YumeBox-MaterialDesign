@@ -53,6 +53,7 @@ fun LocalWebView(
     initialUrl: String,
     modifier: Modifier = Modifier,
     enableDebug: Boolean = BuildConfig.DEBUG,
+    applyWindowInsets: Boolean = true,
     onPageFinished: (String) -> Unit = {},
     onPageError: (String, String) -> Unit = { _, _ -> },
 ) {
@@ -102,7 +103,7 @@ fun LocalWebView(
 
     if (initialUrl.isEmpty()) {
         Box(
-            modifier = modifier.windowInsetsPadding(WindowInsets.safeDrawing),
+            modifier = modifier.let { if (applyWindowInsets) it.windowInsetsPadding(WindowInsets.safeDrawing) else it },
             contentAlignment = Alignment.Center
         ) {
             Text(MLang.Component.WebView.InvalidUrl)
@@ -116,7 +117,7 @@ fun LocalWebView(
                 webViewRef.value = it
             }
         },
-        modifier = modifier.windowInsetsPadding(WindowInsets.safeDrawing),
+        modifier = modifier.let { if (applyWindowInsets) it.windowInsetsPadding(WindowInsets.safeDrawing) else it },
     )
 }
 

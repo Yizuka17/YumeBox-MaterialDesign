@@ -146,6 +146,7 @@ fun MainScreen(
 
     CompositionLocalProvider(
         LocalNavigator provides navigator,
+        LocalTopBarBackEnabled provides false,
         LocalPagerState provides mainPagerState.pagerState,
         LocalMainPagerState provides mainPagerState,
         LocalHandlePageChange provides handlePageChange,

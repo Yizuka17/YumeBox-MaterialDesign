@@ -31,7 +31,6 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
-import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
@@ -40,8 +39,6 @@ import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
-import androidx.compose.material3.TopAppBar
-import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
@@ -69,6 +66,8 @@ import com.github.yumelira.yumebox.presentation.component.Card
 import com.github.yumelira.yumebox.presentation.component.DialogButtonRow
 import com.github.yumelira.yumebox.presentation.component.Md3EIndeterminateLinearWavyProgressIndicator
 import com.github.yumelira.yumebox.presentation.component.Md3ELinearWavyProgressIndicator
+import com.github.yumelira.yumebox.presentation.component.ScreenSectionGrid
+import com.github.yumelira.yumebox.presentation.component.TopBar
 import com.github.yumelira.yumebox.presentation.component.Title
 import com.github.yumelira.yumebox.presentation.component.combinePaddingValues
 import com.github.yumelira.yumebox.presentation.component.md3.YumeMd3FilledButton
@@ -123,27 +122,12 @@ fun AboutScreen(navigator: DestinationsNavigator) {
     Scaffold(
         containerColor = MaterialTheme.colorScheme.surface,
         topBar = {
-            TopAppBar(
-                title = {
-                    Text(
-                        text = MLang.About.Title,
-                        style = MaterialTheme.typography.titleLarge,
-                    )
-                },
-                colors = TopAppBarDefaults.topAppBarColors(
-                    containerColor = MaterialTheme.colorScheme.surface,
-                    scrolledContainerColor = MaterialTheme.colorScheme.surfaceContainer,
-                    titleContentColor = MaterialTheme.colorScheme.onSurface,
-                    navigationIconContentColor = MaterialTheme.colorScheme.onSurfaceVariant,
-                    actionIconContentColor = MaterialTheme.colorScheme.onSurfaceVariant,
-                ),
-            )
+            TopBar(title = MLang.About.Title)
         },
     ) { innerPadding ->
         val mainLikePadding = rememberStandalonePageMainPadding()
-        LazyColumn(
-            modifier = Modifier.fillMaxSize(),
-            contentPadding = combinePaddingValues(innerPadding, mainLikePadding),
+        ScreenSectionGrid(
+            innerPadding = combinePaddingValues(innerPadding, mainLikePadding),
         ) {
             item {
                 Column(
@@ -211,6 +195,8 @@ fun AboutScreen(navigator: DestinationsNavigator) {
                     )
                 }
 
+            }
+            item {
                 Title(MLang.About.Section.ProjectLinks)
                 Card {
                     AboutLinkItem(
@@ -233,6 +219,8 @@ fun AboutScreen(navigator: DestinationsNavigator) {
                     )
                 }
 
+            }
+            item {
                 Title(MLang.About.Section.More)
                 Card {
                     AboutLinkItem(
@@ -249,6 +237,8 @@ fun AboutScreen(navigator: DestinationsNavigator) {
                     )
                 }
 
+            }
+            item {
                 Title(MLang.About.Section.License)
                 Card {
                     YumeMd3PreferenceItem(
@@ -337,7 +327,6 @@ internal fun UpdateCandidateDialog(
 
     AppDialog(
         show = true,
-        title = MLang.Component.Update.Title.Available,
         onDismissRequest = {
             if (downloadProgress.isDownloading) {
                 onCancelDownload()
@@ -359,9 +348,11 @@ internal fun UpdateCandidateDialog(
                 Column(
                     modifier = Modifier
                         .fillMaxWidth()
+                        .weight(1f, fill = false)
                         .heightIn(max = UiDp.dp420)
                         .verticalScroll(rememberScrollState()),
                 ) {
+                    UpdateDialogTitle()
                     UpdateCoverImage(
                         cachedCoverUri = candidate.cachedCoverUri,
                         coverUrl = candidate.coverUrl,
@@ -444,14 +435,14 @@ private fun UpdateDownloadContent(
     progress: UpdateDownloadProgress,
     onCancelDownload: () -> Unit,
 ) {
-    Column {
-        UpdateDialogMessage(progress.message.ifBlank { MLang.Component.Update.Message.Downloading })
-        Spacer(modifier = Modifier.height(UiDp.dp12))
-        UpdateWavyProgressIndicator(
-            progress = progress.progress,
-            modifier = Modifier.fillMaxWidth(),
-        )
-        Spacer(modifier = Modifier.height(UiDp.dp12))
+    Column(Modifier.fillMaxWidth(), verticalArrangement = Arrangement.spacedBy(UiDp.dp12)) {
+        Column(Modifier.weight(1f, fill = false).heightIn(max = UiDp.dp420)
+            .verticalScroll(rememberScrollState())) {
+            UpdateDialogTitle()
+            UpdateDialogMessage(progress.message.ifBlank { MLang.Component.Update.Message.Downloading })
+            Spacer(modifier = Modifier.height(UiDp.dp12))
+            UpdateWavyProgressIndicator(progress = progress.progress, modifier = Modifier.fillMaxWidth())
+        }
         YumeMd3FilledButton(
             text = MLang.Component.Update.Action.CancelDownload,
             onClick = onCancelDownload,
@@ -459,6 +450,13 @@ private fun UpdateDownloadContent(
             modifier = Modifier.fillMaxWidth(),
         )
     }
+}
+
+@Composable
+private fun UpdateDialogTitle() {
+    Text(MLang.Component.Update.Title.Available, style = MaterialTheme.typography.headlineSmall,
+        color = MaterialTheme.colorScheme.onSurface)
+    Spacer(Modifier.height(UiDp.dp16))
 }
 
 @Composable
