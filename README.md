@@ -66,7 +66,6 @@ YumeBox MD3 在保留原项目核心能力的基础上，主要围绕界面体�
 - Bug 与建议：[Issues](https://github.com/Yizuka17/YumeBox-MaterialDesign/issues)
 - 贡献指南：[CONTRIBUTING](https://github.com/Yizuka17/YumeBox-MaterialDesign/blob/Yume/CONTRIBUTING.md)
 - 翻译贡献：Fork 本项目，并在 `locale/lang` 目录下创建或更新对应的翻译文件。
-- 讨论与反馈：[@OOM_WG](https://t.me/OOM_Group)
 
 ## 特别
 

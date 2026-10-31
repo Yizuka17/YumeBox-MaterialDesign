@@ -86,6 +86,7 @@ import com.github.panpf.sketch.request.LoadState
 import com.github.panpf.sketch.state.IntColorDrawableStateImage
 import com.ramcosta.composedestinations.annotation.Destination
 import com.ramcosta.composedestinations.annotation.RootGraph
+import com.ramcosta.composedestinations.generated.destinations.ReadmeScreenDestination
 import com.ramcosta.composedestinations.generated.destinations.OpenSourceLicensesScreenDestination
 import com.ramcosta.composedestinations.navigation.DestinationsNavigator
 import dev.oom_wg.purejoy.mlang.MLang
@@ -223,17 +224,17 @@ fun AboutScreen(navigator: DestinationsNavigator) {
             item {
                 Title(MLang.About.Section.More)
                 Card {
-                    AboutLinkItem(
-                        title = MLang.About.Link.TelegramGroup,
-                        url = "https://t.me/OOM_Group",
-                        onOpenUrl = { url -> openUrl(context, url) },
-                        showArrow = true,
+                    YumeMd3PreferenceItem(
+                        title = "Issues",
+                        summary = "反馈问题和提供改进建议",
+                        onClick = { openUrl(context, "https://github.com/Yizuka17/YumeBox-MaterialDesign/issues") },
+                        trailingContent = { ChevronText() },
                     )
-                    AboutLinkItem(
-                        title = MLang.About.Link.TelegramChannel,
-                        url = "https://t.me/YumeLira",
-                        onOpenUrl = { url -> openUrl(context, url) },
-                        showArrow = true,
+                    YumeMd3PreferenceItem(
+                        title = "Readme",
+                        summary = "项目介绍与使用说明",
+                        onClick = { navigator.navigate(ReadmeScreenDestination) },
+                        trailingContent = { ChevronText() },
                     )
                 }
 

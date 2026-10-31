@@ -92,6 +92,7 @@ public data object RootNavGraph : BaseRoute(), DirectionNavHostGraphSpec {
 
     override val destinations: List<DestinationSpec> get() = listOf(
 		AboutScreenDestination,
+		ReadmeScreenDestination,
 		AccessControlScreenDestination,
 		AcgQuoteConfigScreenDestination,
 		AcgWallpaperConfigScreenDestination,

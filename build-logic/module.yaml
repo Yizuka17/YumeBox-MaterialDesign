@@ -12,3 +12,9 @@ dependencies:
   - com.android.tools.build:aapt2-proto:9.4.1-15978811
   - com.google.protobuf:protobuf-java:3.25.9
   - org.jetbrains.kotlinx:kotlinx-serialization-json:1.12.0
+
+  # Render the bundled README at packaging time, without a runtime Markdown dependency.
+  - org.commonmark:commonmark:0.26.0
+  - org.commonmark:commonmark-ext-gfm-tables:0.26.0
+  - org.commonmark:commonmark-ext-gfm-strikethrough:0.26.0
+  - org.commonmark:commonmark-ext-autolink:0.26.0

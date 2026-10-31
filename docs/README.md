@@ -66,7 +66,6 @@ Future work will keep polishing the MD3 experience, configuration editing, runti
 - Bugs and suggestions: [Issues](https://github.com/Yizuka17/YumeBox-MaterialDesign/issues)
 - Contribution guide: [CONTRIBUTING](https://github.com/Yizuka17/YumeBox-MaterialDesign/blob/Yume/CONTRIBUTING.md)
 - Translation contribution: fork this project and create or update the corresponding translation files under `locale/lang`.
-- Discussion and feedback: [@OOM_WG](https://t.me/OOM_Group)
 
 ## Special
 

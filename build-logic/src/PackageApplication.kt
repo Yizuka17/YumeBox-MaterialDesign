@@ -80,6 +80,7 @@ private fun packageLocked(root: File, state: File, options: Map<String, String>,
     val rewritten = manifest.rewrite(raw, plan, loader, true, request.getProperty("project.name"))
     val additions = linkedMapOf<String, ByteArray>()
     additions["aboutlibraries.json"] = collectLicenses(root, graph.included, maven)
+    additions.putAll(bundledReadme(root))
     val nativeRoot = root.resolve("jniLibs/arm64-v8a")
     listOf("libmihomo.so", "libpreview.so", "libmihomocore.so", "liboverride.so", "libcompat.so", "libloader.so").forEach {
         require(nativeRoot.resolve(it).isFile) { "Required native input missing: $it; run scripts/native-build.py first" }

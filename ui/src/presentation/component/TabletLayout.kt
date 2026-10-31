@@ -18,6 +18,7 @@ import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.semantics.selected
@@ -35,10 +36,14 @@ fun rememberTabletLayout(): Boolean {
 }
 
 @Composable
-fun TabletPageSidebar(title: String, modifier: Modifier = Modifier, content: @Composable ColumnScope.() -> Unit) {
+fun TabletPageSidebar(title: String, modifier: Modifier = Modifier, bottomPadding: Dp = 0.dp,
+    content: @Composable ColumnScope.() -> Unit) {
+    // A hard 840dp breakpoint made the rail grow by 32dp and removed a node column.
+    val width = (LocalConfiguration.current.screenWidthDp.dp * .2f).coerceIn(168.dp, 200.dp)
     Column(
-        modifier.width(if (LocalConfiguration.current.screenWidthDp < 840) 168.dp else 200.dp)
+        modifier.width(width)
             .fillMaxHeight().background(MaterialTheme.colorScheme.surfaceContainerLow)
+            .padding(bottom = bottomPadding)
             .windowInsetsPadding(WindowInsets.statusBars.only(WindowInsetsSides.Top))
             .padding(horizontal = 12.dp, vertical = 16.dp),
     ) {

@@ -237,7 +237,7 @@ fun ProxyPager(
                 .background(MaterialTheme.colorScheme.surface)
         ) {
             if (tabletLayout) TabletPageSidebar(MLang.Proxy.Title,
-                Modifier.padding(bottom = mainInnerPadding.calculateBottomPadding())) {
+                bottomPadding = mainInnerPadding.calculateBottomPadding()) {
                 if (onNavigateToProviders != null) TabletSidebarAction(MLang.Providers.Title, AppMd3Icons.Proxy.Profiles, onClick = onNavigateToProviders)
                 if (onOpenPanel != null) TabletSidebarAction(MLang.Proxy.Action.Panel, AppMd3Icons.Proxy.Panel, onClick = onOpenPanel)
                 TabletSidebarAction(MLang.Proxy.Action.Test, AppMd3Icons.Action.SpeedTest,

@@ -176,7 +176,7 @@ fun ProfilesPager(
 
     Row(modifier = Modifier.fillMaxSize()) {
         if (tabletLayout) TabletPageSidebar(MLang.ProfilesPage.Title,
-            Modifier.padding(bottom = mainInnerPadding.calculateBottomPadding())) {
+            bottomPadding = mainInnerPadding.calculateBottomPadding()) {
             TabletSidebarAction(MLang.ProfilesPage.Action.UpdateAll, ShellIcons.UpdateProfiles,
                 enabled = hasUpdatableProfiles, onClick = updateAllProfiles)
             TabletSidebarAction(MLang.ProfilesPage.Action.AddProfile, ShellIcons.AddProfile, onClick = addProfile)
