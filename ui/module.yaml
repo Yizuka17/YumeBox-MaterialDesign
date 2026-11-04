@@ -31,6 +31,7 @@ dependencies:
   - $libs.miuix.icons
 
   - androidx.compose.material3:material3:1.5.0-alpha22
+  - com.materialkolor:material-color-utilities:4.1.1
   - androidx.compose.material:material-icons-extended
 
   - //ui-miuix

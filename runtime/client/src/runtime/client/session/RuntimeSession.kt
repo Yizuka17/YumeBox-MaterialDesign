@@ -119,6 +119,7 @@ internal class RuntimeSession(private val deps: RuntimeSessionDeps) {
             operationMutex = operationMutex,
             snapshot = { _runtimeSnapshot.value },
             publishRemoteRunning = {
+                _isConfigReloading.value = false
                 publishSnapshot(
                     RuntimeSnapshot(
                         owner = RuntimeOwner.RemoteController,
@@ -207,12 +208,13 @@ internal class RuntimeSession(private val deps: RuntimeSessionDeps) {
      * one.
      */
     private fun applyLocalLocked(state: RuntimeState, forceRefresh: Boolean) {
-        _isConfigReloading.value = state.reloading
         if (isRemoteControllerActive() ||
             _runtimeSnapshot.value.owner == RuntimeOwner.RemoteController
         ) {
+            _isConfigReloading.value = false
             return
         }
+        _isConfigReloading.value = state.reloading
         val previous = _runtimeSnapshot.value
         val next = mapLocal(state, previous)
         if (previous.running && !next.running && !state.reloading) clearRuntimePayload()

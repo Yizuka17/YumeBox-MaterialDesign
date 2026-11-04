@@ -23,6 +23,8 @@ package com.github.yumelira.yumebox.runtime.service.notification
 import com.github.yumelira.yumebox.common.util.formatBytes
 import com.github.yumelira.yumebox.common.util.formatSpeed
 import com.github.yumelira.yumebox.runtime.service.profile.Imported
+import com.github.yumelira.yumebox.data.model.NotificationDisplay
+import com.github.yumelira.yumebox.data.model.NotificationValues
 import java.time.Instant
 import java.time.ZoneId
 import com.github.yumelira.yumebox.core.locale.YumeTxt
@@ -32,6 +34,7 @@ internal sealed class NotificationPresentation {
     abstract val title: String
     abstract val content: String
     abstract val expandedText: String
+    abstract val right: String
 
     /** Traffic figures; also feeds the Super Island payload. */
     data class Running(
@@ -40,6 +43,7 @@ internal sealed class NotificationPresentation {
         override val expandedText: String,
         val compactTraffic: String,
         val currentNode: String?,
+        override val right: String = "",
     ) : NotificationPresentation()
 
     /** No traffic figures (traffic notification disabled). */
@@ -47,6 +51,7 @@ internal sealed class NotificationPresentation {
         override val title: String,
         override val content: String,
         override val expandedText: String,
+        override val right: String = "",
     ) : NotificationPresentation()
 }
 
@@ -56,27 +61,45 @@ internal object NotificationPresentationFactory {
         profile: Imported?,
         currentNode: String?,
         trafficNow: Long,
+        display: NotificationDisplay,
+        forIsland: Boolean,
     ): NotificationPresentation.Running {
         val usageLine = buildUsageLine(profile)
         val node = currentNode ?: YumeTxt.Service.Notification.NoNode
+        val traffic = buildCompactTrafficLine(trafficNow)
+        val values = NotificationValues(
+            profileName, YumeTxt.Service.Notification.Running, node, traffic,
+            profile?.expire?.takeIf { it > 0L }?.let(::expireDate).orEmpty(),
+        )
+        val first = display.first.resolve(values, profileName)
+        val second = display.second.resolve(values, usageLine)
+        val right = display.right.resolve(values, if (forIsland) traffic else "")
+        val defaultExpanded = listOf(second, YumeTxt.Service.Notification.CurrentNode.format(node))
         return NotificationPresentation.Running(
-            title = profileName,
-            content = usageLine,
-            expandedText = "$usageLine\n" + YumeTxt.Service.Notification.CurrentNode.format(node),
-            compactTraffic = buildCompactTrafficLine(trafficNow),
+            title = first,
+            content = second,
+            expandedText = defaultExpanded.filter(String::isNotBlank).joinToString("\n"),
+            compactTraffic = right,
             currentNode = currentNode,
+            right = if (forIsland) "" else right,
         )
     }
 
-    fun createStatus(
+    fun createStatus(profileName: String, status: String): NotificationPresentation.Status =
+        NotificationPresentation.Status(profileName, status, status)
+
+    fun configureStatus(
         profileName: String,
-        status: String,
-    ): NotificationPresentation.Status =
-        NotificationPresentation.Status(
-            title = profileName,
-            content = status,
-            expandedText = status,
-        )
+        profile: Imported?,
+        display: NotificationDisplay,
+    ): NotificationPresentation.Status {
+        val status = YumeTxt.Service.Notification.Running
+        val values = NotificationValues(profileName, status, "", "",
+            profile?.expire?.takeIf { it > 0L }?.let(::expireDate).orEmpty())
+        val title = display.first.resolve(values, profileName)
+        val content = display.second.resolve(values, status)
+        return NotificationPresentation.Status(title, content, content, display.right.resolve(values, ""))
+    }
 
     /**
      * Values only, no labels, so the island can render it: `1.2 GB / 100 GB | 2026-08-31`. Falls back

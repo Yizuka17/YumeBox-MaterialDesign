@@ -25,6 +25,7 @@ public data class AcgWallpaperCropScreenDestinationNavArgs(
 	val initialBiasX: Float = 0f,
 	val initialBiasY: Float = 0f,
 	val profile: String = "portrait",
+	val poolPath: String = "",
 )
 
 /**
@@ -33,7 +34,7 @@ public data class AcgWallpaperCropScreenDestinationNavArgs(
 public data object AcgWallpaperCropScreenDestination : BaseRoute(), TypedDestinationSpec<AcgWallpaperCropScreenDestinationNavArgs> {
 
     override fun invoke(navArgs: AcgWallpaperCropScreenDestinationNavArgs): Direction = with(navArgs) {
-        invoke(wallpaperUri, initialZoom, initialBiasX, initialBiasY, profile)
+        invoke(wallpaperUri, initialZoom, initialBiasX, initialBiasY, profile, poolPath)
     }
 
     public operator fun invoke(
@@ -42,6 +43,7 @@ public data object AcgWallpaperCropScreenDestination : BaseRoute(), TypedDestina
 		initialBiasX: Float = 0f,
 		initialBiasY: Float = 0f,
         profile: String = "portrait",
+        poolPath: String = "",
     ): Direction {
         return Direction(
             route = "$baseRoute" +
@@ -49,13 +51,14 @@ public data object AcgWallpaperCropScreenDestination : BaseRoute(), TypedDestina
 					"?initialZoom=${floatNavType.serializeValue(initialZoom)}" +
 					"&initialBiasX=${floatNavType.serializeValue(initialBiasX)}" +
 					"&initialBiasY=${floatNavType.serializeValue(initialBiasY)}" +
-                    "&profile=${stringNavType.serializeValue("profile", profile)}"
+                    "&profile=${stringNavType.serializeValue("profile", profile)}" +
+                    "&poolPath=${stringNavType.serializeValue("poolPath", poolPath)}"
         )
     }
 
     override val baseRoute: String = "acg_wallpaper_crop_screen"
 
-    override val route: String = "$baseRoute/{wallpaperUri}?initialZoom={initialZoom}&initialBiasX={initialBiasX}&initialBiasY={initialBiasY}&profile={profile}"
+    override val route: String = "$baseRoute/{wallpaperUri}?initialZoom={initialZoom}&initialBiasX={initialBiasX}&initialBiasY={initialBiasY}&profile={profile}&poolPath={poolPath}"
 
 	override val arguments: List<NamedNavArgument> get() = listOf(
 		navArgument("wallpaperUri") {
@@ -75,6 +78,10 @@ public data object AcgWallpaperCropScreenDestination : BaseRoute(), TypedDestina
             type = stringNavType
             defaultValue = "portrait"
         },
+        navArgument("poolPath") {
+            type = stringNavType
+            defaultValue = ""
+        },
 		navArgument("initialBiasY") {
 			type = floatNavType
 			val defValue: Float = 0f
@@ -84,20 +91,22 @@ public data object AcgWallpaperCropScreenDestination : BaseRoute(), TypedDestina
 
     @Composable
     override fun DestinationScope<AcgWallpaperCropScreenDestinationNavArgs>.Content() {
-		val (wallpaperUri, initialZoom, initialBiasX, initialBiasY, profile) = navArgs
+		val (wallpaperUri, initialZoom, initialBiasX, initialBiasY, profile, poolPath) = navArgs
 		AcgWallpaperCropScreen(
 			navigator = destinationsNavigator,
 			wallpaperUri = wallpaperUri,
 			initialZoom = initialZoom,
 			initialBiasX = initialBiasX,
 			initialBiasY = initialBiasY,
-            profile = profile
+            profile = profile,
+            poolPath = poolPath,
 		)
     }
 
 	override fun argsFrom(bundle: Bundle?): AcgWallpaperCropScreenDestinationNavArgs {
 	    return AcgWallpaperCropScreenDestinationNavArgs(
 			profile = stringNavType.safeGet(bundle, "profile") ?: "portrait",
+            poolPath = stringNavType.safeGet(bundle, "poolPath").orEmpty(),
 			wallpaperUri = stringNavType.safeGet(bundle, "wallpaperUri") ?: throw RuntimeException("'wallpaperUri' argument is mandatory, but was not present!"),
 			initialZoom = floatNavType.safeGet(bundle, "initialZoom") ?: throw RuntimeException("'initialZoom' argument is not mandatory and not nullable but was not present!"),
 			initialBiasX = floatNavType.safeGet(bundle, "initialBiasX") ?: throw RuntimeException("'initialBiasX' argument is not mandatory and not nullable but was not present!"),
@@ -108,6 +117,7 @@ public data object AcgWallpaperCropScreenDestination : BaseRoute(), TypedDestina
 	override fun argsFrom(savedStateHandle: SavedStateHandle): AcgWallpaperCropScreenDestinationNavArgs {
 	    return AcgWallpaperCropScreenDestinationNavArgs(
 			profile = stringNavType.get(savedStateHandle, "profile") ?: "portrait",
+            poolPath = stringNavType.get(savedStateHandle, "poolPath").orEmpty(),
 			wallpaperUri = stringNavType.get(savedStateHandle, "wallpaperUri") ?: throw RuntimeException("'wallpaperUri' argument is mandatory, but was not present!"),
 			initialZoom = floatNavType.get(savedStateHandle, "initialZoom") ?: throw RuntimeException("'initialZoom' argument is not mandatory and not nullable but was not present!"),
 			initialBiasX = floatNavType.get(savedStateHandle, "initialBiasX") ?: throw RuntimeException("'initialBiasX' argument is not mandatory and not nullable but was not present!"),

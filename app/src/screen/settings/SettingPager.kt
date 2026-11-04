@@ -57,6 +57,7 @@ import com.github.yumelira.yumebox.presentation.viewmodel.SettingEvent
 import com.github.yumelira.yumebox.presentation.viewmodel.SettingViewModel
 import com.ramcosta.composedestinations.generated.destinations.AboutScreenDestination
 import com.ramcosta.composedestinations.generated.destinations.AppDataManagementScreenDestination
+import com.ramcosta.composedestinations.generated.destinations.ThemeSettingsScreenDestination
 import com.ramcosta.composedestinations.generated.destinations.AppSettingsScreenDestination
 import com.ramcosta.composedestinations.generated.destinations.FeatureScreenDestination
 import com.ramcosta.composedestinations.generated.destinations.LogScreenDestination
@@ -159,8 +160,13 @@ fun SettingPager(
                 Title(MLang.Settings.Section.UiSettings)
                 Card {
                     SettingsEntryItem(
+                        title = MLang.Settings.UiSettings.Theme,
+                        imageVector = AppMd3Icons.Settings.Theme,
+                        onClick = { navigator.navigate(ThemeSettingsScreenDestination) { launchSingleTop = true } },
+                    )
+                    SettingsEntryItem(
                         title = MLang.Settings.UiSettings.App,
-                        summary = MLang.Settings.UiSettings.AppSummary,
+
                         imageVector = AppMd3Icons.Settings.App,
                         onClick = { navigator.navigate(AppSettingsScreenDestination) { launchSingleTop = true } },
                     )
@@ -171,19 +177,19 @@ fun SettingPager(
                 Card {
                     SettingsEntryItem(
                         title = MLang.Settings.NetworkSettings.Network,
-                        summary = MLang.Settings.NetworkSettings.NetworkSummary,
+
                         imageVector = AppMd3Icons.Settings.Network,
                         onClick = { navigator.navigate(NetworkSettingsScreenDestination) { launchSingleTop = true } },
                     )
                     SettingsEntryItem(
                         title = MLang.Settings.NetworkSettings.Override,
-                        summary = MLang.Settings.NetworkSettings.OverrideSummary,
+
                         imageVector = AppMd3Icons.Settings.Override,
                         onClick = { navigator.navigate(OverrideScreenDestination) { launchSingleTop = true } },
                     )
                     SettingsEntryItem(
                         title = MLang.Settings.NetworkSettings.MetaFeatures,
-                        summary = MLang.Settings.NetworkSettings.MetaFeaturesSummary,
+
                         imageVector = AppMd3Icons.Settings.MetaFeatures,
                         onClick = {
                             navigator.navigate(MetaFeatureScreenDestination) {
@@ -193,7 +199,7 @@ fun SettingPager(
                     )
                     SettingsEntryItem(
                         title = MLang.Settings.NetworkSettings.Lab,
-                        summary = MLang.Settings.NetworkSettings.LabSummary,
+
                         imageVector = AppMd3Icons.Settings.Lab,
                         onClick = {
                             navigator.navigate(FeatureScreenDestination) { launchSingleTop = true }
@@ -206,19 +212,19 @@ fun SettingPager(
                 Card {
                     SettingsEntryItem(
                         title = MLang.Settings.DataSettings.ExportBackup,
-                        summary = MLang.Settings.DataSettings.ExportBackupSummary,
+
                         imageVector = AppMd3Icons.Settings.ExportBackup,
                         onClick = backupActions.export,
                     )
                     SettingsEntryItem(
                         title = MLang.Settings.DataSettings.ImportBackup,
-                        summary = MLang.Settings.DataSettings.ImportBackupSummary,
+
                         imageVector = AppMd3Icons.Settings.ImportBackup,
                         onClick = backupActions.restore,
                     )
                     SettingsEntryItem(
                         title = MLang.Settings.DataSettings.AppDataManagement,
-                        summary = MLang.Settings.DataSettings.AppDataManagementSummary,
+
                         imageVector = AppMd3Icons.Settings.AppDataManagement,
                         onClick = { navigator.navigate(AppDataManagementScreenDestination) { launchSingleTop = true } },
                     )
@@ -230,13 +236,13 @@ fun SettingPager(
                 Card {
                     SettingsEntryItem(
                         title = MLang.Settings.More.Logs,
-                        summary = MLang.Settings.More.LogsSummary,
+
                         imageVector = AppMd3Icons.Settings.Logs,
                         onClick = { navigator.navigate(LogScreenDestination) { launchSingleTop = true } },
                     )
                     SettingsEntryItem(
                         title = MLang.Settings.More.About,
-                        summary = MLang.Settings.More.AboutSummary,
+
                         imageVector = AppMd3Icons.Settings.About,
                         onClick = { navigator.navigate(AboutScreenDestination) { launchSingleTop = true } },
                         endActions = {
@@ -252,7 +258,7 @@ fun SettingPager(
 @Composable
 private fun SettingsEntryItem(
     title: String,
-    summary: String,
+    summary: String = "",
     imageVector: androidx.compose.ui.graphics.vector.ImageVector,
     onClick: () -> Unit,
     endActions: @Composable (RowScope.() -> Unit)? = null,

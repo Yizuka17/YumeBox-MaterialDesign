@@ -21,7 +21,7 @@ internal val ZhHansYumeStrings_Editor: YumeStrings_Editor = YumeStrings_Editor(
         Summary = "当前有未保存的修改，确定要放弃吗？",
         Confirm = "放弃",
     ),
-    JsonSubtitle = "使用 JSON 格式编辑",
+    JsonSubtitle = "使用JSON格式编辑",
 )
 
 internal val ZhYumeStrings_Editor: YumeStrings_Editor = YumeStrings_Editor(
@@ -45,7 +45,7 @@ internal val ZhYumeStrings_Editor: YumeStrings_Editor = YumeStrings_Editor(
         Summary = "目前有未儲存的修改，確定要放棄嗎？",
         Confirm = "放棄",
     ),
-    JsonSubtitle = "使用 JSON 格式編輯",
+    JsonSubtitle = "使用JSON格式編輯",
 )
 
 internal val EnYumeStrings_Editor: YumeStrings_Editor = YumeStrings_Editor(
@@ -93,7 +93,7 @@ internal val JaYumeStrings_Editor: YumeStrings_Editor = YumeStrings_Editor(
         Summary = "未保存の変更があります.破棄しますか？",
         Confirm = "破棄",
     ),
-    JsonSubtitle = "JSON 形式で編集",
+    JsonSubtitle = "JSON形式で編集",
 )
 
 internal val RuYumeStrings_Editor: YumeStrings_Editor = YumeStrings_Editor(

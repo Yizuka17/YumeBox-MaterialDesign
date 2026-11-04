@@ -6,7 +6,7 @@ internal val ZhHansYumeStrings_Home: YumeStrings_Home = YumeStrings_Home(
         ConfigSwitched = "配置已切换",
         ConfigSwitchFailed = "配置切换失败：%s",
         Preparing = "正在准备...",
-        BuiltinGeoRequired = "请先安装 Builtin 版本",
+        BuiltinGeoRequired = "请先安装Builtin版本",
         StartFailed = "启动失败：%s",
         RuntimeUnavailable = "内核运行时不可用，请重试",
         StopFailed = "停止失败：%s",
@@ -31,7 +31,7 @@ internal val ZhHansYumeStrings_Home: YumeStrings_Home = YumeStrings_Home(
         NoProfile = "无配置",
     ),
     IpInfo = YumeStrings_Home_IpInfo(
-        ExitIp = "出口 IP",
+        ExitIp = "出口IP",
     ),
     Status = YumeStrings_Home_Status(
         Connecting = "连接中",
@@ -53,7 +53,7 @@ internal val ZhHansYumeStrings_Home: YumeStrings_Home = YumeStrings_Home(
         Ebpf = "eBPF",
     ),
     PreviewGuide = YumeStrings_Home_PreviewGuide(
-        Title = "欢迎使用 YumeBox",
+        Title = "欢迎使用YumeBox",
         Description = "点亮底部「启动」，一键连接",
         Next = "下一个",
         Start = "开始使用",
@@ -72,7 +72,7 @@ internal val ZhYumeStrings_Home: YumeStrings_Home = YumeStrings_Home(
         ConfigSwitched = "設定檔已切換",
         ConfigSwitchFailed = "設定檔切換失敗：%s",
         Preparing = "準備中...",
-        BuiltinGeoRequired = "請先安裝 Builtin 版本",
+        BuiltinGeoRequired = "請先安裝Builtin版本",
         StartFailed = "啟動失敗：%s",
         RuntimeUnavailable = "核心執行環境不可用，請重試",
         StopFailed = "停止失敗：%s",
@@ -97,7 +97,7 @@ internal val ZhYumeStrings_Home: YumeStrings_Home = YumeStrings_Home(
         NoProfile = "無設定檔",
     ),
     IpInfo = YumeStrings_Home_IpInfo(
-        ExitIp = "出口 IP",
+        ExitIp = "出口IP",
     ),
     Status = YumeStrings_Home_Status(
         Connecting = "連線中",
@@ -119,7 +119,7 @@ internal val ZhYumeStrings_Home: YumeStrings_Home = YumeStrings_Home(
         Ebpf = "eBPF",
     ),
     PreviewGuide = YumeStrings_Home_PreviewGuide(
-        Title = "歡迎使用 YumeBox",
+        Title = "歡迎使用YumeBox",
         Description = "點亮底部「啟動」，一鍵連線",
         Next = "下一個",
         Start = "開始使用",
@@ -204,7 +204,7 @@ internal val JaYumeStrings_Home: YumeStrings_Home = YumeStrings_Home(
         ConfigSwitched = "設定を切り替えました",
         ConfigSwitchFailed = "設定の切り替えに失敗しました: %s",
         Preparing = "準備中...",
-        BuiltinGeoRequired = "先に Builtin 版をインストールしてください",
+        BuiltinGeoRequired = "先に Builtin版をインストールしてください",
         StartFailed = "開始に失敗しました: %s",
         RuntimeUnavailable = "ランタイムを利用できません.もう一度お試しください.",
         StopFailed = "停止に失敗しました: %s",
@@ -229,7 +229,7 @@ internal val JaYumeStrings_Home: YumeStrings_Home = YumeStrings_Home(
         NoProfile = "プロファイルなし",
     ),
     IpInfo = YumeStrings_Home_IpInfo(
-        ExitIp = "出口 IP",
+        ExitIp = "出口IP",
     ),
     Status = YumeStrings_Home_Status(
         Connecting = "接続中",

@@ -26,10 +26,10 @@ internal val ZhHansYumeStrings_Providers: YumeStrings_Providers = YumeStrings_Pr
     ),
     Message = YumeStrings_Providers_Message(
         FetchFailed = "获取外部资源失败: %s",
-        UpdateSuccess = "%s 更新成功",
+        UpdateSuccess = "%s更新成功",
         UpdateFailed = "更新失败: %s",
         AllUpdated = "全部更新完成",
-        UploadSuccess = "%s 上传成功",
+        UploadSuccess = "%s上传成功",
         UploadFailed = "上传失败: %s",
     ),
 )
@@ -60,10 +60,10 @@ internal val ZhYumeStrings_Providers: YumeStrings_Providers = YumeStrings_Provid
     ),
     Message = YumeStrings_Providers_Message(
         FetchFailed = "取得外部資源失敗: %s",
-        UpdateSuccess = "%s 更新成功",
+        UpdateSuccess = "%s更新成功",
         UpdateFailed = "更新失敗: %s",
         AllUpdated = "全部更新完成",
-        UploadSuccess = "%s 上傳成功",
+        UploadSuccess = "%s上傳成功",
         UploadFailed = "上傳失敗: %s",
     ),
 )

@@ -141,6 +141,7 @@ object AppMd3Icons {
     }
 
     object Settings {
+        val Theme: ImageVector = Icons.Rounded.Palette
         val App: ImageVector = Icons.Rounded.Settings
         val Network: ImageVector = Icons.Rounded.Dns
         val Override: ImageVector = Icons.Rounded.Tune

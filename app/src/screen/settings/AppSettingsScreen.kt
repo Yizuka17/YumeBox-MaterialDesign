@@ -93,6 +93,25 @@ fun AppSettingsScreen(
         ScreenSectionGrid(
             innerPadding = combinePaddingValues(innerPadding, mainLikePadding),
         ) {
+            item { AppServiceSettingsSection(viewModel) }
+            item { NotificationDisplaySettingsSection() }
+            item { AppBehaviorSettingsSection(viewModel) }
+            item { AppPrivacySettingsSection(viewModel) }
+        }
+    }
+}
+
+@Composable
+@Destination<RootGraph>
+fun ThemeSettingsScreen(navigator: DestinationsNavigator) {
+    val viewModel = koinViewModel<AppSettingsViewModel>()
+    Scaffold(
+        containerColor = MaterialTheme.colorScheme.surface,
+        topBar = { TopBar(title = MLang.Settings.UiSettings.Theme) },
+    ) { innerPadding ->
+        ScreenSectionGrid(
+            innerPadding = combinePaddingValues(innerPadding, rememberStandalonePageMainPadding()),
+        ) {
             item {
                 AppHomeSettingsSection(
                     viewModel = viewModel,
@@ -100,10 +119,8 @@ fun AppSettingsScreen(
                 )
             }
             item { AppThemeSettingsSection(viewModel) }
+            item { AppTypographySettingsSection() }
             item { AppInterfaceSettingsSection(viewModel) }
-            item { AppServiceSettingsSection(viewModel) }
-            item { AppBehaviorSettingsSection(viewModel) }
-            item { AppPrivacySettingsSection(viewModel) }
         }
     }
 }
@@ -118,14 +135,13 @@ private fun AppBehaviorSettingsSection(viewModel: AppSettingsViewModel) {
     Card {
         PreferenceSwitchItem(
             title = MLang.AppSettings.Behavior.AutoStartTitle,
-            summary = MLang.AppSettings.Behavior.AutoStartSummary,
+
             checked = automaticRestart,
             onCheckedChange = viewModel::onAutomaticRestartChange,
         )
         if (com.github.yumelira.yumebox.common.util.XiaomiAutoStart.isSupported()) {
             PreferenceArrowItem(
                 title = "系统自启动权限",
-                summary = "打开 HyperOS 自启动设置，允许 YumeBox MD3 在后台启动",
                 onClick = {
                     if (!com.github.yumelira.yumebox.common.util.XiaomiAutoStart.openSettings(context)) {
                         context.toast("无法打开系统自启动设置")
@@ -135,7 +151,7 @@ private fun AppBehaviorSettingsSection(viewModel: AppSettingsViewModel) {
         }
         PreferenceSwitchItem(
             title = MLang.AppSettings.Behavior.AutoUpdateOnStartTitle,
-            summary = MLang.AppSettings.Behavior.AutoUpdateOnStartSummary,
+
             checked = autoUpdateCurrentProfileOnStart,
             onCheckedChange = viewModel::onAutoUpdateCurrentProfileOnStartChange,
         )
@@ -153,7 +169,7 @@ private fun AppThemeSettingsSection(viewModel: AppSettingsViewModel) {
     Card {
         PreferenceEnumItem(
             title = MLang.AppSettings.Interface.ThemeModeTitle,
-            summary = MLang.AppSettings.Interface.ThemeModeSummary,
+
             currentValue = themeMode,
             items = listOf(
                 MLang.AppSettings.Interface.ThemeModeSystem,
@@ -165,7 +181,7 @@ private fun AppThemeSettingsSection(viewModel: AppSettingsViewModel) {
         )
         PreferenceEnumItem(
             title = MLang.AppSettings.Interface.ColorThemeModeTitle,
-            summary = MLang.AppSettings.Interface.ColorThemeModeSummary,
+
             currentValue = colorTheme,
             items = listOf(
                 MLang.AppSettings.Interface.ColorThemeModeMonet,
@@ -187,19 +203,18 @@ private fun AppThemeSettingsSection(viewModel: AppSettingsViewModel) {
         } else if (colorTheme == AppColorTheme.AcgWallpaper) {
             PreferenceValueItem(
                 title = MLang.AppSettings.Interface.ColorThemePickerTitle,
-                summary = MLang.AppSettings.Interface.ColorThemeAcgWallpaperSummary,
                 onClick = { },
             )
         } else {
             PreferenceValueItem(
                 title = MLang.AppSettings.Interface.ColorThemePickerTitle,
-                summary = MLang.AppSettings.Interface.ColorThemeDynamicSummary,
+
                 onClick = { },
             )
         }
         PreferenceSwitchItem(
             title = MLang.AppSettings.Interface.ThemeColorPolarityInvertTitle,
-            summary = MLang.AppSettings.Interface.ThemeColorPolarityInvertSummary,
+
             checked = invertOnPrimaryColors,
             onCheckedChange = viewModel::onInvertOnPrimaryColorsChange,
         )
@@ -217,13 +232,13 @@ private fun AppInterfaceSettingsSection(viewModel: AppSettingsViewModel) {
     Card {
         PreferenceSwitchItem(
             title = MLang.AppSettings.Wallpaper.TabletMode,
-            summary = MLang.AppSettings.Wallpaper.TabletSummary,
+
             checked = tabletMode,
             onCheckedChange = viewModel.acgTabletModeEnabled::set,
         )
         PreferenceEnumItem(
             title = MLang.AppSettings.Interface.LanguageTitle,
-            summary = MLang.AppSettings.Interface.LanguageSummary,
+
             currentValue = appLanguage,
             items = listOf(
                 MLang.AppSettings.Interface.LanguageSystem,
@@ -236,13 +251,13 @@ private fun AppInterfaceSettingsSection(viewModel: AppSettingsViewModel) {
         )
         PreferenceSwitchItem(
             title = MLang.AppSettings.Interface.AutoHideNavbarTitle,
-            summary = MLang.AppSettings.Interface.AutoHideNavbarSummary,
+
             checked = bottomBarAutoHide,
             onCheckedChange = viewModel::onBottomBarAutoHideChange,
         )
         PreferenceSwitchItem(
             title = MLang.AppSettings.Interface.LegacyNavbarStyleTitle,
-            summary = MLang.AppSettings.Interface.LegacyNavbarStyleSummary,
+
             checked = bottomBarUseLegacyStyle,
             onCheckedChange = viewModel::onBottomBarUseLegacyStyleChange,
         )
@@ -263,7 +278,7 @@ private fun AppPrivacySettingsSection(viewModel: AppSettingsViewModel) {
         BiometricProtectedPreferenceSwitch(
             checkedFlow = viewModel.biometricUnlockEnabled.state,
             title = MLang.AppSettings.Privacy.BiometricUnlockTitle,
-            summary = MLang.AppSettings.Privacy.BiometricUnlockSummary,
+
             enableTitle = MLang.AppSettings.Privacy.BiometricDialogTitleEnable,
             disableTitle = MLang.AppSettings.Privacy.BiometricDialogTitleDisable,
             onConfirmedChange = viewModel::onBiometricUnlockEnabledChange,
@@ -271,7 +286,7 @@ private fun AppPrivacySettingsSection(viewModel: AppSettingsViewModel) {
         BiometricProtectedPreferenceSwitch(
             checkedFlow = viewModel.screenshotProtectionEnabled.state,
             title = MLang.AppSettings.Privacy.ScreenshotProtectionTitle,
-            summary = MLang.AppSettings.Privacy.ScreenshotProtectionSummary,
+
             enableTitle = MLang.AppSettings.Privacy.ScreenshotDialogTitleEnable,
             disableTitle = MLang.AppSettings.Privacy.ScreenshotDialogTitleDisable,
             onConfirmedChange = viewModel::onScreenshotProtectionEnabledChange,
@@ -283,7 +298,7 @@ private fun AppPrivacySettingsSection(viewModel: AppSettingsViewModel) {
         )
         PreferenceSwitchItem(
             title = MLang.AppSettings.Privacy.HideFromRecentsTitle,
-            summary = MLang.AppSettings.Privacy.HideFromRecentsSummary,
+
             checked = excludeFromRecents,
             onCheckedChange = viewModel::onExcludeFromRecentsChange,
         )
@@ -307,47 +322,60 @@ private fun AppServiceSettingsSection(viewModel: AppSettingsViewModel) {
             }
             PreferenceSwitchItem(
                 title = "超级岛",
-                summary = "在支持的 HyperOS 系统上显示代理状态和流量",
                 checked = islandEnabled,
                 onCheckedChange = settings.superIslandEnabled::set,
             )
             PreferenceArrowItem(
-                title = "Shizuku 授权",
-                summary = if (shizukuAvailable) "已授权" else "用于 HyperOS 超级岛兼容",
+                title = "Shizuku授权",
+                summary = if (shizukuAvailable) "已授权" else "未授权",
                 onClick = {
                     val manager = com.github.yumelira.yumebox.runtime.service.shizuku.ShizukuManager
                     if (manager.isRunning()) {
                         manager.requestPermission { granted ->
                             shizukuAvailable = granted
-                            context.toast(if (granted) "Shizuku 已授权" else "未获得 Shizuku 授权")
+                            context.toast(if (granted) "Shizuku已授权" else "未获得Shizuku授权")
                         }
-                    } else if (!manager.openShizuku(context)) context.toast("请先安装并启动 Shizuku")
+                    } else if (!manager.openShizuku(context)) context.toast("请先安装并启动Shizuku")
                 },
             )
         }
         PreferenceSwitchItem(
             title = MLang.AppSettings.ServiceSection.TrafficNotificationTitle,
-            summary = MLang.AppSettings.ServiceSection.TrafficNotificationSummary,
+
             checked = showTrafficNotification,
             onCheckedChange = viewModel::onShowTrafficNotificationChange,
         )
         PreferenceSwitchItem(
             title = MLang.AppSettings.ServiceSection.SingleNodeTestTitle,
-            summary = MLang.AppSettings.ServiceSection.SingleNodeTestSummary,
+
             checked = singleNodeTest,
             onCheckedChange = viewModel::onSingleNodeTestChange,
         )
         PreferenceSwitchItem(
             title = MLang.AppSettings.ServiceSection.ExitUiWhenBackgroundTitle,
-            summary = MLang.AppSettings.ServiceSection.ExitUiWhenBackgroundSummary,
+
             checked = exitUiWhenBackground,
             onCheckedChange = viewModel::onExitUiWhenBackgroundChange,
         )
         PreferenceArrowItem(
             title = MLang.AppSettings.ServiceSection.BatteryOptimizationTitle,
             onClick = {
-                if (!openBatteryOptimizationSettings(context)) {
-                    context.toast(MLang.Util.Error.UnknownError)
+                val power = context.getSystemService(android.os.PowerManager::class.java)
+                // HyperOS exposes its own per-app policy through the standard request
+                // intent. Even when Android reports an exemption, keep that page reachable.
+                val xiaomi = com.github.yumelira.yumebox.common.util.XiaomiAutoStart.isSupported()
+                if (!xiaomi && power?.isIgnoringBatteryOptimizations(context.packageName) == true) {
+                    context.toast(MLang.AppSettings.ServiceSection.BatteryOptimizationAlreadyDisabled)
+                } else {
+                    runCatching {
+                        context.startActivity(Intent(Settings.ACTION_REQUEST_IGNORE_BATTERY_OPTIMIZATIONS).apply {
+                            data = Uri.fromParts("package", context.packageName, null)
+                        })
+                    }.recoverCatching {
+                        context.startActivity(Intent(Settings.ACTION_APPLICATION_DETAILS_SETTINGS).apply {
+                            data = Uri.fromParts("package", context.packageName, null)
+                        })
+                    }.onFailure { context.toast(MLang.Util.Error.UnknownError) }
                 }
             },
         )
@@ -380,24 +408,18 @@ private fun AppHomeSettingsSection(
     Card {
         PreferenceSwitchItem(
             title = MLang.AppSettings.Experimental.AcgHomeTitle,
-            summary = MLang.AppSettings.Experimental.AcgHomeSummary,
+
             checked = acgMainUiEnabled,
             onCheckedChange = viewModel::onAcgMainUiEnabledChange,
         )
         PreferenceSwitchItem(
             title = MLang.AppSettings.Experimental.AcgSidebarExpandedTitle,
-            summary = MLang.AppSettings.Experimental.AcgSidebarExpandedSummary,
+
             checked = acgSidebarExpanded,
             onCheckedChange = viewModel::onAcgSidebarExpandedChange,
         )
         PreferenceArrowItem(
             title = MLang.AppSettings.Experimental.DailyQuoteTitle,
-            summary = when {
-                acgDailyQuoteApiEnabled && acgCustomQuoteEnabled -> MLang.AppSettings.Experimental.DailyQuoteSummaryApiAndCustomEnabled
-                acgDailyQuoteApiEnabled -> MLang.AppSettings.Experimental.DailyQuoteSummaryApiEnabled
-                acgCustomQuoteEnabled -> MLang.AppSettings.Experimental.DailyQuoteSummaryCustomEnabled
-                else -> MLang.AppSettings.Experimental.DailyQuoteSummaryConfig
-            },
             onClick = {
                 navigator.navigate(AcgQuoteConfigScreenDestination) {
                     launchSingleTop = true
@@ -406,7 +428,7 @@ private fun AppHomeSettingsSection(
         )
         PreferenceArrowItem(
             title = MLang.AppSettings.Experimental.WallpaperTitle,
-            summary = MLang.AppSettings.Experimental.WallpaperSummary,
+
             onClick = { navigator.navigate(AcgWallpaperConfigScreenDestination) { launchSingleTop = true } },
         )
     }
@@ -462,7 +484,7 @@ fun AcgQuoteConfigScreen(
                     )
                     AcgTextEditorPreferenceItem(
                         title = MLang.AppSettings.Experimental.CustomQuoteTitle,
-                        summary = MLang.AppSettings.Experimental.CustomQuoteSummary,
+
                         editorTitle = MLang.AppSettings.Experimental.CustomQuoteEditorTitle,
                         content = acgCustomQuoteListJson.ifBlank { customQuoteListTemplate() },
                         navigator = navigator,
@@ -486,7 +508,7 @@ fun AcgQuoteConfigScreen(
                     )
                     PreferenceArrowItem(
                         title = MLang.AppSettings.Experimental.DailyQuoteDocsTitle,
-                        summary = MLang.AppSettings.Experimental.DailyQuoteDocsSummary,
+
                         onClick = {
                             if (!openDailyQuoteDocs(context)) {
                                 context.toast(MLang.Util.Error.UnknownError)
@@ -534,7 +556,7 @@ private fun customQuoteListTemplate() = """// ${MLang.AppSettings.Experimental.C
 private fun BiometricProtectedPreferenceSwitch(
     checkedFlow: kotlinx.coroutines.flow.StateFlow<Boolean>,
     title: String,
-    summary: String,
+    summary: String = "",
     enableTitle: String,
     disableTitle: String,
     onConfirmedChange: (Boolean) -> Unit,
@@ -585,7 +607,7 @@ private fun HideAppIconPreferenceItem(
 
     PreferenceSwitchItem(
         title = MLang.AppSettings.Privacy.HideIconTitle,
-        summary = MLang.AppSettings.Privacy.HideIconSummary,
+
         checked = hideAppIcon,
         onCheckedChange = { checked ->
             if (checked) {
@@ -614,7 +636,7 @@ private fun HideAppIconPreferenceItem(
 @Composable
 private fun AcgQuotePreferenceItem(
     title: String,
-    summary: String,
+    summary: String = "",
     dialogTitle: String,
     currentValue: String,
     enabled: Boolean = true,
@@ -646,7 +668,7 @@ private fun AcgQuotePreferenceItem(
 @Composable
 private fun AcgTextEditorPreferenceItem(
     title: String,
-    summary: String,
+    summary: String = "",
     editorTitle: String,
     content: String,
     navigator: DestinationsNavigator,
@@ -702,21 +724,6 @@ private fun requestBiometricConfirmation(
     )
 }
 
-private fun openBatteryOptimizationSettings(
-    context: android.content.Context,
-): Boolean {
-    val power = context.getSystemService(android.os.PowerManager::class.java)
-    if (power?.isIgnoringBatteryOptimizations(context.packageName) == true) {
-        context.toast(MLang.AppSettings.ServiceSection.BatteryOptimizationAlreadyDisabled)
-        return true
-    }
-    return runCatching {
-        context.startActivity(Intent(Settings.ACTION_REQUEST_IGNORE_BATTERY_OPTIMIZATIONS).apply {
-            data = "package:${context.packageName}".toUri()
-        })
-    }.isSuccess
-}
-
 @Composable
 private fun PageScalePreferenceItem(
     pageScale: Float,
@@ -753,7 +760,7 @@ private fun PageScalePreferenceItem(
 
     PreferenceArrowItem(
         title = MLang.AppSettings.Interface.PageScaleTitle,
-        summary = MLang.AppSettings.Interface.PageScaleSummary,
+
         endActions = {
             Text(
                 text = pageScalePercentText,
@@ -843,7 +850,7 @@ private fun PageScaleDialog(
             onApply(clampedScale)
             onDismissRequest()
         },
-        summary = MLang.AppSettings.Interface.PageScaleDialogSummary,
+
         renderInRootScaffold = true,
         singleLine = true,
         trailingIcon = {

@@ -34,6 +34,8 @@ public fun AcgWallpaperCropScreenDestinationNavArgs.toSavedStateHandle(
     handle: SavedStateHandle = SavedStateHandle()
 ): SavedStateHandle {
 	stringNavType.put(handle, "wallpaperUri", wallpaperUri)
+	stringNavType.put(handle, "profile", profile)
+	stringNavType.put(handle, "poolPath", poolPath)
 	floatNavType.put(handle, "initialZoom", initialZoom)
 	floatNavType.put(handle, "initialBiasX", initialBiasX)
 	floatNavType.put(handle, "initialBiasY", initialBiasY)

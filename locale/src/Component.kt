@@ -12,16 +12,16 @@ internal val ZhHansYumeStrings_Component: YumeStrings_Component = YumeStrings_Co
         ClickToUpdate = "点击更新获取订阅信息",
         Traffic = "流量：%s / %s (%d%%)",
         UsedTraffic = "已用：%s",
-        ExpireAt = "到期：%s (剩余%d 天)",
+        ExpireAt = "到期：%s (剩余%d天)",
         ExpireToday = "到期：今天",
         Expired = "已过期：%s",
         JustNow = "刚刚",
-        MinutesAgo = "%d 分钟前",
-        HoursAgo = "%d 小时前",
-        DaysAgo = "%d 天前",
+        MinutesAgo = "%d分钟前",
+        HoursAgo = "%d小时前",
+        DaysAgo = "%d天前",
     ),
     WebView = YumeStrings_Component_WebView(
-        InvalidUrl = "无效的 URL",
+        InvalidUrl = "无效的URL",
     ),
     Selector = YumeStrings_Component_Selector(
         NotModify = "不修改",
@@ -48,14 +48,14 @@ internal val ZhHansYumeStrings_Component: YumeStrings_Component = YumeStrings_Co
         Copy = "复制",
     ),
     Flag = YumeStrings_Component_Flag(
-        ContentDescription = "%s 旗帜",
+        ContentDescription = "%s旗帜",
     ),
     Loading = YumeStrings_Component_Loading(
         Starting = "启动中...",
     ),
     ConfigInput = YumeStrings_Component_ConfigInput(
         PortLabel = "端口号 (留空表示不修改)",
-        CountItems = "%d 项",
+        CountItems = "%d项",
     ),
     BottomBar = YumeStrings_Component_BottomBar(
         Home = "首页",
@@ -64,7 +64,7 @@ internal val ZhHansYumeStrings_Component: YumeStrings_Component = YumeStrings_Co
         Setting = "设置",
     ),
     Editor = YumeStrings_Component_Editor(
-        CountItems = "共 %d 项",
+        CountItems = "共 %d项",
         Action = YumeStrings_Component_Editor_Action(
             Search = "搜索",
         ),
@@ -86,7 +86,7 @@ internal val ZhHansYumeStrings_Component: YumeStrings_Component = YumeStrings_Co
             Type = "规则类型",
             Target = "目标",
             Content = "规则内容",
-            Src = "源 IP",
+            Src = "源IP",
             NoResolve = "不解析",
             TargetReject = "REJECT",
             TargetDirect = "DIRECT",
@@ -108,16 +108,16 @@ internal val ZhYumeStrings_Component: YumeStrings_Component = YumeStrings_Compon
         ClickToUpdate = "點一下更新以取得訂閱資訊",
         Traffic = "流量：%s / %s (%d%%)",
         UsedTraffic = "已用：%s",
-        ExpireAt = "到期：%s (剩餘 %d 天)",
+        ExpireAt = "到期：%s (剩餘 %d天)",
         ExpireToday = "到期：今天",
         Expired = "已過期：%s",
         JustNow = "剛剛",
-        MinutesAgo = "%d 分鐘前",
-        HoursAgo = "%d 小時前",
-        DaysAgo = "%d 天前",
+        MinutesAgo = "%d分鐘前",
+        HoursAgo = "%d小時前",
+        DaysAgo = "%d天前",
     ),
     WebView = YumeStrings_Component_WebView(
-        InvalidUrl = "無效的 URL",
+        InvalidUrl = "無效的URL",
     ),
     Selector = YumeStrings_Component_Selector(
         NotModify = "不修改",
@@ -144,14 +144,14 @@ internal val ZhYumeStrings_Component: YumeStrings_Component = YumeStrings_Compon
         Copy = "複製",
     ),
     Flag = YumeStrings_Component_Flag(
-        ContentDescription = "%s 旗幟",
+        ContentDescription = "%s旗幟",
     ),
     Loading = YumeStrings_Component_Loading(
         Starting = "啟動中...",
     ),
     ConfigInput = YumeStrings_Component_ConfigInput(
         PortLabel = "連接埠 (留空表示不修改)",
-        CountItems = "%d 項",
+        CountItems = "%d項",
     ),
     BottomBar = YumeStrings_Component_BottomBar(
         Home = "首頁",
@@ -160,7 +160,7 @@ internal val ZhYumeStrings_Component: YumeStrings_Component = YumeStrings_Compon
         Setting = "設定",
     ),
     Editor = YumeStrings_Component_Editor(
-        CountItems = "共 %d 項",
+        CountItems = "共 %d項",
         Action = YumeStrings_Component_Editor_Action(
             Search = "搜尋",
         ),
@@ -182,7 +182,7 @@ internal val ZhYumeStrings_Component: YumeStrings_Component = YumeStrings_Compon
             Type = "規則類型",
             Target = "目標",
             Content = "規則內容",
-            Src = "來源 IP",
+            Src = "來源IP",
             NoResolve = "不解析",
             TargetReject = "REJECT",
             TargetDirect = "DIRECT",
@@ -300,13 +300,13 @@ internal val JaYumeStrings_Component: YumeStrings_Component = YumeStrings_Compon
         ClickToUpdate = "更新をタップして購読情報を取得",
         Traffic = "通信量: %s / %s (%d%%)",
         UsedTraffic = "使用済み: %s",
-        ExpireAt = "期限: %s (残り %d 日)",
+        ExpireAt = "期限: %s (残り %d日)",
         ExpireToday = "期限: 今日",
         Expired = "期限切れ: %s",
         JustNow = "たった今",
-        MinutesAgo = "%d 分前",
-        HoursAgo = "%d 時間前",
-        DaysAgo = "%d 日前",
+        MinutesAgo = "%d分前",
+        HoursAgo = "%d時間前",
+        DaysAgo = "%d日前",
     ),
     WebView = YumeStrings_Component_WebView(
         InvalidUrl = "無効な URL",
@@ -343,7 +343,7 @@ internal val JaYumeStrings_Component: YumeStrings_Component = YumeStrings_Compon
     ),
     ConfigInput = YumeStrings_Component_ConfigInput(
         PortLabel = "ポート (空欄で変更しない)",
-        CountItems = "%d 件",
+        CountItems = "%d件",
     ),
     BottomBar = YumeStrings_Component_BottomBar(
         Home = "ホーム",
@@ -352,7 +352,7 @@ internal val JaYumeStrings_Component: YumeStrings_Component = YumeStrings_Compon
         Setting = "設定",
     ),
     Editor = YumeStrings_Component_Editor(
-        CountItems = "合計 %d 件",
+        CountItems = "合計 %d件",
         Action = YumeStrings_Component_Editor_Action(
             Search = "検索",
         ),
@@ -374,7 +374,7 @@ internal val JaYumeStrings_Component: YumeStrings_Component = YumeStrings_Compon
             Type = "ルール種別",
             Target = "ターゲット",
             Content = "ルール内容",
-            Src = "送信元 IP",
+            Src = "送信元IP",
             NoResolve = "解決しない",
             TargetReject = "REJECT",
             TargetDirect = "DIRECT",

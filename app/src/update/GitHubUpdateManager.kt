@@ -61,7 +61,7 @@ class GitHubUpdateManager @JvmOverloads constructor(
                 .header("Cache-Control", if (manual) "no-cache" else "max-age=21600").build()
             val releases = client.newCall(request).execute().use { response ->
                 if (response.code == 404) return@withLock null.also { _candidate.value = null }
-                if (!response.isSuccessful) throw IOException(if (response.code == 403 || response.code == 429) "GitHub 请求受限，请稍后重试" else "GitHub HTTP ${response.code}")
+                if (!response.isSuccessful) throw IOException(if (response.code == 403 || response.code == 429) "GitHub请求受限，请稍后重试" else "GitHub HTTP ${response.code}")
                 val body = response.body.string()
                 if (includePrereleases) json.decodeFromString<List<GitHubRelease>>(body) else listOf(json.decodeFromString<GitHubRelease>(body))
             }
@@ -109,7 +109,7 @@ class GitHubUpdateManager @JvmOverloads constructor(
         val file = File(directory, "release-${candidate.release.id}.apk")
         val partial = File(directory, "release-${candidate.release.id}.part")
         try {
-            val asset = candidate.asset ?: throw IOException("没有适合当前设备的 APK，请打开发布页下载")
+            val asset = candidate.asset ?: throw IOException("没有适合当前设备的APK，请打开发布页下载")
             require(asset.url.startsWith("https://github.com/$REPOSITORY/releases/download/")) { "发布附件地址无效" }
             if (file.isFile) {
                 val valid = runCatching { validateApk(file) }.isSuccess && (asset.size <= 0 || file.length() == asset.size)
@@ -143,7 +143,7 @@ class GitHubUpdateManager @JvmOverloads constructor(
             }
             asset.digest?.takeIf { it.startsWith("sha256:") }?.let { expected ->
                 val actual = hash.digest().joinToString("") { "%02x".format(it) }
-                require(actual.equals(expected.substringAfter(':'), true)) { "安装包 SHA-256 校验失败" }
+                require(actual.equals(expected.substringAfter(':'), true)) { "安装包SHA-256校验失败" }
             }
             validateApk(partial)
             if (cancelled) throw IOException("下载已取消")
@@ -166,9 +166,9 @@ class GitHubUpdateManager @JvmOverloads constructor(
     private fun validateApk(file: File) {
         val pm = context.packageManager
         val flags = if (Build.VERSION.SDK_INT >= 28) PackageManager.GET_SIGNING_CERTIFICATES else PackageManager.GET_SIGNATURES
-        val archive = pm.getPackageArchiveInfo(file.path, flags) ?: error("文件不是有效的 APK")
+        val archive = pm.getPackageArchiveInfo(file.path, flags) ?: error("文件不是有效的APK")
         val installed = pm.getPackageInfo(context.packageName, flags)
-        require(archive.packageName == context.packageName) { "安装包不属于 YumeBox MD3" }
+        require(archive.packageName == context.packageName) { "安装包不属于YumeBox MD3" }
         val code = if (Build.VERSION.SDK_INT >= 28) archive.longVersionCode else archive.versionCode.toLong()
         require(code > currentVersionCode) { "安装包版本不高于当前版本" }
         val old = if (Build.VERSION.SDK_INT >= 28) installed.signingInfo?.apkContentsSigners else installed.signatures

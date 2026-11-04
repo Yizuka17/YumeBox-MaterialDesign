@@ -26,7 +26,7 @@ internal val ZhHansYumeStrings_ProfilesPage: YumeStrings_ProfilesPage = YumeStri
         SubscriptionUrl = "订阅链接 (HTTP/HTTPS)",
         SelectFile = "点击选择文件",
         NewProfile = "新配置",
-        AgeSecretKey = "Age 私钥（可选）",
+        AgeSecretKey = "Age私钥（可选）",
     ),
     QrScanner = YumeStrings_ProfilesPage_QrScanner(
         NeedPermission = "需要相机权限",
@@ -42,7 +42,7 @@ internal val ZhHansYumeStrings_ProfilesPage: YumeStrings_ProfilesPage = YumeStri
     Validation = YumeStrings_ProfilesPage_Validation(
         EnterUrl = "请输入链接",
         SelectFile = "请选择文件",
-        YamlOnly = "仅支持 .yaml 或 .yml 格式的配置文件",
+        YamlOnly = "仅支持 .yaml或 .yml格式的配置文件",
     ),
     Progress = YumeStrings_ProfilesPage_Progress(
         Downloading = "下载中...",
@@ -62,7 +62,7 @@ internal val ZhHansYumeStrings_ProfilesPage: YumeStrings_ProfilesPage = YumeStri
     LinkSettings = YumeStrings_ProfilesPage_LinkSettings(
         Title = "链接设置",
         OpenMode = "打开方式",
-        OpenModeInApp = "App 内打开",
+        OpenModeInApp = "App内打开",
         OpenModeExternal = "外部浏览器",
         DefaultLink = "默认链接",
         DefaultLinkSummary = "点击左上角快捷按钮时打开的链接",
@@ -98,7 +98,7 @@ internal val ZhHansYumeStrings_ProfilesPage: YumeStrings_ProfilesPage = YumeStri
         SectionOverride = "覆写配置",
         SaveFailed = "保存配置失败",
         ConfigMissing = "配置不存在：%s",
-        AgeSecretKey = "Age 私钥",
+        AgeSecretKey = "Age私钥",
     ),
 )
 
@@ -121,21 +121,21 @@ internal val ZhYumeStrings_ProfilesPage: YumeStrings_ProfilesPage = YumeStrings_
         Title = "設定檔類型",
         Subscription = "訂閱連結",
         LocalFile = "本機檔案",
-        QrScan = "掃描 QR Code",
+        QrScan = "掃描QR Code",
     ),
     Input = YumeStrings_ProfilesPage_Input(
         ProfileName = "設定檔名稱",
         SubscriptionUrl = "訂閱連結 (HTTP/HTTPS)",
         SelectFile = "點一下選擇檔案",
         NewProfile = "新設定檔",
-        AgeSecretKey = "Age 私鑰（選填）",
+        AgeSecretKey = "Age私鑰（選填）",
     ),
     QrScanner = YumeStrings_ProfilesPage_QrScanner(
         NeedPermission = "需要相機權限",
         NeedCamera = "需要相機權限才能掃描",
-        SelectFromAlbum = "從相簿選擇 QR Code 圖片",
+        SelectFromAlbum = "從相簿選擇QR Code圖片",
         RecognizeSuccess = "辨識成功",
-        RecognizeFailed = "未能辨識到 QR Code",
+        RecognizeFailed = "未能辨識到QR Code",
         RecognizeError = "辨識失敗：%s",
     ),
     Message = YumeStrings_ProfilesPage_Message(
@@ -144,7 +144,7 @@ internal val ZhYumeStrings_ProfilesPage: YumeStrings_ProfilesPage = YumeStrings_
     Validation = YumeStrings_ProfilesPage_Validation(
         EnterUrl = "請輸入連結",
         SelectFile = "請選擇檔案",
-        YamlOnly = "僅支援 .yaml 或 .yml 格式",
+        YamlOnly = "僅支援 .yaml或 .yml格式",
     ),
     Progress = YumeStrings_ProfilesPage_Progress(
         Downloading = "下載中...",
@@ -200,7 +200,7 @@ internal val ZhYumeStrings_ProfilesPage: YumeStrings_ProfilesPage = YumeStrings_
         SectionOverride = "覆寫設定",
         SaveFailed = "儲存設定檔失敗",
         ConfigMissing = "設定檔不存在：%s",
-        AgeSecretKey = "Age 私鑰",
+        AgeSecretKey = "Age私鑰",
     ),
 )
 
@@ -323,16 +323,16 @@ internal val JaYumeStrings_ProfilesPage: YumeStrings_ProfilesPage = YumeStrings_
     ),
     Type = YumeStrings_ProfilesPage_Type(
         Title = "プロファイル種別",
-        Subscription = "購読 URL",
+        Subscription = "購読URL",
         LocalFile = "ローカルファイル",
         QrScan = "QR コードをスキャン",
     ),
     Input = YumeStrings_ProfilesPage_Input(
         ProfileName = "プロファイル名",
-        SubscriptionUrl = "購読 URL (HTTP/HTTPS)",
+        SubscriptionUrl = "購読URL (HTTP/HTTPS)",
         SelectFile = "タップしてファイルを選択",
         NewProfile = "新規プロファイル",
-        AgeSecretKey = "Age 秘密鍵（任意）",
+        AgeSecretKey = "Age秘密鍵（任意）",
     ),
     QrScanner = YumeStrings_ProfilesPage_QrScanner(
         NeedPermission = "カメラ権限が必要です",
@@ -348,7 +348,7 @@ internal val JaYumeStrings_ProfilesPage: YumeStrings_ProfilesPage = YumeStrings_
     Validation = YumeStrings_ProfilesPage_Validation(
         EnterUrl = "URL を入力してください",
         SelectFile = "ファイルを選択してください",
-        YamlOnly = ".yaml または .yml 形式のみ対応",
+        YamlOnly = ".yaml または .yml形式のみ対応",
     ),
     Progress = YumeStrings_ProfilesPage_Progress(
         Downloading = "ダウンロード中...",
@@ -404,7 +404,7 @@ internal val JaYumeStrings_ProfilesPage: YumeStrings_ProfilesPage = YumeStrings_
         SectionOverride = "上書き設定",
         SaveFailed = "プロファイルの保存に失敗しました",
         ConfigMissing = "設定が見つかりません: %s",
-        AgeSecretKey = "Age 秘密鍵",
+        AgeSecretKey = "Age秘密鍵",
     ),
 )
 

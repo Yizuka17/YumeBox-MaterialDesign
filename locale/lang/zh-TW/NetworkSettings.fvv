@@ -11,26 +11,26 @@ NetworkSettings = {
     VpnService = {
         RouteTrafficTitle = "路由系統流量"
         RouteTrafficSummary = "選擇目前用於接管系統流量的代理模式"
-        VpnMode = "VPN 模式"
+        VpnMode = "VPN模式"
         RootTunMode = "Root TUN"
-        SystemProxy = "HTTP 系統代理"
+        SystemProxy = "HTTP系統代理"
     }
 
     VpnOptions = {
         BypassPrivateTitle = "繞過私有網路"
         BypassPrivateSummary = "繞過私有網路和本地地址"
-        DnsHijackTitle = "DNS 劫持"
-        DnsHijackSummary = "將所有 DNS 請求重新導向到 YumeBox"
+        DnsHijackTitle = "DNS劫持"
+        DnsHijackSummary = "將所有DNS請求重新導向到YumeBox"
         AllowBypassTitle = "允許應用程式繞過"
-        AllowBypassSummary = "允許應用程式繞過 VPN"
-        EnableIpv6Title = "啟用 IPv6"
-        EnableIpv6Summary = "允許透過 VPN 路由 IPv6 流量"
-        SystemProxyTitle = "VPN 系統代理"
-        SystemProxySummary = "僅在 VPN 模式下，為未經由 TUN 的應用程式設定 HTTP 代理"
+        AllowBypassSummary = "允許應用程式繞過VPN"
+        EnableIpv6Title = "啟用IPv6"
+        EnableIpv6Summary = "允許透過VPN路由IPv6流量"
+        SystemProxyTitle = "VPN系統代理"
+        SystemProxySummary = "僅在VPN模式下，為未經由TUN的應用程式設定HTTP代理"
     }
 
     ProxyOptions = {
-        TunStackTitle = "TUN 協定堆疊"
+        TunStackTitle = "TUN協定堆疊"
         AccessControlModeTitle = "存取控制模式"
         AllowAll = "允許所有"
         AllowSelected = "允許選擇"
@@ -41,27 +41,27 @@ NetworkSettings = {
 
     RootTun = {
         IfNameTitle = "介面名稱"
-        IfNameSummary = "RootTun 建立的虛擬網路卡名"
+        IfNameSummary = "RootTun建立的虛擬網路卡名"
         MtuTitle = "MTU"
-        MtuSummary = "RootTun 連線的最大傳輸單元"
+        MtuSummary = "RootTun連線的最大傳輸單元"
         AutoRouteTitle = "自動路由"
         AutoRouteSummary = "自動新增轉送所需路由"
         StrictRouteTitle = "嚴格路由"
-        StrictRouteSummary = "僅允許命中的流量經由 RootTun"
+        StrictRouteSummary = "僅允許命中的流量經由RootTun"
         AutoRedirectTitle = "自動重新導向"
-        AutoRedirectSummary = "自動啟用 RootTun 所需的重新導向規則"
-        DnsModeTitle = "DNS 模式"
-        DnsModeSummary = "選擇 RedirHost 或 FakeIP"
+        AutoRedirectSummary = "自動啟用RootTun所需的重新導向規則"
+        DnsModeTitle = "DNS模式"
+        DnsModeSummary = "選擇RedirHost或FakeIP"
         DnsModeRedirHost = "RedirHost"
         DnsModeFakeIp = "FakeIP"
-        FakeIpRangeTitle = "FakeIP IPv4 地址段"
-        FakeIpRangeSummary = "僅在 FakeIP 模式下生效"
-        FakeIpRange6Title = "FakeIP IPv6 地址段"
-        FakeIpRange6Summary = "僅在 FakeIP 模式下生效"
+        FakeIpRangeTitle = "FakeIP IPv4地址段"
+        FakeIpRangeSummary = "僅在FakeIP模式下生效"
+        FakeIpRange6Title = "FakeIP IPv6地址段"
+        FakeIpRange6Summary = "僅在FakeIP模式下生效"
     }
 
     Error = {
-        VpnDenied = "VPN 權限被拒絕"
-        RootRequired = "RootTun 需要 YumeBox 已取得可用的 Root 權限"
+        VpnDenied = "VPN權限被拒絕"
+        RootRequired = "RootTun需要YumeBox已取得可用的Root權限"
     }
 }

@@ -69,7 +69,7 @@ internal fun ThemeModeSelectorItem(
 ) {
     EnumSelector(
         title = MLang.AppSettings.Interface.ThemeModeTitle,
-        summary = MLang.AppSettings.Interface.ThemeModeSummary,
+
         currentValue = themeMode,
         items = listOf(
             MLang.AppSettings.Interface.ThemeModeSystem,
@@ -110,9 +110,7 @@ internal fun ThemeColorPickerItem(
 
     PreferenceListItem(
         title = MLang.AppSettings.Interface.ColorThemeTitle,
-        summary = MLang.AppSettings.Interface.ColorThemeCustomSummary.format(
-            formatThemeSeedHex(themeSeedColorArgb)
-        ),
+        summary = formatThemeSeedHex(themeSeedColorArgb),
         onClick = {
             editingThemeSeedColor.value = runCatching { colorFromArgb(themeSeedColorArgb) }
                 .getOrDefault(Color.White)

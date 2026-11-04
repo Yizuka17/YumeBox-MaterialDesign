@@ -29,7 +29,7 @@ Home = {
     }
 
     IpInfo = {
-        ExitIp = "出口 IP"
+        ExitIp = "出口IP"
     }
 
     Acg = {

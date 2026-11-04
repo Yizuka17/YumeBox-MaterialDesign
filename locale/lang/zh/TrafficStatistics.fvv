@@ -17,11 +17,11 @@ TrafficStatistics = {
         MoreThanYesterday = "较昨日 +%s"
         LessThanYesterday = "较昨日 %s"
         SameAsYesterday = "与昨日持平"
-        WeekStats = "近 7 天统计"
+        WeekStats = "近7天统计"
     }
 
     Chart = {
-        Hourly = "4 小时"
+        Hourly = "4小时"
         Daily = "按天"
     }
 
@@ -44,6 +44,6 @@ TrafficStatistics = {
     Metric = {
         Download = "下行"
         Upload = "上行"
-        UsageLine = "下行 %s  上行 %s"
+        UsageLine = "下行 %s上行 %s"
     }
 }

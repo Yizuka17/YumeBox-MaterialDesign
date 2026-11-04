@@ -3,7 +3,7 @@ package com.github.yumelira.yumebox.core.locale
 internal val ZhHansYumeStrings_About: YumeStrings_About = YumeStrings_About(
     Title = "关于",
     App = YumeStrings_About_App(
-        Description = "基于 mihomo 的开源 Android 客户端",
+        Description = "基于mihomo的开源Android客户端",
         VersionLoading = "加载中...",
         VersionFailed = "加载失败",
     ),
@@ -19,8 +19,8 @@ internal val ZhHansYumeStrings_About: YumeStrings_About = YumeStrings_About(
         License = "许可证",
     ),
     Link = YumeStrings_About_Link(
-        TelegramGroup = "Telegram 群组",
-        TelegramChannel = "Telegram 频道",
+        TelegramGroup = "Telegram群组",
+        TelegramChannel = "Telegram频道",
     ),
     Support = YumeStrings_About_Support(
         ExportLogs = "导出日志",
@@ -32,15 +32,15 @@ internal val ZhHansYumeStrings_About: YumeStrings_About = YumeStrings_About(
         Libraries = "引用库",
         LibrariesSummary = "查看本应用使用的所有第三方库",
         AgplName = "GNU Affero General Public License v3.0",
-        AgplDescription = "本程序是自由软件：你可以根据 GNU Affero 通用公共许可证的条款重新分发和修改.",
+        AgplDescription = "本程序是自由软件：你可以根据GNU Affero通用公共许可证的条款重新分发和修改.",
     ),
-    Copyright = "© 2025 – 至今 YumeYucca",
+    Copyright = "© 2025 – 至今YumeYucca",
 )
 
 internal val ZhYumeStrings_About: YumeStrings_About = YumeStrings_About(
     Title = "關於",
     App = YumeStrings_About_App(
-        Description = "基於 mihomo 的開源 Android 用戶端",
+        Description = "基於mihomo的開源Android用戶端",
         VersionLoading = "載入中...",
         VersionFailed = "載入失敗",
     ),
@@ -56,8 +56,8 @@ internal val ZhYumeStrings_About: YumeStrings_About = YumeStrings_About(
         License = "授權",
     ),
     Link = YumeStrings_About_Link(
-        TelegramGroup = "Telegram 群組",
-        TelegramChannel = "Telegram 頻道",
+        TelegramGroup = "Telegram群組",
+        TelegramChannel = "Telegram頻道",
     ),
     Support = YumeStrings_About_Support(
         ExportLogs = "匯出日誌",
@@ -69,9 +69,9 @@ internal val ZhYumeStrings_About: YumeStrings_About = YumeStrings_About(
         Libraries = "引用函式庫",
         LibrariesSummary = "檢視本應用使用的所有第三方函式庫",
         AgplName = "GNU Affero General Public License v3.0",
-        AgplDescription = "本程式為自由軟體：你可依 GNU Affero 通用公眾授權條款重新散布與／或修改.",
+        AgplDescription = "本程式為自由軟體：你可依GNU Affero通用公眾授權條款重新散布與／或修改.",
     ),
-    Copyright = "© 2025 – 至今 YumeYucca",
+    Copyright = "© 2025 – 至今YumeYucca",
 )
 
 internal val EnYumeStrings_About: YumeStrings_About = YumeStrings_About(
@@ -143,7 +143,7 @@ internal val JaYumeStrings_About: YumeStrings_About = YumeStrings_About(
         Libraries = "ライブラリ",
         LibrariesSummary = "このアプリで使用しているサードパーティライブラリを表示",
         AgplName = "GNU Affero General Public License v3.0",
-        AgplDescription = "本プログラムはフリーソフトウェアです.GNU Affero 一般公衆ライセンスの条項に従って再配布および/または改変できます.",
+        AgplDescription = "本プログラムはフリーソフトウェアです.GNU Affero一般公衆ライセンスの条項に従って再配布および/または改変できます.",
     ),
     Copyright = "© 2025 – Present YumeYucca",
 )

@@ -14,7 +14,7 @@ internal val ZhHansYumeStrings_Proxy: YumeStrings_Proxy = YumeStrings_Proxy(
     ),
     Node = YumeStrings_Proxy_Node(
         Timeout = "超时",
-        Count = "%d 节点",
+        Count = "%d节点",
     ),
     Empty = YumeStrings_Proxy_Empty(
         NoNodes = "暂无节点",
@@ -61,7 +61,7 @@ internal val ZhYumeStrings_Proxy: YumeStrings_Proxy = YumeStrings_Proxy(
     ),
     Node = YumeStrings_Proxy_Node(
         Timeout = "逾時",
-        Count = "%d 節點",
+        Count = "%d節點",
     ),
     Empty = YumeStrings_Proxy_Empty(
         NoNodes = "暫無節點",

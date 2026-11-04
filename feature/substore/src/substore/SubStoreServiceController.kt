@@ -65,7 +65,7 @@ object SubStoreServiceController {
             putExtra(EXTRA_AUTO_CLOSE, request.autoCloseMinutes ?: 0)
         }
         runCatching {
-            checkNotNull(context.startService(intent)) { "Sub-Store 服务未注册或无法启动" }
+            checkNotNull(context.startService(intent)) { "Sub-Store服务未注册或无法启动" }
         }.onFailure {
             _snapshot.value = SubStoreServiceSnapshot()
             throw it

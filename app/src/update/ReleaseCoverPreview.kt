@@ -40,7 +40,9 @@ import kotlinx.coroutines.launch
 
 @Composable
 fun ReleaseCoverPreview(source: String, onDismiss: () -> Unit, localImage: Boolean = false,
-    description: String = "更新封面预览", saveTitle: String = "保存封面", onDelete: (() -> Unit)? = null) {
+    description: String = "更新封面预览", saveTitle: String = "保存封面", onDelete: (() -> Unit)? = null,
+    onAdjust: (() -> Unit)? = null,
+) {
     val context = LocalContext.current
     val scope = rememberCoroutineScope()
     var scale by remember(source) { mutableFloatStateOf(1f) }
@@ -101,7 +103,7 @@ fun ReleaseCoverPreview(source: String, onDismiss: () -> Unit, localImage: Boole
                         scaleX = scale; scaleY = scale
                         translationX = offset.x; translationY = offset.y
                     }
-                    .semantics { onLongClick("保存图片") { showSave = true; true } }
+                    .semantics { onLongClick(if (localImage) MLang.AppSettings.Wallpaper.ImageActions else saveTitle) { showSave = true; true } }
                     .pointerInput(source) {
                         detectTapGestures(
                             onLongPress = { showSave = true },
@@ -141,6 +143,10 @@ fun ReleaseCoverPreview(source: String, onDismiss: () -> Unit, localImage: Boole
                     PreferenceValueItem(title = MLang.AppSettings.Wallpaper.SaveImage, enabled = !saving, onClick = {
                         showSave = false
                         saveImage()
+                    })
+                    if (onAdjust != null) PreferenceValueItem(title = MLang.AppSettings.Wallpaper.AdjustPosition, onClick = {
+                        showSave = false
+                        onAdjust()
                     })
                     if (onDelete != null) PreferenceValueItem(title = MLang.AppSettings.Wallpaper.Remove, onClick = {
                         showSave = false

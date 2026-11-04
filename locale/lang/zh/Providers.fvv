@@ -30,13 +30,13 @@ Providers = {
     
     Message = {
         FetchFailed = "获取外部资源失败: %s"
-        UpdateSuccess = "%s 更新成功"
+        UpdateSuccess = "%s更新成功"
         UpdateFailed = "更新失败: %s"
         AllUpdated = "全部更新完成"
-        UploadSuccess = "%s 上传成功"
+        UploadSuccess = "%s上传成功"
         UploadFailed = "上传失败: %s"
     }
     InfoTitle = "内核目录"
-    InfoSummary = "GeoX 和内核运行时公共文件位于：%s。规则和代理提供者只会写入当前配置的私有目录。"
+    InfoSummary = "GeoX和内核运行时公共文件位于：%s。规则和代理提供者只会写入当前配置的私有目录。"
     ProviderPath = "资源路径：%s"
 }

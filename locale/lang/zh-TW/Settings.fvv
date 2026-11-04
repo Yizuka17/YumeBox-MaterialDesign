@@ -10,6 +10,7 @@ Settings = {
     }
 
     UiSettings = {
+        Theme = "主題"
         App = "應用程式"
         AppSummary = "外觀 · 語言 · 主題"
     }
@@ -19,8 +20,8 @@ Settings = {
         NetworkSummary = "DNS · 埠 · 入站"
         Override = "覆寫"
         OverrideSummary = "規則覆寫"
-        MetaFeatures = "Meta 功能"
-        MetaFeaturesSummary = "Meta 擴充套件"
+        MetaFeatures = "Meta功能"
+        MetaFeaturesSummary = "Meta擴充套件"
         Lab = "實驗室"
         LabSummary = "Sub-Store · 實驗功能"
     }
@@ -29,7 +30,7 @@ Settings = {
         ExportBackup = "匯出備份"
         ExportBackupSummary = "設定、設定檔與覆寫"
         ImportBackup = "還原備份"
-        ImportBackupSummary = "支援 ZIP 和舊版 JSON"
+        ImportBackupSummary = "支援ZIP和舊版JSON"
         AppDataManagement = "應用程式資料管理"
         AppDataManagementSummary = "清理部分快取檔案"
     }
@@ -42,6 +43,6 @@ Settings = {
     }
 
     Error = {
-        WebviewFailed = "無法開啟 WebView：%s"
+        WebviewFailed = "無法開啟WebView：%s"
     }
 }

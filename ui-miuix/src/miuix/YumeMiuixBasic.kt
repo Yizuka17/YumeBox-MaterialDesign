@@ -72,7 +72,7 @@ fun YumeMiuixText(
     style: TextStyle = TextStyle.Default,
     fontWeight: FontWeight? = null,
     fontSize: TextUnit = TextUnit.Unspecified,
-    fontFamily: FontFamily? = FontFamily.Default,
+    fontFamily: FontFamily? = null,
     letterSpacing: TextUnit = TextUnit.Unspecified,
     lineHeight: TextUnit = TextUnit.Unspecified,
     maxLines: Int = Int.MAX_VALUE,

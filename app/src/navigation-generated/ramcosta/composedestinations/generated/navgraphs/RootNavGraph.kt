@@ -100,6 +100,7 @@ public data object RootNavGraph : BaseRoute(), DirectionNavHostGraphSpec {
 		ActivationWizardScreenDestination,
 		AppDataManagementScreenDestination,
 		AppSettingsScreenDestination,
+		ThemeSettingsScreenDestination,
 		AppStartScreenDestination,
 		ConnectionScreenDestination,
 		CustomRoutingRouteDestination,

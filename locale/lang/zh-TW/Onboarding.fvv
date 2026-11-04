@@ -30,7 +30,7 @@ Onboarding = {
     Privacy = {
         Title = "確認隱私與協議"
         Subtitle = "閱讀並同意協議後方可繼續"
-        RichTextLead = "在開始使用前需要同意隱私協議，才能繼續使用 YumeBox。"
+        RichTextLead = "在開始使用前需要同意隱私協議，才能繼續使用YumeBox。"
         RichTextPrefix = "繼續前請先閱讀並同意 "
         RichTextConnector = " 與 "
         RichTextSuffix = "。"
@@ -56,7 +56,7 @@ Onboarding = {
 
     Project = {
         Github = {
-            Title = "GitHub 倉庫"
+            Title = "GitHub倉庫"
             Summary = "github.com/Yizuka17/YumeBox-MaterialDesign"
         }
         Community = {

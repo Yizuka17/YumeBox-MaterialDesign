@@ -38,6 +38,7 @@ import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.produceState
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.setValue
@@ -60,8 +61,12 @@ import com.github.yumelira.yumebox.data.model.AppColorTheme
 import com.github.yumelira.yumebox.presentation.component.StartupBiometricContent
 import com.github.yumelira.yumebox.presentation.component.ToastDialogHost
 import com.github.yumelira.yumebox.presentation.component.rememberStartupBiometricGateState
-import com.github.yumelira.yumebox.presentation.theme.DEFAULT_ACG_WALLPAPER_THEME_SEED_ARGB
-import com.github.yumelira.yumebox.presentation.theme.DEFAULT_CUSTOM_THEME_SEED_ARGB
+import com.github.yumelira.yumebox.screen.acg.AcgWallpaperManager
+import com.github.yumelira.yumebox.screen.acg.extractWallpaperSeed
+import com.github.yumelira.yumebox.screen.settings.AppFontStorage
+import androidx.compose.ui.text.font.FontFamily
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.withContext
 import com.github.yumelira.yumebox.presentation.theme.NavigationTransitions
 import com.github.yumelira.yumebox.presentation.theme.ProvideAndroidPlatformTheme
 import com.github.yumelira.yumebox.presentation.theme.YumeTheme
@@ -101,9 +106,11 @@ class MainActivity : FragmentActivity() {
     private val serviceCache: MMKV by inject(qualifier = named("service_cache"))
     private val applicationScope: CoroutineScope by inject(qualifier = named(APPLICATION_SCOPE_NAME))
     private val updateManager: GitHubUpdateManager by inject()
+    private val wallpapers: AcgWallpaperManager by inject()
 
     private lateinit var intentController: IntentController
-    private var openHomeRequest by mutableIntStateOf(0)
+    private var pageRequest by mutableIntStateOf(0)
+    private var requestedPage by mutableIntStateOf(0)
 
     override fun attachBaseContext(newBase: Context) {
         super.attachBaseContext(AppLanguageManager.wrap(newBase))
@@ -143,16 +150,31 @@ class MainActivity : FragmentActivity() {
             val themeMode = appSettingsViewModel.themeMode.state.collectAsState().value
             val colorTheme = appSettingsViewModel.colorTheme.state.collectAsState().value
             val themeSeedColorArgb = appSettingsViewModel.themeSeedColorArgb.state.collectAsState().value
-            val acgWallpaperSeedColorArgb = appSettingsViewModel.acgWallpaperSeedColorArgb.state.collectAsState().value
-            val acgWallpaperUri = appSettingsViewModel.acgWallpaperUri.state.collectAsState().value
-            val effectiveThemeSeedColorArgb = if (colorTheme == AppColorTheme.AcgWallpaper) {
-                if (acgWallpaperUri.isBlank() && acgWallpaperSeedColorArgb == DEFAULT_CUSTOM_THEME_SEED_ARGB) {
-                    DEFAULT_ACG_WALLPAPER_THEME_SEED_ARGB
-                } else {
-                    acgWallpaperSeedColorArgb
+            val wallpaperProfile by wallpapers.activeProfile.collectAsState()
+            val wallpaperOptions by wallpapers.options.collectAsState()
+            val displayedWallpapers by wallpapers.displayedSources.collectAsState()
+            val dailyWallpaper by appSettingsViewModel.acgDailyWallpaperEnabled.state.collectAsState()
+            val legacyWallpaper by appSettingsViewModel.acgWallpaperUri.state.collectAsState()
+            val wallpaperModel = remember(wallpaperProfile, wallpaperOptions, dailyWallpaper, legacyWallpaper, displayedWallpapers) {
+                displayedWallpapers[wallpaperProfile] ?: wallpapers.displayUri(wallpaperProfile, dailyWallpaper)
+            }
+            val wallpaperSeed by produceState<Long?>(null, colorTheme, wallpaperModel) {
+                value = if (colorTheme == AppColorTheme.AcgWallpaper) withContext(Dispatchers.Default) {
+                    extractWallpaperSeed(this@MainActivity, wallpaperModel)
+                } else null
+            }
+            val effectiveColorTheme = if (colorTheme == AppColorTheme.AcgWallpaper && wallpaperSeed == null) {
+                AppColorTheme.MonetDynamic
+            } else colorTheme
+            val effectiveThemeSeedColorArgb =
+                if (colorTheme == AppColorTheme.AcgWallpaper) wallpaperSeed ?: themeSeedColorArgb else themeSeedColorArgb
+            val customFont by appSettingsStorage.customFont.state.collectAsState()
+            val fontWeight by appSettingsStorage.appFontWeight.state.collectAsState()
+            val fontSizeScale by appSettingsStorage.appFontSizeScale.state.collectAsState()
+            val fontFamily by produceState<FontFamily?>(null, customFont, fontWeight) {
+                value = withContext(Dispatchers.IO) {
+                    AppFontStorage.load(this@MainActivity, customFont, fontWeight)
                 }
-            } else {
-                themeSeedColorArgb
             }
             val invertOnPrimaryColors = appSettingsViewModel.invertOnPrimaryColors.state.collectAsState().value
             val excludeFromRecents = appSettingsViewModel.excludeFromRecents.state.collectAsState().value
@@ -181,16 +203,18 @@ class MainActivity : FragmentActivity() {
 
             ProvideAndroidPlatformTheme {
                 val systemDensity = LocalDensity.current
-                val scaledDensity = remember(systemDensity, pageScale) {
-                    Density(systemDensity.density * pageScale, systemDensity.fontScale)
+                val scaledDensity = remember(systemDensity, pageScale, fontSizeScale) {
+                    Density(systemDensity.density * pageScale, systemDensity.fontScale * fontSizeScale.coerceIn(0.85f, 1.35f))
                 }
                 CompositionLocalProvider(LocalDensity provides scaledDensity,
                     com.github.yumelira.yumebox.presentation.component.LocalTabletModeEnabled provides tabletModeEnabled) {
                     YumeTheme(
                         themeMode = themeMode,
-                        colorTheme = colorTheme,
+                        colorTheme = effectiveColorTheme,
                         themeSeedColorArgb = effectiveThemeSeedColorArgb,
                         invertOnPrimaryColors = invertOnPrimaryColors,
+                        fontFamily = fontFamily,
+                        fontWeight = fontWeight,
                     ) {
                         if (!biometricGateState.isAuthenticated) {
                             Surface(
@@ -215,10 +239,10 @@ class MainActivity : FragmentActivity() {
                                     navController = navController,
                                     defaultTransitions = NavigationTransitions.defaultStyle,
                                 )
-                                LaunchedEffect(openHomeRequest) {
-                                    if (openHomeRequest > 0) {
+                                LaunchedEffect(pageRequest) {
+                                    if (pageRequest > 0) {
                                         navController.navigate(
-                                            com.ramcosta.composedestinations.generated.destinations.MainScreenDestination(0).route,
+                                            com.ramcosta.composedestinations.generated.destinations.MainScreenDestination(requestedPage).route,
                                         ) {
                                             popUpTo(navController.graph.id)
                                             launchSingleTop = true
@@ -290,8 +314,14 @@ class MainActivity : FragmentActivity() {
     @Suppress("SpellCheckingInspection")
     private fun handleIntent(intent: Intent?) {
         intent?.let { safeIntent ->
-            if (safeIntent.action == com.github.yumelira.yumebox.runtime.api.Components.ACTION_OPEN_HOME) {
-                openHomeRequest++
+            val page = when (safeIntent.action) {
+                com.github.yumelira.yumebox.runtime.api.Components.ACTION_OPEN_HOME -> 0
+                com.github.yumelira.yumebox.runtime.api.Components.ACTION_OPEN_PROXY -> 1
+                else -> null
+            }
+            if (page != null) {
+                requestedPage = page
+                pageRequest++
                 safeIntent.action = Intent.ACTION_MAIN
             }
             if (safeIntent.getBooleanExtra(EXTRA_EXIT_UI_WHEN_BACKGROUND, false)) {

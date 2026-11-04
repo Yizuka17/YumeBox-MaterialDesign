@@ -30,13 +30,13 @@ Providers = {
     
     Message = {
         FetchFailed = "取得外部資源失敗: %s"
-        UpdateSuccess = "%s 更新成功"
+        UpdateSuccess = "%s更新成功"
         UpdateFailed = "更新失敗: %s"
         AllUpdated = "全部更新完成"
-        UploadSuccess = "%s 上傳成功"
+        UploadSuccess = "%s上傳成功"
         UploadFailed = "上傳失敗: %s"
     }
     InfoTitle = "核心目錄"
-    InfoSummary = "GeoX 和核心執行時公共檔案位於：%s。規則和代理提供者只會寫入目前設定的私有目錄。"
+    InfoSummary = "GeoX和核心執行時公共檔案位於：%s。規則和代理提供者只會寫入目前設定的私有目錄。"
     ProviderPath = "資源路徑：%s"
 }

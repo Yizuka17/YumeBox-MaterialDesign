@@ -53,7 +53,7 @@ fun rememberGlobalBackupActions(): GlobalBackupActions {
             onDismissRequest = { controller.discard(backup); prepared = null },
             title = { Text(if (backup.legacySettingsOnly) "恢复旧版备份" else "恢复备份") },
             text = { Text(if (backup.legacySettingsOnly) "此文件只恢复旧版设置，不包含完整配置。" else
-                "${backup.profileCount} 个配置 · ${backup.overrideCount} 个覆写\n恢复将替换现有数据，并重启正在运行的服务。") },
+                "${backup.profileCount}个配置 · ${backup.overrideCount}个覆写\n恢复将替换现有数据，并重启正在运行的服务。") },
             dismissButton = { TextButton(onClick = { controller.discard(backup); prepared = null }) { Text("取消") } },
             confirmButton = {
                 TextButton(onClick = {

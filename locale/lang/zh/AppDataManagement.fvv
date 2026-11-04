@@ -3,36 +3,36 @@ AppDataManagement = {
     Title = "应用数据管理"
 
     Section = {
-        GeoFiles = "Geo 文件"
+        GeoFiles = "Geo文件"
         Logs = "日志"
     }
 
     GeoFiles = {
-        HistoryTitle = "管理 GeoX 文件"
-        HistorySummary = "历史下载缓存：%d 个"
+        HistoryTitle = "管理GeoX文件"
+        HistorySummary = "历史下载缓存：%d个"
         EmptyHistory = "没有可清理的历史下载"
-        EmptyHistorySummary = "校验失败的 GeoX 文件会被直接删除，不会进入这里"
+        EmptyHistorySummary = "校验失败的GeoX文件会被直接删除，不会进入这里"
         CacheItemSummary = "%s · %s"
-        DeleteConfirmTitle = "删除 GeoX 文件？"
-        DeleteConfirmMessage = "确定删除已选中的 %d 个历史 GeoX 文件吗？此操作无法撤销。"
-        DeleteComplete = "已删除 %d 个历史 GeoX 文件"
+        DeleteConfirmTitle = "删除GeoX文件？"
+        DeleteConfirmMessage = "确定删除已选中的 %d个历史GeoX文件吗？此操作无法撤销。"
+        DeleteComplete = "已删除 %d个历史GeoX文件"
     }
 
     Logs = {
         ManagementTitle = "管理日志"
-        ManagementSummary = "日志文件：%d 个"
+        ManagementSummary = "日志文件：%d个"
         EmptyLogs = "没有可清理的日志"
         EmptyLogsSummary = "在日志页面开始记录后，日志文件会显示在这里"
         LogItemSummary = "%s · %s"
         RecordingFileTitle = "%s（记录中）"
         DeleteConfirmTitle = "删除日志文件？"
-        DeleteConfirmMessage = "确定删除已选中的 %d 个日志文件吗？此操作无法撤销。"
-        DeleteComplete = "已删除 %d 个日志文件"
+        DeleteConfirmMessage = "确定删除已选中的 %d个日志文件吗？此操作无法撤销。"
+        DeleteComplete = "已删除 %d个日志文件"
         ViewerTitle = "查看日志：%s"
         EmptyLogContent = "日志为空"
         EmptyLogContentSummary = "该文件没有可显示的日志条目"
         ViewerLimitHint = "仅显示最近的日志"
-        ViewerLimitSummary = "当前显示最近 %d 条"
+        ViewerLimitSummary = "当前显示最近 %d条"
         LogLineTitle = "[%s] [%s]"
     }
 }

@@ -21,9 +21,11 @@
 package com.github.yumelira.yumebox.runtime.service.notification
 
 import android.app.Notification
+import android.app.NotificationManager
 import android.app.PendingIntent
 import android.app.Service
 import android.content.Intent
+import android.os.Build
 import android.os.SystemClock
 import androidx.core.app.NotificationChannelCompat
 import androidx.core.app.NotificationCompat
@@ -31,6 +33,8 @@ import androidx.core.app.NotificationManagerCompat
 import com.github.yumelira.yumebox.core.util.PollingTimerSpecs
 import com.github.yumelira.yumebox.core.util.PollingTimers
 import com.github.yumelira.yumebox.data.store.AppSettingsStore
+import com.github.yumelira.yumebox.data.model.NotificationDisplay
+import dev.oom_wg.purejoy.mlang.MLang
 import com.github.yumelira.yumebox.data.store.RemoteControllerStore
 import com.github.yumelira.yumebox.domain.model.resolvePrimaryNode
 import com.github.yumelira.yumebox.domain.model.toInfo
@@ -127,7 +131,7 @@ class ServiceNotificationManager(
     }
 
     private sealed interface NoticeFrame {
-        data class Plain(val presentation: NotificationPresentation) : NoticeFrame
+        data class Plain(val presentation: NotificationPresentation, val liveUpdate: Boolean) : NoticeFrame
 
         data class Island(val running: NotificationPresentation.Running) : NoticeFrame
     }
@@ -138,30 +142,25 @@ class ServiceNotificationManager(
         val profileName =
             profile?.name?.takeIf { it.isNotBlank() }
                 ?: YumeTxt.Service.Notification.UnknownProfile
+        val display = NotificationDisplay.decode(settingsStore.decodeString("notificationDisplay").orEmpty())
+        val liveUpdate = settingsStore.decodeBool("liveUpdatesEnabled", false) &&
+            Build.VERSION.SDK_INT >= 36 &&
+            runCatching { service.getSystemService(NotificationManager::class.java).canPostPromotedNotifications() }.getOrDefault(false)
         if (!shouldShowTrafficNotification()) {
-            return NoticeFrame.Plain(
-                NotificationPresentationFactory.createStatus(
-                    profileName = profileName,
-                    status = YumeTxt.Service.Notification.Running,
-                )
-            )
+            return NoticeFrame.Plain(NotificationPresentationFactory.configureStatus(profileName, profile, display), liveUpdate)
         }
-        val running = loadRunning(profile, profileName)
-        return if (isIslandEnabled()) NoticeFrame.Island(running) else NoticeFrame.Plain(running)
-    }
-
-    private suspend fun loadRunning(
-        profile: Imported?,
-        profileName: String,
-    ): NotificationPresentation.Running {
+        val island = isIslandEnabled()
         val core = CoreProcess.controller(service)
         val now = runCatching { core.queryTrafficNow() }.getOrDefault(0L)
-        return NotificationPresentationFactory.createRunning(
+        val running = NotificationPresentationFactory.createRunning(
             profileName = profileName,
             profile = profile,
             currentNode = resolveCurrentNode(core),
             trafficNow = now,
+            display = display,
+            forIsland = island,
         )
+        return if (island) NoticeFrame.Island(running) else NoticeFrame.Plain(running, liveUpdate)
     }
 
     private suspend fun refreshRunningNotification() {
@@ -195,7 +194,7 @@ class ServiceNotificationManager(
     private suspend fun postPlain(frame: NoticeFrame.Plain) {
         if (releaseBypass()) islandShown = false
         if (frame == lastFrame) return
-        deliver(buildNotification(frame.presentation))
+        deliver(buildNotification(frame.presentation, liveUpdate = frame.liveUpdate))
         lastFrame = frame
     }
 
@@ -230,7 +229,11 @@ class ServiceNotificationManager(
         }
     }
 
-    private fun buildNotification(presentation: NotificationPresentation, resumeTask: Boolean = false): Notification {
+    private fun buildNotification(
+        presentation: NotificationPresentation,
+        resumeTask: Boolean = false,
+        liveUpdate: Boolean = false,
+    ): Notification {
         val contentIntent =
             PendingIntent.getActivity(
                 service,
@@ -250,9 +253,10 @@ class ServiceNotificationManager(
                 PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE,
             )
 
-        return NotificationCompat.Builder(service, config.channelId)
-            .setContentTitle(presentation.title)
+        val builder = NotificationCompat.Builder(service, config.channelId)
+            .setContentTitle(presentation.title.ifBlank { service.applicationInfo.loadLabel(service.packageManager).toString() })
             .setContentText(presentation.content)
+            .setSubText(presentation.right.takeIf(String::isNotBlank))
             .setStyle(NotificationCompat.BigTextStyle().bigText(presentation.expandedText))
             .setSmallIcon(smallIconRes())
             .setColor(service.getColor(R.color.color_yumebox))
@@ -262,7 +266,17 @@ class ServiceNotificationManager(
             .setShowWhen(false)
             .setForegroundServiceBehavior(NotificationCompat.FOREGROUND_SERVICE_IMMEDIATE)
             .setPriority(NotificationCompat.PRIORITY_LOW)
-            .build()
+        if (liveUpdate) {
+            builder.setRequestPromotedOngoing(true)
+            presentation.right.takeIf(String::isNotBlank)?.let { builder.setShortCriticalText(it) }
+            builder.addAction(0, MLang.AppSettings.Notice.SelectNode, PendingIntent.getActivity(
+                service, 1,
+                Intent(Components.ACTION_OPEN_PROXY).setComponent(Components.MAIN_ACTIVITY)
+                    .addFlags(Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_SINGLE_TOP),
+                PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE,
+            ))
+        }
+        return builder.build()
     }
 
     // startForeground() must never trip before the first frame, so a preference read failure falls

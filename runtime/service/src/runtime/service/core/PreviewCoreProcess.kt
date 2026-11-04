@@ -125,7 +125,7 @@ class PreviewCoreProcess(private val context: Context) {
         val secret = UUID.randomUUID().toString().replace("-", "")
         val line = "secret: \"$secret\""
         val lines = config.lineSequence().toMutableList()
-        val index = lines.indexOfFirst { it.trimStart().startsWith("secret:") }
+        val index = lines.indexOfFirst { it.startsWith("secret:") }
         if (index >= 0) {
             lines[index] = line
         } else {

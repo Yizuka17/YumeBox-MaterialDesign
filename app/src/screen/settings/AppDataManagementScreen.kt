@@ -291,7 +291,7 @@ private fun GeoHistorySheet(
             if (entries.isEmpty()) {
                 PreferenceListItem(
                     title = MLang.AppDataManagement.GeoFiles.EmptyHistory,
-                    summary = MLang.AppDataManagement.GeoFiles.EmptyHistorySummary,
+
                 )
             } else {
                 entries.forEach { entry ->
@@ -360,7 +360,7 @@ private fun LogFilesSheet(
             if (entries.isEmpty()) {
                 PreferenceListItem(
                     title = MLang.AppDataManagement.Logs.EmptyLogs,
-                    summary = MLang.AppDataManagement.Logs.EmptyLogsSummary,
+
                 )
             } else {
                 entries.forEach { entry ->

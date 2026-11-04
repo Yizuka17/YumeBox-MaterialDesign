@@ -110,10 +110,10 @@ fun YumeMd3PreferenceItem(
                     text = title,
                     style = MaterialTheme.typography.bodyLarge,
                     color = titleColor,
-                    maxLines = if (summary == null) 2 else 1,
+                    maxLines = if (summary.isNullOrBlank()) 2 else 1,
                     overflow = TextOverflow.Ellipsis,
                 )
-                if (summary != null) {
+                if (!summary.isNullOrBlank()) {
                     Spacer(modifier = Modifier.height(2.dp))
                     Text(
                         text = summary,

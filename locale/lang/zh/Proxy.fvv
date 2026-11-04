@@ -7,7 +7,7 @@ Proxy = {
         Global = "全局"
         Rule = "规则"
         Unknown = "未知"
-        Switched = "已切换到：%s 模式"
+        Switched = "已切换到：%s模式"
         SwitchFailed = "切换模式失败：%s"
     }
 
@@ -19,7 +19,7 @@ Proxy = {
 
     Node = {
         Timeout = "超时"
-        Count = "%d 节点"
+        Count = "%d节点"
     }
 
     Zako = {

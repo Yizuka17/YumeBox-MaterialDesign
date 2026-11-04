@@ -9,7 +9,7 @@ internal val ZhHansYumeStrings_ProfilesVM: YumeStrings_ProfilesVM = YumeStrings_
         ProfileUpdated = "配置已更新：%s",
         UpdateFailed = "更新配置失败：%s",
         ToggleFailed = "切换状态失败：%s",
-        ProvidersPartial = "配置已保存，%d 个外部资源失败：%s",
+        ProvidersPartial = "配置已保存，%d个外部资源失败：%s",
         ProvidersUndiscovered = "配置已保存，但未能识别外部资源列表",
     ),
     Progress = YumeStrings_ProfilesVM_Progress(
@@ -31,7 +31,7 @@ internal val ZhYumeStrings_ProfilesVM: YumeStrings_ProfilesVM = YumeStrings_Prof
         ProfileUpdated = "設定檔已更新：%s",
         UpdateFailed = "更新設定檔失敗：%s",
         ToggleFailed = "切換狀態失敗：%s",
-        ProvidersPartial = "設定檔已儲存，%d 個外部資源失敗：%s",
+        ProvidersPartial = "設定檔已儲存，%d個外部資源失敗：%s",
         ProvidersUndiscovered = "設定檔已儲存，但未能識別外部資源列表",
     ),
     Progress = YumeStrings_ProfilesVM_Progress(
@@ -75,7 +75,7 @@ internal val JaYumeStrings_ProfilesVM: YumeStrings_ProfilesVM = YumeStrings_Prof
         ProfileUpdated = "プロファイルを更新しました: %s",
         UpdateFailed = "プロファイルの更新に失敗しました: %s",
         ToggleFailed = "状態の切り替えに失敗しました: %s",
-        ProvidersPartial = "プロファイルを保存しました.外部リソース %d 件が失敗: %s",
+        ProvidersPartial = "プロファイルを保存しました.外部リソース %d件が失敗: %s",
         ProvidersUndiscovered = "プロファイルを保存しましたが、外部リソース一覧を認識できませんでした",
     ),
     Progress = YumeStrings_ProfilesVM_Progress(

@@ -164,6 +164,38 @@ AppSettings = {
         Apply = "Apply"
     }
 
+    Notice = {
+        Title = "Notification display"
+        Preview = "Preview"
+        First = "First line"
+        Second = "Second line"
+        Right = "Right-side info"
+        Default = "Default"
+        Profile = "Profile"
+        Status = "Status"
+        Node = "Node"
+        Traffic = "Traffic speed"
+        Expiry = "Expiry date"
+        Custom = "Custom text"
+        Hidden = "Hidden"
+        Live = "Android Live Updates"
+        LiveSummary = "Show the running proxy as a Live Update when Android allows it."
+        SystemLiveSettings = "Open system Live Update settings"
+        SelectNode = "Select node"
+        PreviewProfile = "Example profile"
+        PreviewNode = "Example node"
+    }
+
+    Typography = {
+        Title = "Typography"
+        Font = "Font file"
+        System = "System default"
+        Weight = "Font weight"
+        Size = "Text size"
+        Reset = "Restore default typography"
+        ImportFailed = "Unable to read this font. Choose a TTF or OTF file."
+    }
+
     Wallpaper = {
         Title = "ACG wallpapers"
         TabletMode = "Tablet layout optimization"
@@ -177,6 +209,10 @@ AppSettings = {
         Api = "Wallpaper API"
         ApiCache = "API cache"
         CacheEmpty = "No cached wallpapers yet"
+        AdjustPosition = "Adjust position"
+        CropHint = "Drag to reposition · Pinch to zoom · Frame shows the home view"
+        ResetCrop = "Reset crop"
+        CropZoom = "Zoom"
         ImageActions = "Image actions"
         SaveImage = "Save image"
         ApiEdit = "Edit wallpaper API"

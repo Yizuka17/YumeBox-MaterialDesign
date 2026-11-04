@@ -39,12 +39,15 @@ import androidx.compose.runtime.remember
 import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontFamily
+import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.unit.dp
 import com.github.yumelira.yumebox.data.model.AppColorTheme
 import com.github.yumelira.yumebox.data.model.MonetContrast
 import com.github.yumelira.yumebox.data.model.MonetStyle
 import com.github.yumelira.yumebox.data.model.ThemeMode
 import top.yukonga.miuix.kmp.theme.MiuixTheme
+import top.yukonga.miuix.kmp.theme.defaultTextStyles
 
 internal val LocalPlatformSystemUiEffect = compositionLocalOf<@Composable (Boolean) -> Unit> { { _ -> } }
 
@@ -58,6 +61,8 @@ fun YumeTheme(
     monetContrast: MonetContrast = MonetContrast.Standard,
     monetIntensity: Float = 0.45f,
     invertOnPrimaryColors: Boolean = false,
+    fontFamily: FontFamily? = null,
+    fontWeight: Int = 0,
     spacing: Spacing = Spacing(),
     radii: Radii = Radii(),
     sizes: Sizes = Sizes(),
@@ -90,6 +95,9 @@ fun YumeTheme(
                 if (isDark) dynamicDarkColorScheme(context) else dynamicLightColorScheme(context)
             }
 
+            colorTheme == AppColorTheme.AcgWallpaper ->
+                wallpaperMonetColorScheme(themeSeedColorArgb, isDark, invertOnPrimaryColors)
+
             else -> {
                 materialColorSchemeFromSeed(
                     seed = colorFromArgb(themeSeedColorArgb),
@@ -117,6 +125,21 @@ fun YumeTheme(
         )
     }
 
+    val typography = remember(fontFamily, fontWeight) { yumeTypography(fontFamily, fontWeight) }
+    val miuixTypography = remember(fontFamily, fontWeight) {
+        defaultTextStyles().run {
+            val selectedFamily = fontFamily
+            val selectedWeight = fontWeight
+            fun TextStyle.adjust() = withUserFont(selectedFamily, selectedWeight)
+            copy(
+                main = main.adjust(), paragraph = paragraph.adjust(),
+                body1 = body1.adjust(), body2 = body2.adjust(), button = button.adjust(),
+                footnote1 = footnote1.adjust(), footnote2 = footnote2.adjust(),
+                headline1 = headline1.adjust(), headline2 = headline2.adjust(), subtitle = subtitle.adjust(),
+                title1 = title1.adjust(), title2 = title2.adjust(), title3 = title3.adjust(), title4 = title4.adjust(),
+            )
+        }
+    }
     CompositionLocalProvider(
         LocalSpacing provides spacing,
         LocalRadii provides radii,
@@ -126,12 +149,13 @@ fun YumeTheme(
     ) {
         MaterialTheme(
             colorScheme = materialColorScheme,
-            typography = YumeMaterialTypography,
+            typography = typography,
             shapes = YumeMaterialShapes,
             motionScheme = MotionScheme.expressive(),
         ) {
             MiuixTheme(
                 colors = miuixColorScheme,
+                textStyles = miuixTypography,
             ) {
                 content()
             }
@@ -139,24 +163,32 @@ fun YumeTheme(
     }
 }
 
-private val YumeMaterialTypography = Typography().run {
-    val systemFontFamily = FontFamily.Default
+private fun TextStyle.withUserFont(family: FontFamily?, weight: Int) = copy(
+        fontFamily = family ?: fontFamily,
+        fontWeight = if (weight in 100..900) {
+            // Preserve the difference between regular body and emphasized labels/titles.
+            FontWeight((weight + (fontWeight?.weight ?: 400) - 400).coerceIn(100, 900))
+        } else fontWeight,
+    )
+
+private fun yumeTypography(family: FontFamily?, weight: Int) = Typography().run {
+    fun TextStyle.customize() = withUserFont(family ?: FontFamily.Default, weight)
     copy(
-        displayLarge = displayLarge.copy(fontFamily = systemFontFamily),
-        displayMedium = displayMedium.copy(fontFamily = systemFontFamily),
-        displaySmall = displaySmall.copy(fontFamily = systemFontFamily),
-        headlineLarge = headlineLarge.copy(fontFamily = systemFontFamily),
-        headlineMedium = headlineMedium.copy(fontFamily = systemFontFamily),
-        headlineSmall = headlineSmall.copy(fontFamily = systemFontFamily),
-        titleLarge = titleLarge.copy(fontFamily = systemFontFamily),
-        titleMedium = titleMedium.copy(fontFamily = systemFontFamily),
-        titleSmall = titleSmall.copy(fontFamily = systemFontFamily),
-        bodyLarge = bodyLarge.copy(fontFamily = systemFontFamily),
-        bodyMedium = bodyMedium.copy(fontFamily = systemFontFamily),
-        bodySmall = bodySmall.copy(fontFamily = systemFontFamily),
-        labelLarge = labelLarge.copy(fontFamily = systemFontFamily),
-        labelMedium = labelMedium.copy(fontFamily = systemFontFamily),
-        labelSmall = labelSmall.copy(fontFamily = systemFontFamily),
+        displayLarge = displayLarge.customize(),
+        displayMedium = displayMedium.customize(),
+        displaySmall = displaySmall.customize(),
+        headlineLarge = headlineLarge.customize(),
+        headlineMedium = headlineMedium.customize(),
+        headlineSmall = headlineSmall.customize(),
+        titleLarge = titleLarge.customize(),
+        titleMedium = titleMedium.customize(),
+        titleSmall = titleSmall.customize(),
+        bodyLarge = bodyLarge.customize(),
+        bodyMedium = bodyMedium.customize(),
+        bodySmall = bodySmall.customize(),
+        labelLarge = labelLarge.customize(),
+        labelMedium = labelMedium.customize(),
+        labelSmall = labelSmall.customize(),
     )
 }
 private val YumeMaterialShapes = Shapes(

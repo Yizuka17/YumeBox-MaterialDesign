@@ -11,17 +11,17 @@ Component = {
         ClickToUpdate = "點選更新以取得訂閱資訊"
         Traffic = "流量：%s / %s (%d%%)"
         UsedTraffic = "已用：%s"
-        ExpireAt = "到期：%s (剩餘%d 天)"
+        ExpireAt = "到期：%s (剩餘%d天)"
         ExpireToday = "到期：今天"
         Expired = "已過期：%s"
         JustNow = "剛剛"
-        MinutesAgo = "%d 分鐘前"
-        HoursAgo = "%d 小時前"
-        DaysAgo = "%d 天前"
+        MinutesAgo = "%d分鐘前"
+        HoursAgo = "%d小時前"
+        DaysAgo = "%d天前"
     }
 
     WebView = {
-        InvalidUrl = "無效的 URL"
+        InvalidUrl = "無效的URL"
     }
 
     Selector = {
@@ -55,7 +55,7 @@ Component = {
     }
 
     Flag = {
-        ContentDescription = "%s 旗幟"
+        ContentDescription = "%s旗幟"
     }
 
     Loading = {
@@ -91,7 +91,7 @@ Component = {
             NoUpdate = "目前已經是最新版本"
             CheckFailed = "檢查更新失敗：%s"
             MissingReleaseMetadata = "最新發布缺少版本後設資料"
-            NoCompatibleAsset = "最新發布中沒有找到適合目前裝置的 APK"
+            NoCompatibleAsset = "最新發布中沒有找到適合目前裝置的APK"
             DownloadAlreadyRunning = "更新包仍在下載中"
             DownloadCancelled = "下載已取消"
             InstallPromptOpened = "下載完成，已開啟安裝器"
@@ -101,7 +101,7 @@ Component = {
 
     ConfigInput = {
         PortLabel = "埠號 (留空表示不修改)"
-        CountItems = "%d 項"
+        CountItems = "%d項"
     }
 
     BottomBar = {
@@ -112,7 +112,7 @@ Component = {
     }
 
     Editor = {
-        CountItems = "共 %d 項"
+        CountItems = "共 %d項"
         Action = {
             Reset = "重置"
             Add = "新增"
@@ -137,7 +137,7 @@ Component = {
             Type = "規則型別"
             Target = "目標"
             Content = "規則內容"
-            Src = "源 IP"
+            Src = "源IP"
             NoResolve = "不解析"
             TargetReject = "REJECT"
             TargetDirect = "DIRECT"

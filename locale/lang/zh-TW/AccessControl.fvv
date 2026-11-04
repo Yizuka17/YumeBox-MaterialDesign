@@ -8,7 +8,7 @@ AccessControl = {
     }
 
     AppList = {
-        Title = "應用程式清單 (%d 已選擇)"
+        Title = "應用程式清單 (%d已選擇)"
         Loading = "載入中..."
     }
 
@@ -27,13 +27,13 @@ AccessControl = {
         ImportExport = "匯入/匯出"
         Import = "從剪貼簿匯入"
         Export = "匯出到剪貼簿"
-        ImportSuccess = "匯入成功：%d 個套件名稱"
-        ExportSuccess = "已複製 %d 個套件名稱到剪貼簿"
+        ImportSuccess = "匯入成功：%d個套件名稱"
+        ExportSuccess = "已複製 %d個套件名稱到剪貼簿"
         ImportFailed = "匯入失敗"
         RegionQuickSelect = "地區快捷選擇"
         ChinaApps = "中國應用程式"
         OverseasApps = "非中國應用程式"
-        RegionSelectResult = "已按「%s」快捷選擇，共 %d 個"
+        RegionSelectResult = "已按「%s」快捷選擇，共 %d個"
     }
 
     SortMode = {

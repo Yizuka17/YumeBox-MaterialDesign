@@ -3,36 +3,36 @@ AppDataManagement = {
     Title = "應用程式資料管理"
 
     Section = {
-        GeoFiles = "Geo 檔案"
+        GeoFiles = "Geo檔案"
         Logs = "日誌"
     }
 
     GeoFiles = {
-        HistoryTitle = "管理 GeoX 檔案"
-        HistorySummary = "歷史下載快取：%d 個"
+        HistoryTitle = "管理GeoX檔案"
+        HistorySummary = "歷史下載快取：%d個"
         EmptyHistory = "沒有可清理的歷史下載"
-        EmptyHistorySummary = "校驗失敗的 GeoX 檔案會被直接刪除，不會出現在這裡"
+        EmptyHistorySummary = "校驗失敗的GeoX檔案會被直接刪除，不會出現在這裡"
         CacheItemSummary = "%s · %s"
-        DeleteConfirmTitle = "刪除 GeoX 檔案？"
-        DeleteConfirmMessage = "確定刪除已選取的 %d 個歷史 GeoX 檔案嗎？此操作無法復原。"
-        DeleteComplete = "已刪除 %d 個歷史 GeoX 檔案"
+        DeleteConfirmTitle = "刪除GeoX檔案？"
+        DeleteConfirmMessage = "確定刪除已選取的 %d個歷史GeoX檔案嗎？此操作無法復原。"
+        DeleteComplete = "已刪除 %d個歷史GeoX檔案"
     }
 
     Logs = {
         ManagementTitle = "管理日誌"
-        ManagementSummary = "日誌檔案：%d 個"
+        ManagementSummary = "日誌檔案：%d個"
         EmptyLogs = "沒有可清理的日誌"
         EmptyLogsSummary = "在日誌頁面開始記錄後，日誌檔案會顯示在這裡"
         LogItemSummary = "%s · %s"
         RecordingFileTitle = "%s（記錄中）"
         DeleteConfirmTitle = "刪除日誌檔案？"
-        DeleteConfirmMessage = "確定刪除已選取的 %d 個日誌檔案嗎？此操作無法復原。"
-        DeleteComplete = "已刪除 %d 個日誌檔案"
+        DeleteConfirmMessage = "確定刪除已選取的 %d個日誌檔案嗎？此操作無法復原。"
+        DeleteComplete = "已刪除 %d個日誌檔案"
         ViewerTitle = "查看日誌：%s"
         EmptyLogContent = "日誌為空"
         EmptyLogContentSummary = "該檔案沒有可顯示的日誌條目"
         ViewerLimitHint = "僅顯示最近的日誌"
-        ViewerLimitSummary = "目前顯示最近 %d 條"
+        ViewerLimitSummary = "目前顯示最近 %d條"
         LogLineTitle = "[%s] [%s]"
     }
 }

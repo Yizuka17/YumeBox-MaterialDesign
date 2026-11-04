@@ -44,6 +44,7 @@ class AppTrafficStatisticsCollector(
     private var lastTotalUpload = NO_BASELINE
     private var lastTotalDownload = NO_BASELINE
     private var lastProfileId: String? = null
+    private var lastSampleNanos = 0L
 
     init {
         startCollection()
@@ -69,10 +70,7 @@ class AppTrafficStatisticsCollector(
     }
 
     private fun startTrafficMonitoring(): Job = scope.launch {
-        lastTotalUpload = trafficStatisticsStore.getLastTrafficUpload()
-        lastTotalDownload = trafficStatisticsStore.getLastTrafficDownload()
-        lastProfileId = trafficStatisticsStore.getLastProfileId()
-        connectionBaselines.clear()
+        resetBaselines()
         collectTrafficDataSafely()
         PollingTimers.ticks(PollingTimerSpecs.TrafficStatsCollection).collect {
             collectTrafficDataSafely()
@@ -88,54 +86,26 @@ class AppTrafficStatisticsCollector(
     }
 
     private suspend fun collectTrafficData() {
-        val totalTraffic = querySource.queryTrafficTotal()
         val snapshot = querySource.queryConnections()
+        val totalTraffic = TrafficData(upload = snapshot.uploadTotal, download = snapshot.downloadTotal)
+        val now = System.nanoTime()
+        val elapsedMs = if (lastSampleNanos == 0L) 0L else ((now - lastSampleNanos) / 1_000_000).coerceAtLeast(1)
+        lastSampleNanos = now
         val timestamp = System.currentTimeMillis()
         val currentProfileId =
             querySource.currentProfileId()
                 ?: runCatching { querySource.queryActiveProfileId() }.getOrNull()
 
-        if (lastTotalUpload < 0L || lastTotalDownload < 0L) {
-            initializeTotals(
-                totalTraffic = totalTraffic,
-                profileId = currentProfileId,
-                forcePersist = true,
-            )
-            bootstrapConnectionBaselines(snapshot.connections)
-            return
-        }
-
-        if (currentProfileId != lastProfileId) {
-            initializeTotals(
-                totalTraffic = totalTraffic,
-                profileId = currentProfileId,
-                forcePersist = true,
-            )
-            bootstrapConnectionBaselines(snapshot.connections)
-            return
-        }
-
-        if (connectionBaselines.isEmpty()) {
-            recordUnattributedDeltaIfNeeded(
-                timestamp = timestamp,
-                currentUpload = totalTraffic.upload,
-                currentDownload = totalTraffic.download,
-            )
-            initializeTotals(
-                totalTraffic = totalTraffic,
-                profileId = currentProfileId,
-                forcePersist = true,
-            )
-            bootstrapConnectionBaselines(snapshot.connections)
-            return
-        }
-
-        if (totalTraffic.upload < lastTotalUpload || totalTraffic.download < lastTotalDownload) {
-            initializeTotals(
-                totalTraffic = totalTraffic,
-                profileId = currentProfileId,
-                forcePersist = true,
-            )
+        val totalUploadDelta = totalTraffic.upload - lastTotalUpload
+        val totalDownloadDelta = totalTraffic.download - lastTotalDownload
+        // Rebaseline after a restart, profile change, or impossible counter jump. An
+        // empty connection list by itself is normal: short flows still count in totals.
+        val maxDelta = elapsedMs.coerceAtMost(Long.MAX_VALUE / MAX_BYTES_PER_MILLI) * MAX_BYTES_PER_MILLI
+        if (elapsedMs == 0L || currentProfileId != lastProfileId ||
+            totalTraffic.upload < lastTotalUpload || totalTraffic.download < lastTotalDownload ||
+            totalUploadDelta > maxDelta || totalDownloadDelta > maxDelta
+        ) {
+            initializeTotals(totalTraffic = totalTraffic, profileId = currentProfileId, forcePersist = true)
             bootstrapConnectionBaselines(snapshot.connections)
             return
         }
@@ -146,8 +116,6 @@ class AppTrafficStatisticsCollector(
                 connections = snapshot.connections,
                 trafficDeltas = trafficDeltas,
             )
-        val totalUploadDelta = totalTraffic.upload - lastTotalUpload
-        val totalDownloadDelta = totalTraffic.download - lastTotalDownload
         val unattributedUpload = (totalUploadDelta - attributedTotals.upload).coerceAtLeast(0L)
         val unattributedDownload =
             (totalDownloadDelta - attributedTotals.download).coerceAtLeast(0L)
@@ -289,32 +257,8 @@ class AppTrafficStatisticsCollector(
         )
     }
 
-    private suspend fun recordUnattributedDeltaIfNeeded(
-        timestamp: Long,
-        currentUpload: Long,
-        currentDownload: Long,
-    ) {
-        if (currentUpload < lastTotalUpload || currentDownload < lastTotalDownload) {
-            return
-        }
-        val uploadDelta = currentUpload - lastTotalUpload
-        val downloadDelta = currentDownload - lastTotalDownload
-        if (uploadDelta <= 0L && downloadDelta <= 0L) {
-            return
-        }
-        trafficStatisticsStore.recordAppTrafficBatch(
-            timestamp = timestamp,
-            records =
-                listOf(
-                    TrafficStatisticsBuckets.buildUnattributedRecord(
-                        uploadDelta = uploadDelta,
-                        downloadDelta = downloadDelta,
-                    )
-                ),
-        )
-    }
-
     private fun resetBaselines() {
+        lastSampleNanos = 0L
         trafficStatisticsStore.flushNow()
         connectionBaselines.clear()
         lastTotalUpload = NO_BASELINE
@@ -350,5 +294,6 @@ class AppTrafficStatisticsCollector(
     companion object {
         private const val TAG = "AppTrafficStatsCollector"
         private const val NO_BASELINE = -1L
+        private const val MAX_BYTES_PER_MILLI = 64L * 1024 * 1024
     }
 }

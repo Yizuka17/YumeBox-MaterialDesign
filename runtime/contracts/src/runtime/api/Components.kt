@@ -29,5 +29,6 @@ import android.content.ComponentName
  */
 object Components {
     lateinit var MAIN_ACTIVITY: ComponentName
+    const val ACTION_OPEN_PROXY = "com.github.yumelira.yumebox.action.OPEN_PROXY"
     const val ACTION_OPEN_HOME = "com.github.yumelira.yumebox.action.OPEN_HOME"
 }

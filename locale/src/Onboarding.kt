@@ -29,7 +29,7 @@ internal val ZhHansYumeStrings_Onboarding: YumeStrings_Onboarding = YumeStrings_
     Privacy = YumeStrings_Onboarding_Privacy(
         Title = "确认隐私与协议",
         Subtitle = "阅读并同意协议后方可继续",
-        RichTextLead = "在开始使用前需要同意隐私协议，才能继续使用 YumeBox.",
+        RichTextLead = "在开始使用前需要同意隐私协议，才能继续使用YumeBox.",
         RichTextPrefix = "继续前请先阅读并同意 ",
         RichTextConnector = " 与 ",
         RichTextSuffix = ".",
@@ -49,7 +49,7 @@ internal val ZhHansYumeStrings_Onboarding: YumeStrings_Onboarding = YumeStrings_
     ),
     Project = YumeStrings_Onboarding_Project(
         Github = YumeStrings_Onboarding_Project_Github(
-            Title = "GitHub 仓库",
+            Title = "GitHub仓库",
             Summary = "github.com/yumeyucca/YumeBox",
         ),
         Community = YumeStrings_Onboarding_Project_Community(
@@ -92,7 +92,7 @@ internal val ZhYumeStrings_Onboarding: YumeStrings_Onboarding = YumeStrings_Onbo
     Privacy = YumeStrings_Onboarding_Privacy(
         Title = "確認隱私與協議",
         Subtitle = "閱讀並同意協議後方可繼續",
-        RichTextLead = "在開始使用前需要同意隱私協議，才能繼續使用 YumeBox.",
+        RichTextLead = "在開始使用前需要同意隱私協議，才能繼續使用YumeBox.",
         RichTextPrefix = "繼續前請先閱讀並同意 ",
         RichTextConnector = " 與 ",
         RichTextSuffix = ".",
@@ -112,7 +112,7 @@ internal val ZhYumeStrings_Onboarding: YumeStrings_Onboarding = YumeStrings_Onbo
     ),
     Project = YumeStrings_Onboarding_Project(
         Github = YumeStrings_Onboarding_Project_Github(
-            Title = "GitHub 倉庫",
+            Title = "GitHub倉庫",
             Summary = "github.com/yumeyucca/YumeBox",
         ),
         Community = YumeStrings_Onboarding_Project_Community(

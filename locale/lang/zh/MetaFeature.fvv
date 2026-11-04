@@ -1,19 +1,19 @@
 <Meta Feature Page>
 MetaFeature = {
-    Title = "Meta 功能"
+    Title = "Meta功能"
 
     Section = {
         ConnectionAndTraffic = "连接与流量统计"
         CustomRouting = "自定义分流"
-        GeoXUpdate = "GeoX 更新"
+        GeoXUpdate = "GeoX更新"
     }
 
     GeoX = {
-        OnlineUpdateTitle = "在线更新 GeoX"
+        OnlineUpdateTitle = "在线更新GeoX"
         OnlineUpdateSummary = "从远程源下载数据库文件"
-        LocalUpdateTitle = "本地更新 GeoX"
+        LocalUpdateTitle = "本地更新GeoX"
         LocalUpdateSummary = "从本地文件导入并应用数据库"
-        RuntimeHomeInfo = "GeoX 数据库文件下载并存放在内核目录：%s"
+        RuntimeHomeInfo = "GeoX数据库文件下载并存放在内核目录：%s"
     }
 
     CustomRouting = {
@@ -23,16 +23,16 @@ MetaFeature = {
         GroupTypeTitle = "策略组类型"
         GroupTypeUrlTest = "UrlTest"
         GroupTypeFallback = "Fallback"
-        UrlTestRegionGroupTitle = "UrlTest 地区组"
-        FallbackRegionGroupTitle = "Fallback 地区组"
+        UrlTestRegionGroupTitle = "UrlTest地区组"
+        FallbackRegionGroupTitle = "Fallback地区组"
     }
 
     Download = {
-        DialogTitle = "在线更新 GeoX"
-        LocalDialogTitle = "本地更新 GeoX"
+        DialogTitle = "在线更新GeoX"
+        LocalDialogTitle = "本地更新GeoX"
         SelectFiles = "请选择要更新的文件"
         DownloadComplete = "下载完成：%d/%d"
-        ProgressTitle = "正在更新 GeoX"
+        ProgressTitle = "正在更新GeoX"
         ProgressSummary = "请保持此页面打开，正在下载并校验文件"
         StatusPending = "等待中"
         StatusDownloading = "下载中 %d%%"
@@ -48,7 +48,7 @@ MetaFeature = {
         LastUpdateSourceOnline = "在线"
         LastUpdateSourceLocal = "本地"
         LastUpdateNever = "暂无记录"
-        ImportSuccess = "%s 已导入并应用"
-        ImportFailed = "%s 导入失败：文件无效或校验未通过"
+        ImportSuccess = "%s已导入并应用"
+        ImportFailed = "%s导入失败：文件无效或校验未通过"
     }
 }

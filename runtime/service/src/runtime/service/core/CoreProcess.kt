@@ -410,7 +410,7 @@ class CoreProcess(private val context: Context) {
         val secret = UUID.randomUUID().toString().replace("-", "")
         val line = "secret: \"$secret\""
         val lines = config.lineSequence().toMutableList()
-        val idx = lines.indexOfFirst { it.trimStart().startsWith("secret:") }
+        val idx = lines.indexOfFirst { it.startsWith("secret:") }
         if (idx >= 0) {
             lines[idx] = line
         } else {
@@ -424,7 +424,7 @@ class CoreProcess(private val context: Context) {
         val raw =
             config
                 .lineSequence()
-                .firstOrNull { it.trimStart().startsWith("secret:") }
+                .firstOrNull { it.startsWith("secret:") }
                 ?.substringAfter("secret:")
                 ?.trim() ?: return null
         return raw.trim('"', '\'').trim().takeIf { it.isNotEmpty() }

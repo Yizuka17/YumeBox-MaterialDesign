@@ -48,7 +48,7 @@ ProfilesPage = {
     Validation = {
         EnterUrl = "请输入链接"
         SelectFile = "请选择文件"
-        YamlOnly = "仅支持 .yaml 或 .yml 格式的配置文件"
+        YamlOnly = "仅支持 .yaml或 .yml格式的配置文件"
     }
 
     Progress = {
@@ -73,7 +73,7 @@ ProfilesPage = {
     LinkSettings = {
         Title = "链接设置"
         OpenMode = "打开方式"
-        OpenModeInApp = "App 内打开"
+        OpenModeInApp = "App内打开"
         OpenModeExternal = "外部浏览器"
         DefaultLink = "默认链接"
         DefaultLinkSummary = "点击左上角快捷按钮时打开的链接"

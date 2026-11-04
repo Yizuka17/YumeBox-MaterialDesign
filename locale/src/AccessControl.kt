@@ -7,7 +7,7 @@ internal val ZhHansYumeStrings_AccessControl: YumeStrings_AccessControl = YumeSt
         Empty = "没有匹配的应用",
     ),
     AppList = YumeStrings_AccessControl_AppList(
-        Title = "应用列表 (%d 已选择)",
+        Title = "应用列表 (%d已选择)",
         Loading = "加载中...",
     ),
     Settings = YumeStrings_AccessControl_Settings(
@@ -23,13 +23,13 @@ internal val ZhHansYumeStrings_AccessControl: YumeStrings_AccessControl = YumeSt
         ImportExport = "导入/导出",
         Import = "从剪贴板导入",
         Export = "导出到剪贴板",
-        ImportSuccess = "导入成功：%d 个包名",
-        ExportSuccess = "已复制 %d 个包名到剪贴板",
+        ImportSuccess = "导入成功：%d个包名",
+        ExportSuccess = "已复制 %d个包名到剪贴板",
         ImportFailed = "导入失败",
         RegionQuickSelect = "地区快捷选择",
         ChinaApps = "中国应用",
         OverseasApps = "非中国应用",
-        RegionSelectResult = "已按「%s」快捷选择，共 %d 个",
+        RegionSelectResult = "已按「%s」快捷选择，共 %d个",
     ),
     SortMode = YumeStrings_AccessControl_SortMode(
         PackageName = "包名",
@@ -50,7 +50,7 @@ internal val ZhYumeStrings_AccessControl: YumeStrings_AccessControl = YumeString
         Empty = "沒有符合的應用",
     ),
     AppList = YumeStrings_AccessControl_AppList(
-        Title = "應用列表 (%d 已選取)",
+        Title = "應用列表 (%d已選取)",
         Loading = "載入中...",
     ),
     Settings = YumeStrings_AccessControl_Settings(
@@ -66,13 +66,13 @@ internal val ZhYumeStrings_AccessControl: YumeStrings_AccessControl = YumeString
         ImportExport = "匯入/匯出",
         Import = "從剪貼簿匯入",
         Export = "匯出到剪貼簿",
-        ImportSuccess = "匯入成功：%d 個套件名稱",
-        ExportSuccess = "已複製 %d 個套件名稱到剪貼簿",
+        ImportSuccess = "匯入成功：%d個套件名稱",
+        ExportSuccess = "已複製 %d個套件名稱到剪貼簿",
         ImportFailed = "匯入失敗",
         RegionQuickSelect = "地區快速選取",
         ChinaApps = "中國應用",
         OverseasApps = "非中國應用",
-        RegionSelectResult = "已依「%s」快速選取，共 %d 個",
+        RegionSelectResult = "已依「%s」快速選取，共 %d個",
     ),
     SortMode = YumeStrings_AccessControl_SortMode(
         PackageName = "套件名稱",
@@ -136,7 +136,7 @@ internal val JaYumeStrings_AccessControl: YumeStrings_AccessControl = YumeString
         Empty = "一致するアプリがありません",
     ),
     AppList = YumeStrings_AccessControl_AppList(
-        Title = "アプリ一覧（%d 件選択中）",
+        Title = "アプリ一覧（%d件選択中）",
         Loading = "読み込み中...",
     ),
     Settings = YumeStrings_AccessControl_Settings(
@@ -152,13 +152,13 @@ internal val JaYumeStrings_AccessControl: YumeStrings_AccessControl = YumeString
         ImportExport = "インポート/エクスポート",
         Import = "クリップボードからインポート",
         Export = "クリップボードへエクスポート",
-        ImportSuccess = "インポート完了: パッケージ名 %d 件",
-        ExportSuccess = "パッケージ名 %d 件をクリップボードにコピーしました",
+        ImportSuccess = "インポート完了: パッケージ名 %d件",
+        ExportSuccess = "パッケージ名 %d件をクリップボードにコピーしました",
         ImportFailed = "インポートに失敗しました",
         RegionQuickSelect = "地域クイック選択",
         ChinaApps = "中国向けアプリ",
         OverseasApps = "中国以外のアプリ",
-        RegionSelectResult = "「%s」でクイック選択、合計 %d 件",
+        RegionSelectResult = "「%s」でクイック選択、合計 %d件",
     ),
     SortMode = YumeStrings_AccessControl_SortMode(
         PackageName = "パッケージ名",

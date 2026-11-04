@@ -21,7 +21,7 @@ ProfilesPage = {
         Title = "設定檔類型"
         Subscription = "訂閱連結"
         LocalFile = "本地檔案"
-        QrScan = "掃描 QR Code 新增"
+        QrScan = "掃描QR Code新增"
     }
 
     Input = {
@@ -33,11 +33,11 @@ ProfilesPage = {
 
     QrScanner = {
         NeedPermission = "需要相機權限"
-        NeedCamera = "需要相機權限才能掃描 QR Code"
-        SelectFromAlbum = "從相簿選擇 QR Code 圖片"
+        NeedCamera = "需要相機權限才能掃描QR Code"
+        SelectFromAlbum = "從相簿選擇QR Code圖片"
         ScanSuccess = "掃描成功"
         RecognizeSuccess = "識別成功"
-        RecognizeFailed = "未能識別到 QR Code"
+        RecognizeFailed = "未能識別到QR Code"
         RecognizeError = "識別失敗：%s"
     }
 
@@ -48,7 +48,7 @@ ProfilesPage = {
     Validation = {
         EnterUrl = "請輸入連結"
         SelectFile = "請選擇檔案"
-        YamlOnly = "僅支援 .yaml 或 .yml 格式的設定檔"
+        YamlOnly = "僅支援 .yaml或 .yml格式的設定檔"
     }
 
     Progress = {
@@ -73,7 +73,7 @@ ProfilesPage = {
     LinkSettings = {
         Title = "連結設定"
         OpenMode = "開啟方式"
-        OpenModeInApp = "App 內開啟"
+        OpenModeInApp = "App內開啟"
         OpenModeExternal = "外部瀏覽器"
         DefaultLink = "預設連結"
         DefaultLinkSummary = "點選左上角快捷按鈕時開啟的連結"

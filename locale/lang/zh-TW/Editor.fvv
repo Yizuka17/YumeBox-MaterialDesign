@@ -1,7 +1,7 @@
 <Editor Feature>
 Editor = {
     Common = {
-        JsonSubtitle = "使用 JSON 格式編輯"
+        JsonSubtitle = "使用JSON格式編輯"
         ConfigPreviewTitle = "設定檔預覽"
         EditConfigTitle = "編輯設定檔"
         EditOverrideConfigTitle = "編輯覆寫設定"
@@ -28,9 +28,9 @@ Editor = {
     }
 
     Diagnostic = {
-        JsonFormatError = "JSON 格式錯誤"
-        JsonMustStartWithObjectOrArray = "JSON 必須以 '{' 或 '[' 開頭"
-        JsonSyntaxError = "JSON 語法錯誤"
+        JsonFormatError = "JSON格式錯誤"
+        JsonMustStartWithObjectOrArray = "JSON必須以 '{' 或 '[' 開頭"
+        JsonSyntaxError = "JSON語法錯誤"
         Unterminated = "未終止的字串或物件"
         Unknown = "未知"
         Expected = "期望 %s"

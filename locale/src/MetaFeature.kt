@@ -1,25 +1,25 @@
 package com.github.yumelira.yumebox.core.locale
 
 internal val ZhHansYumeStrings_MetaFeature: YumeStrings_MetaFeature = YumeStrings_MetaFeature(
-    Title = "Meta 功能",
+    Title = "Meta功能",
     Section = YumeStrings_MetaFeature_Section(
         ConnectionAndTraffic = "连接、日志与规则",
         Routing = "分流相关",
     ),
     GeoX = YumeStrings_MetaFeature_GeoX(
-        OnlineUpdateTitle = "更新 GeoX",
+        OnlineUpdateTitle = "更新GeoX",
         OnlineUpdateSummary = "下载数据库文件",
     ),
     CustomRouting = YumeStrings_MetaFeature_CustomRouting(
         Title = "自定义分流",
         Summary = "独立的分流规则配置",
-        EditYaml = "编辑 YAML",
-        ManualYamlPresetDiscarded = "已丢弃未保存的预设开关，以保护手写 YAML 内容",
+        EditYaml = "编辑YAML",
+        ManualYamlPresetDiscarded = "已丢弃未保存的预设开关，以保护手写YAML内容",
         GroupTypeTitle = "策略组类型",
         GroupTypeUrlTest = "UrlTest",
         GroupTypeFallback = "Fallback",
-        UrlTestRegionGroupTitle = "UrlTest 地区组",
-        FallbackRegionGroupTitle = "Fallback 地区组",
+        UrlTestRegionGroupTitle = "UrlTest地区组",
+        FallbackRegionGroupTitle = "Fallback地区组",
         Region = YumeStrings_MetaFeature_CustomRouting_Region(
             HongKong = "香港自动组",
             Taiwan = "台湾自动组",
@@ -33,7 +33,7 @@ internal val ZhHansYumeStrings_MetaFeature: YumeStrings_MetaFeature = YumeString
             Ads = "广告拦截",
             China = "中国大陆直连",
             Global = "境外地理规则",
-            Match = "兜底 MATCH",
+            Match = "兜底MATCH",
         ),
     ),
     RuntimeRules = YumeStrings_MetaFeature_RuntimeRules(
@@ -41,11 +41,11 @@ internal val ZhHansYumeStrings_MetaFeature: YumeStrings_MetaFeature = YumeString
         Summary = "查看并临时开关运行时规则",
     ),
     Download = YumeStrings_MetaFeature_Download(
-        DialogTitle = "更新 GeoX",
+        DialogTitle = "更新GeoX",
         DownloadComplete = "下载完成：%d/%d",
     ),
     AgeKey = YumeStrings_MetaFeature_AgeKey(
-        Section = "Age 密钥",
+        Section = "Age密钥",
         X25519Title = "X25519",
         HybridTitle = "mlkem768-x25519",
         SecretKey = "私钥",
@@ -56,25 +56,25 @@ internal val ZhHansYumeStrings_MetaFeature: YumeStrings_MetaFeature = YumeString
 )
 
 internal val ZhYumeStrings_MetaFeature: YumeStrings_MetaFeature = YumeStrings_MetaFeature(
-    Title = "Meta 功能",
+    Title = "Meta功能",
     Section = YumeStrings_MetaFeature_Section(
         ConnectionAndTraffic = "連線、日誌與規則",
         Routing = "分流相關",
     ),
     GeoX = YumeStrings_MetaFeature_GeoX(
-        OnlineUpdateTitle = "更新 GeoX",
+        OnlineUpdateTitle = "更新GeoX",
         OnlineUpdateSummary = "下載資料庫檔案",
     ),
     CustomRouting = YumeStrings_MetaFeature_CustomRouting(
         Title = "自訂分流",
         Summary = "獨立的分流規則設定",
-        EditYaml = "編輯 YAML",
-        ManualYamlPresetDiscarded = "已捨棄未儲存的預設切換，以保護手寫 YAML 內容",
+        EditYaml = "編輯YAML",
+        ManualYamlPresetDiscarded = "已捨棄未儲存的預設切換，以保護手寫YAML內容",
         GroupTypeTitle = "策略組類型",
         GroupTypeUrlTest = "UrlTest",
         GroupTypeFallback = "Fallback",
-        UrlTestRegionGroupTitle = "UrlTest 地區組",
-        FallbackRegionGroupTitle = "Fallback 地區組",
+        UrlTestRegionGroupTitle = "UrlTest地區組",
+        FallbackRegionGroupTitle = "Fallback地區組",
         Region = YumeStrings_MetaFeature_CustomRouting_Region(
             HongKong = "香港自動群組",
             Taiwan = "台灣自動群組",
@@ -88,7 +88,7 @@ internal val ZhYumeStrings_MetaFeature: YumeStrings_MetaFeature = YumeStrings_Me
             Ads = "廣告攔截",
             China = "中國大陸直連",
             Global = "境外地理規則",
-            Match = "最終 MATCH",
+            Match = "最終MATCH",
         ),
     ),
     RuntimeRules = YumeStrings_MetaFeature_RuntimeRules(
@@ -96,11 +96,11 @@ internal val ZhYumeStrings_MetaFeature: YumeStrings_MetaFeature = YumeStrings_Me
         Summary = "檢視並暫時開關執行中規則",
     ),
     Download = YumeStrings_MetaFeature_Download(
-        DialogTitle = "線上更新 GeoX",
+        DialogTitle = "線上更新GeoX",
         DownloadComplete = "下載完成：%d/%d",
     ),
     AgeKey = YumeStrings_MetaFeature_AgeKey(
-        Section = "Age 金鑰",
+        Section = "Age金鑰",
         X25519Title = "X25519",
         HybridTitle = "mlkem768-x25519",
         SecretKey = "私鑰",
@@ -166,7 +166,7 @@ internal val EnYumeStrings_MetaFeature: YumeStrings_MetaFeature = YumeStrings_Me
 )
 
 internal val JaYumeStrings_MetaFeature: YumeStrings_MetaFeature = YumeStrings_MetaFeature(
-    Title = "Meta 機能",
+    Title = "Meta機能",
     Section = YumeStrings_MetaFeature_Section(
         ConnectionAndTraffic = "接続、ログ、ルール",
         Routing = "ルーティング",
@@ -183,8 +183,8 @@ internal val JaYumeStrings_MetaFeature: YumeStrings_MetaFeature = YumeStrings_Me
         GroupTypeTitle = "グループ種別",
         GroupTypeUrlTest = "UrlTest",
         GroupTypeFallback = "Fallback",
-        UrlTestRegionGroupTitle = "UrlTest 地域グループ",
-        FallbackRegionGroupTitle = "Fallback 地域グループ",
+        UrlTestRegionGroupTitle = "UrlTest地域グループ",
+        FallbackRegionGroupTitle = "Fallback地域グループ",
         Region = YumeStrings_MetaFeature_CustomRouting_Region(
             HongKong = "香港自動グループ",
             Taiwan = "台湾自動グループ",
@@ -198,7 +198,7 @@ internal val JaYumeStrings_MetaFeature: YumeStrings_MetaFeature = YumeStrings_Me
             Ads = "広告ブロック",
             China = "中国本土を直接接続",
             Global = "中国国外の地域ルール",
-            Match = "最終 MATCH",
+            Match = "最終MATCH",
         ),
     ),
     RuntimeRules = YumeStrings_MetaFeature_RuntimeRules(

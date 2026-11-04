@@ -26,6 +26,11 @@ enum class WallpaperProfile(val key: String, val defaultApi: String, val default
     Tablet("tablet", "https://www.loliapi.com/acg/pc/", R.drawable.wallpaper_tablet),
 }
 
+data class WallpaperCrop(val zoom: Float = 1f, val x: Float = 0f, val y: Float = 0f)
+
+internal fun defaultWallpaperCrop(profile: WallpaperProfile) =
+    WallpaperCrop(x = if (profile == WallpaperProfile.Portrait) -1f else 0f)
+
 data class WallpaperOptions(
     val apiEnabled: Boolean = true,
     val apiUrl: String,
@@ -39,6 +44,7 @@ data class WallpaperOptions(
     val biasX: Float = 0f,
     val biasY: Float = 0f,
     val samplesInitialized: Boolean = false,
+    val crops: Map<String, WallpaperCrop> = emptyMap(),
 )
 
 /** Files use paths relative to one backed-up directory, so restoration is portable. */
@@ -46,11 +52,32 @@ class AcgWallpaperManager(private val context: Context, val settings: AppSetting
     private val scope = CoroutineScope(SupervisorJob() + Dispatchers.IO)
     private val root get() = File(context.filesDir, "acg_wallpapers")
     private val stateLock = Any()
+    private var sampleCropsInitialized = false
     private val refreshLocks = WallpaperProfile.entries.associateWith { Mutex() }
     private val _options = MutableStateFlow(readOptions())
     val options: StateFlow<Map<WallpaperProfile, WallpaperOptions>> = _options.asStateFlow()
     private val _refreshing = MutableStateFlow<Set<WallpaperProfile>>(emptySet())
     val refreshing = _refreshing.asStateFlow()
+    private val _activeProfile = MutableStateFlow(WallpaperProfile.Portrait)
+    val activeProfile = _activeProfile.asStateFlow()
+    private val _displayedSources = MutableStateFlow<Map<WallpaperProfile, String>>(emptyMap())
+    val displayedSources = _displayedSources.asStateFlow()
+
+    fun reportDisplayedSource(profile: WallpaperProfile, source: String) {
+        _displayedSources.update { if (it[profile] == source) it else it + (profile to source) }
+    }
+    private val _heroFrames = MutableStateFlow<Map<AcgFrameKey, androidx.compose.ui.unit.IntSize>>(emptyMap())
+    internal val heroFrames = _heroFrames.asStateFlow()
+
+    fun reportActiveProfile(profile: WallpaperProfile) { _activeProfile.value = profile }
+
+    internal fun reportHeroFrame(key: AcgFrameKey, size: androidx.compose.ui.unit.IntSize) {
+        if (size.width > 0 && size.height > 0) _heroFrames.update {
+            if (it[key] == size) it else (it - key + (key to size)).entries.toList().takeLast(12).associate { entry ->
+                entry.key to entry.value
+            }
+        }
+    }
     private val client = OkHttpClient.Builder().connectTimeout(5, TimeUnit.SECONDS)
         .readTimeout(12, TimeUnit.SECONDS).callTimeout(20, TimeUnit.SECONDS).build()
 
@@ -72,9 +99,28 @@ class AcgWallpaperManager(private val context: Context, val settings: AppSetting
             val old = readOptions().getValue(profile)
             if (!old.samplesInitialized) {
                 val pool = old.pool.ifEmpty { listOf(bundledSample(profile)) }
-                update(profile) { it.copy(pool = pool, samplesInitialized = true) }
+                val newSample = if (old.pool.isEmpty()) pool.firstOrNull() else null
+                update(profile) {
+                    it.copy(pool = pool, samplesInitialized = true,
+                        crops = if (newSample != null) it.crops + (newSample to defaultWallpaperCrop(profile)) else it.crops)
+                }
+            }
+            if (!sampleCropsInitialized && profile == WallpaperProfile.Portrait) {
+                val current = readOptions().getValue(profile)
+                // Older installs already have the bundled pool sample under a generated name.
+                // Preserve any explicit crop; only initialize untouched copies of the default art.
+                val bytes = context.resources.openRawResource(profile.defaultWallpaper).use { it.readBytes() }
+                val untouched = current.pool.filter { path ->
+                    path !in current.crops && file(path)?.let {
+                        it.isFile && it.length() == bytes.size.toLong() && it.readBytes().contentEquals(bytes)
+                    } == true
+                }
+                if (untouched.isNotEmpty()) update(profile) {
+                    it.copy(crops = it.crops + untouched.associateWith { defaultWallpaperCrop(profile) })
+                }
             }
         }
+        sampleCropsInitialized = true
     }
 
     private fun readOptions(): Map<WallpaperProfile, WallpaperOptions> {
@@ -84,14 +130,25 @@ class AcgWallpaperManager(private val context: Context, val settings: AppSetting
             fun paths(key: String): List<String> = obj.optJSONArray(key)?.let { array ->
                 (0 until array.length()).mapNotNull { array.optString(it).takeIf(::validPath) }.distinct().take(100)
             }.orEmpty()
+            val pool = paths("pool")
+            val history = paths("history").take(10)
+            val crops = obj.optJSONObject("crops")
             WallpaperOptions(
                 apiEnabled = obj.optBoolean("apiEnabled", true), apiUrl = obj.optString("apiUrl", profile.defaultApi),
-                poolEnabled = obj.optBoolean("poolEnabled", false), pool = paths("pool"), history = paths("history").take(10),
+                poolEnabled = obj.optBoolean("poolEnabled", false), pool = pool, history = history,
                 current = obj.optString("current"), day = obj.optString("day"), staticImage = obj.optString("staticImage"),
                 zoom = obj.optDouble("zoom", 1.0).toFloat().takeIf { it.isFinite() }?.coerceIn(1f, 5f) ?: 1f,
                 biasX = obj.optDouble("biasX", 0.0).toFloat().takeIf { it.isFinite() }?.coerceIn(-1f, 1f) ?: 0f,
                 biasY = obj.optDouble("biasY", 0.0).toFloat().takeIf { it.isFinite() }?.coerceIn(-1f, 1f) ?: 0f,
                 samplesInitialized = obj.optBoolean("samplesInitialized", false),
+                crops = (pool + history).mapNotNull { path ->
+                    crops?.optJSONObject(path)?.let { crop ->
+                        fun finite(key: String, default: Float) =
+                            crop.optDouble(key, default.toDouble()).toFloat().takeIf(Float::isFinite) ?: default
+                        path to WallpaperCrop(finite("zoom", 1f).coerceIn(1f, 5f),
+                            finite("x", 0f).coerceIn(-1f, 1f), finite("y", 0f).coerceIn(-1f, 1f))
+                    }
+                }.toMap(),
             )
         }
     }
@@ -107,6 +164,12 @@ class AcgWallpaperManager(private val context: Context, val settings: AppSetting
                 put("current", option.current); put("day", option.day); put("staticImage", option.staticImage)
                 put("zoom", option.zoom); put("biasX", option.biasX); put("biasY", option.biasY)
                 put("samplesInitialized", option.samplesInitialized)
+                put("crops", JSONObject().apply {
+                    option.crops.forEach { (path, crop) ->
+                        put(path, JSONObject().put("zoom", crop.zoom.toDouble())
+                            .put("x", crop.x.toDouble()).put("y", crop.y.toDouble()))
+                    }
+                })
             })
         }
         settings.acgWallpaperConfigJson.set(json.toString())
@@ -114,7 +177,7 @@ class AcgWallpaperManager(private val context: Context, val settings: AppSetting
     }
 
     fun setApi(profile: WallpaperProfile, enabled: Boolean? = null, url: String? = null) {
-        if (url != null) require(validApiUrl(url)) { "请输入有效的 HTTP 或 HTTPS 图片 API" }
+        if (url != null) require(validApiUrl(url)) { "请输入有效的HTTP或HTTPS图片API" }
         update(profile) { it.copy(apiEnabled = enabled ?: it.apiEnabled, apiUrl = url?.trim() ?: it.apiUrl, day = "") }
     }
 
@@ -127,8 +190,16 @@ class AcgWallpaperManager(private val context: Context, val settings: AppSetting
         if (daily) fileUri(option.current)?.let { return it }
         fileUri(option.staticImage)?.let { return it }
         // Old single-wallpaper settings remain a fallback for upgrades and legacy JSON restores.
-        return settings.acgWallpaperUri.value.ifBlank {
-            "android.resource://${context.packageName}/${profile.defaultWallpaper}"
+        if (profile == WallpaperProfile.Portrait) {
+            settings.acgWallpaperUri.value.takeIf { it.isNotBlank() }?.let { return it }
+        }
+        return "android.resource://${context.packageName}/${profile.defaultWallpaper}"
+    }
+
+    fun setPoolCrop(profile: WallpaperProfile, path: String, crop: WallpaperCrop) {
+        update(profile) {
+            require((path in it.pool || path in it.history) && fileUri(path) != null)
+            it.copy(crops = it.crops + (path to crop))
         }
     }
 
@@ -162,7 +233,8 @@ class AcgWallpaperManager(private val context: Context, val settings: AppSetting
         val removed = synchronized(stateLock) {
             val old = readOptions().getValue(profile)
             update(profile) {
-                WallpaperOptions(apiUrl = profile.defaultApi, pool = listOf(sample), samplesInitialized = true, staticImage = it.staticImage,
+                WallpaperOptions(apiUrl = profile.defaultApi, pool = listOf(sample), samplesInitialized = true,
+                    crops = mapOf(sample to defaultWallpaperCrop(profile)), staticImage = it.staticImage,
                     zoom = it.zoom, biasX = it.biasX, biasY = it.biasY)
             }
             (old.pool + old.history + old.current).distinct()
@@ -172,7 +244,7 @@ class AcgWallpaperManager(private val context: Context, val settings: AppSetting
     }
 
     suspend fun addToPool(profile: WallpaperProfile, uris: List<String>) = withContext(Dispatchers.IO) {
-        require(options.value.getValue(profile).pool.size + uris.size <= 100) { "图片池最多保存 100 张图片" }
+        require(options.value.getValue(profile).pool.size + uris.size <= 100) { "图片池最多保存100张图片" }
         val staged = mutableListOf<String>()
         try {
             uris.forEach { staged += importImage(profile, "pool", it) }
@@ -187,13 +259,13 @@ class AcgWallpaperManager(private val context: Context, val settings: AppSetting
     }
 
     suspend fun removeFromPool(profile: WallpaperProfile, path: String) = withContext(Dispatchers.IO) {
-        update(profile) { it.copy(pool = it.pool - path, current = it.current.takeUnless { value -> value == path }.orEmpty(), day = "") }
+        update(profile) { it.copy(pool = it.pool - path, crops = it.crops - path, current = it.current.takeUnless { value -> value == path }.orEmpty(), day = "") }
         if (path.startsWith("${profile.key}/pool/")) file(path)?.delete()
     }
 
     suspend fun removeFromCache(profile: WallpaperProfile, path: String) = withContext(Dispatchers.IO) {
         if (!path.startsWith("${profile.key}/history/")) return@withContext
-        update(profile) { it.copy(history = it.history - path,
+        update(profile) { it.copy(history = it.history - path, crops = it.crops - path,
             current = it.current.takeUnless { value -> value == path }.orEmpty(), day = "") }
         file(path)?.delete()
     }
@@ -232,7 +304,8 @@ class AcgWallpaperManager(private val context: Context, val settings: AppSetting
                     } else {
                         update(profile) { current ->
                             val history = downloaded?.let { (listOf(it) + current.history).distinct().take(10) } ?: current.history
-                            current.copy(current = fallback, day = today, history = history)
+                            current.copy(current = fallback, day = today, history = history,
+                                crops = current.crops.filterKeys { it in history || it in current.pool })
                         }
                         true
                     }
@@ -262,7 +335,7 @@ class AcgWallpaperManager(private val context: Context, val settings: AppSetting
                 val buffer = ByteArray(64 * 1024); var total = 0
                 while (true) {
                     val count = input.read(buffer); if (count < 0) break
-                    total += count; require(total <= 20 * 1024 * 1024) { "图片不能超过 20 MB" }; out.write(buffer, 0, count)
+                    total += count; require(total <= 20 * 1024 * 1024) { "图片不能超过20 MB" }; out.write(buffer, 0, count)
                 }
             }
             val bounds = BitmapFactory.Options().apply { inJustDecodeBounds = true }
@@ -279,7 +352,7 @@ class AcgWallpaperManager(private val context: Context, val settings: AppSetting
         // Direct images and redirects work by default; common JSON image APIs can return url/imgurl/data.url.
         repeat(3) {
             client.newCall(Request.Builder().url(url).header("Accept", "image/*, application/json").build()).execute().use { response ->
-                check(response.isSuccessful) { "壁纸 API 返回 ${response.code}" }
+                check(response.isSuccessful) { "壁纸API返回${response.code}" }
                 val body = response.body
                 require(body.contentLength() <= 20L * 1024 * 1024)
                 if (body.contentType()?.subtype?.contains("json") == true) {
@@ -293,14 +366,14 @@ class AcgWallpaperManager(private val context: Context, val settings: AppSetting
                         }
                         output.toByteArray()
                     }
-                    url = findImageUrl(org.json.JSONTokener(bytes.toString(Charsets.UTF_8)).nextValue()) ?: error("API 没有返回图片地址")
+                    url = findImageUrl(org.json.JSONTokener(bytes.toString(Charsets.UTF_8)).nextValue()) ?: error("API没有返回图片地址")
                     require(validApiUrl(url))
                 } else {
                     return saveImage(profile, "history", body.byteStream())
                 }
             }
         }
-        error("壁纸 API 跳转次数过多")
+        error("壁纸API跳转次数过多")
     }
 
     private fun findImageUrl(value: Any?, depth: Int = 0): String? {

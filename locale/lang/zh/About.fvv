@@ -15,18 +15,18 @@ About = {
     }
 
     Link = {
-        TelegramGroup = "Telegram 群组"
-        TelegramChannel = "Telegram 频道"
+        TelegramGroup = "Telegram群组"
+        TelegramChannel = "Telegram频道"
     }
 
     License = {
         CheckUpdate = "检查更新"
-        CheckUpdateSummary = "手动检查 GitHub Release 更新"
+        CheckUpdateSummary = "手动检查GitHub Release更新"
         Libraries = "引用库"
         LibrariesSummary = "View all third-party libraries used in this app"
         AgplName = "GNU Affero General Public License v3.0"
         AgplDescription = "This program is free software: you can redistribute it and/or modify it under the terms of the GNU Affero General Public License."
     }
 
-    Copyright = "© 2025 – 至今 YumeLira"
+    Copyright = "© 2025 – 至今YumeLira"
 }

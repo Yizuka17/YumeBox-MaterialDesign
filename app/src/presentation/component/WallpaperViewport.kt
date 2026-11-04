@@ -20,6 +20,11 @@
 
 package com.github.yumelira.yumebox.presentation.component
 
+import androidx.compose.ui.geometry.Offset
+import androidx.compose.ui.geometry.Size
+import androidx.compose.ui.graphics.drawscope.DrawScope
+import androidx.compose.ui.graphics.drawscope.translate
+import androidx.compose.ui.graphics.painter.Painter
 import kotlin.math.max
 
 data class WallpaperViewportLayout(
@@ -27,7 +32,18 @@ data class WallpaperViewportLayout(
     val maxShiftY: Float,
     val biasX: Float,
     val biasY: Float,
-)
+    val renderedWidth: Float,
+    val renderedHeight: Float,
+) {
+    val imageOffset: Offset get() = Offset(-maxShiftX * (1f + biasX), -maxShiftY * (1f + biasY))
+}
+
+fun DrawScope.drawWallpaper(painter: Painter, layout: WallpaperViewportLayout, frameOrigin: Offset = Offset.Zero) {
+    val origin = frameOrigin + layout.imageOffset
+    translate(origin.x, origin.y) {
+        with(painter) { draw(Size(layout.renderedWidth, layout.renderedHeight)) }
+    }
+}
 
 fun calculateWallpaperViewportLayout(
     containerWidthPx: Float,
@@ -69,5 +85,7 @@ fun calculateWallpaperViewportLayout(
         maxShiftY = maxShiftY,
         biasX = clampedBiasX,
         biasY = clampedBiasY,
+        renderedWidth = renderedWidthPx,
+        renderedHeight = renderedHeightPx,
     )
 }

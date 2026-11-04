@@ -45,6 +45,7 @@ import com.github.yumelira.yumebox.presentation.component.rememberStandalonePage
 import com.github.yumelira.yumebox.presentation.icon.AppMd3Icons
 import com.github.yumelira.yumebox.screen.acg.AcgWallpaperManager
 import com.github.yumelira.yumebox.screen.acg.WallpaperOptions
+import com.github.yumelira.yumebox.screen.acg.WallpaperCrop
 import com.github.yumelira.yumebox.screen.acg.WallpaperProfile
 import com.github.yumelira.yumebox.update.ReleaseCoverPreview
 import com.ramcosta.composedestinations.annotation.Destination
@@ -78,16 +79,23 @@ fun AcgWallpaperConfigScreen(navigator: DestinationsNavigator) {
     var busy by remember { mutableStateOf(false) }
     var preview by remember { mutableStateOf<String?>(null) }
 
+    fun openCrop(profile: WallpaperProfile, path: String, pooled: Boolean) {
+        val uri = manager.fileUri(path) ?: return
+        val option = options.getValue(profile)
+        val crop = if (pooled) option.crops[path] ?: WallpaperCrop()
+            else WallpaperCrop(option.zoom, option.biasX, option.biasY)
+        navigator.navigate(AcgWallpaperCropScreenDestination(
+            wallpaperUri = uri, initialZoom = crop.zoom, initialBiasX = crop.x, initialBiasY = crop.y,
+            profile = profile.key, poolPath = if (pooled) path else "",
+        ))
+    }
+
     BackHandler(gallery != null) { galleryKey = null; preview = null }
 
     val singlePicker = rememberLauncherForActivityResult(ActivityResultContracts.PickVisualMedia()) { uri ->
         if (uri != null) {
             val profile = WallpaperProfile.entries.first { it.key == pickProfile }
-            val option = options.getValue(profile)
-            navigator.navigate(AcgWallpaperCropScreenDestination(
-                wallpaperUri = uri.toString(), profile = profile.key,
-                initialZoom = option.zoom, initialBiasX = option.biasX, initialBiasY = option.biasY,
-            ))
+            navigator.navigate(AcgWallpaperCropScreenDestination(wallpaperUri = uri.toString(), profile = profile.key))
         }
     }
     val poolPicker = rememberLauncherForActivityResult(ActivityResultContracts.PickMultipleVisualMedia(30)) { uris ->
@@ -109,7 +117,8 @@ fun AcgWallpaperConfigScreen(navigator: DestinationsNavigator) {
     fun refresh(profile: WallpaperProfile) {
         if (profile in manager.refreshing.value) return
         scope.launch {
-            manager.refresh(profile, force = true)
+            val success = manager.refresh(profile, force = true)
+            context.toast(if (success) MLang.AppSettings.Wallpaper.Cached else MLang.AppSettings.Wallpaper.Offline)
         }
     }
     fun removePreview(path: String) {
@@ -131,7 +140,7 @@ fun AcgWallpaperConfigScreen(navigator: DestinationsNavigator) {
         containerColor = MaterialTheme.colorScheme.surface,
         topBar = {
             TopBar(
-                title = if (gallery == null) MLang.AppSettings.Wallpaper.Title else if (galleryIsCache) "${profileTitle(gallery)} · ${MLang.AppSettings.Wallpaper.ApiCache}" else profileTitle(gallery),
+                title = if (gallery == null) MLang.AppSettings.Wallpaper.Title else if (galleryIsCache) "${profileTitle(gallery)} (${MLang.AppSettings.Wallpaper.ApiCache})" else profileTitle(gallery),
                 navigationIcon = {
                     IconButton(onClick = { if (gallery != null) galleryKey = null else navigator.popBackStack() }) {
                         Icon(AppMd3Icons.Navigation.Back, MLang.Component.Navigation.Back)
@@ -192,13 +201,13 @@ fun AcgWallpaperConfigScreen(navigator: DestinationsNavigator) {
                     Title(MLang.AppSettings.Experimental.WallpaperTitle)
                     Card {
                         PreferenceSwitchItem(
-                            title = MLang.AppSettings.Wallpaper.Daily, summary = MLang.AppSettings.Wallpaper.DailySummary,
+                            title = MLang.AppSettings.Wallpaper.Daily,
                             checked = daily, onCheckedChange = settings.acgDailyWallpaperEnabled::set,
                         )
                         PreferenceArrowItem(
-                            title = MLang.AppSettings.Wallpaper.Manual, summary = MLang.AppSettings.Wallpaper.ManualSummary,
+                            title = MLang.AppSettings.Wallpaper.Manual,
                             enabled = !daily,
-                            onClick = { if (tablet) manualDialog = true else chooseSingle(WallpaperProfile.Portrait) },
+                            onClick = { if (tablet || options.getValue(WallpaperProfile.Portrait).staticImage.isNotBlank()) manualDialog = true else chooseSingle(WallpaperProfile.Portrait) },
                         )
                         PreferenceValueItem(title = MLang.AppSettings.Wallpaper.Reset,
                             onClick = { scope.launch { manager.resetDefaults(); context.toast(MLang.AppSettings.Experimental.ResetWallpaperSuccess) } })
@@ -222,14 +231,26 @@ fun AcgWallpaperConfigScreen(navigator: DestinationsNavigator) {
     AppDialog(show = manualDialog, title = MLang.AppSettings.Wallpaper.Manual, onDismissRequest = { manualDialog = false }) {
         Column {
             PreferenceArrowItem(MLang.AppSettings.Wallpaper.ChoosePortrait, onClick = { chooseSingle(WallpaperProfile.Portrait) })
-            PreferenceArrowItem(MLang.AppSettings.Wallpaper.ChooseTablet, enabled = tablet, onClick = { chooseSingle(WallpaperProfile.Tablet) })
+            if (tablet) PreferenceArrowItem(MLang.AppSettings.Wallpaper.ChooseTablet, onClick = { chooseSingle(WallpaperProfile.Tablet) })
+            WallpaperProfile.entries.filter { it == WallpaperProfile.Portrait || tablet }.forEach { profile ->
+                val path = options.getValue(profile).staticImage
+                if (manager.fileUri(path) != null) PreferenceArrowItem(
+                    title = MLang.AppSettings.Wallpaper.AdjustPosition + " (" + profileTitle(profile) + ")",
+                    onClick = { manualDialog = false; openCrop(profile, path, pooled = false) },
+                )
+            }
         }
     }
     preview?.let { path ->
         manager.fileUri(path)?.let { uri ->
             ReleaseCoverPreview(uri, onDismiss = { preview = null }, localImage = true,
                 description = MLang.AppSettings.Wallpaper.Preview, saveTitle = MLang.AppSettings.Wallpaper.SaveImage,
-                onDelete = { removePreview(path) })
+                onDelete = { removePreview(path) },
+                onAdjust = {
+                    preview = null
+                    gallery?.let { openCrop(it, path, pooled = true) }
+                },
+            )
         }
     }
 }
@@ -247,13 +268,12 @@ private fun WallpaperProfileSection(
         Column(Modifier.animateContentSize()) {
             PreferenceArrowItem(
                 title = MLang.AppSettings.Wallpaper.Api,
-                summary = if (enabled) option.apiUrl else MLang.AppSettings.Wallpaper.TabletDisabled,
+                summary = option.apiUrl,
                 enabled = enabled, onClick = { draft = option.apiUrl; invalid = false; edit = true },
                 endActions = { HapticSwitch(checked = option.apiEnabled, enabled = enabled, onCheckedChange = { manager.setApi(profile, enabled = it) }) },
             )
             PreferenceArrowItem(
-                title = MLang.AppSettings.Wallpaper.Pool,
-                summary = if (enabled) "${MLang.AppSettings.Wallpaper.PoolSummary} (${option.pool.size})" else MLang.AppSettings.Wallpaper.TabletDisabled,
+                title = MLang.AppSettings.Wallpaper.Pool + " (${option.pool.size})",
                 enabled = enabled, onClick = onOpenPool,
                 endActions = { HapticSwitch(checked = option.poolEnabled, enabled = enabled, onCheckedChange = { manager.setPoolEnabled(profile, it) }) },
             )

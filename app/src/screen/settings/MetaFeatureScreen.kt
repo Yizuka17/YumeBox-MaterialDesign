@@ -113,7 +113,7 @@ fun MetaFeatureScreen(navigator: DestinationsNavigator) {
                 Card {
                     PreferenceArrowItem(
                         title = MLang.Connection.Title,
-                        summary = MLang.Connection.Summary,
+
                         onClick = {
                             navigator.navigate(ConnectionScreenDestination) {
                                 launchSingleTop = true
@@ -122,7 +122,7 @@ fun MetaFeatureScreen(navigator: DestinationsNavigator) {
                     )
                     PreferenceArrowItem(
                         title = MLang.TrafficStatistics.Title,
-                        summary = MLang.TrafficStatistics.EntrySummary,
+
                         onClick = {
                             navigator.navigate(TrafficStatisticsScreenDestination) {
                                 launchSingleTop = true
@@ -136,7 +136,7 @@ fun MetaFeatureScreen(navigator: DestinationsNavigator) {
                 Card {
                     PreferenceArrowItem(
                         title = MLang.MetaFeature.CustomRouting.Title,
-                        summary = MLang.MetaFeature.CustomRouting.Summary,
+
                         onClick = {
                             navigator.navigate(com.ramcosta.composedestinations.generated.destinations.CustomRoutingRouteDestination) {
                                 launchSingleTop = true
@@ -150,7 +150,7 @@ fun MetaFeatureScreen(navigator: DestinationsNavigator) {
                 Card {
                     PreferenceArrowItem(
                         title = MLang.MetaFeature.GeoX.OnlineUpdateTitle,
-                        summary = MLang.MetaFeature.GeoX.OnlineUpdateSummary,
+
                         onClick = {
                             refreshGeoXUpdateRecords()
                             showGeoXDownloadSheet.value = true
@@ -158,7 +158,7 @@ fun MetaFeatureScreen(navigator: DestinationsNavigator) {
                     )
                     PreferenceArrowItem(
                         title = MLang.MetaFeature.GeoX.LocalUpdateTitle,
-                        summary = MLang.MetaFeature.GeoX.LocalUpdateSummary,
+
                         onClick = {
                             refreshGeoXUpdateRecords()
                             showGeoXImportSheet.value = true

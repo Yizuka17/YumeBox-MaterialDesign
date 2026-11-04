@@ -167,15 +167,11 @@ fun AboutScreen(navigator: DestinationsNavigator) {
 
                 Card {
                     YumeMd3PreferenceItem(
-                        title = "YumeBox MD3",
-                        summary = "A Material Design 3 / Material You fork of YumeBox, an open-source Android client based on Mihomo",
-                    )
-                    YumeMd3PreferenceItem(
                         title = MLang.About.License.CheckUpdate,
                         summary = if (updateUiState.isChecking) {
                             MLang.Component.Update.Message.Checking
                         } else {
-                            MLang.About.License.CheckUpdateSummary
+                            ""
                         },
                         enabled = !updateUiState.isChecking && !downloadProgress.isDownloading,
                         onClick = updateViewModel::checkForUpdate,
@@ -184,13 +180,11 @@ fun AboutScreen(navigator: DestinationsNavigator) {
                     )
                     com.github.yumelira.yumebox.presentation.component.md3.YumeMd3SwitchPreferenceItem(
                         title = "自动检查更新",
-                        summary = "应用在前台时，每 6 小时从 GitHub Releases 检查正式版",
                         checked = automaticUpdates,
                         onCheckedChange = { automaticUpdates = it; updateManager.autoCheck = it },
                     )
                     com.github.yumelira.yumebox.presentation.component.md3.YumeMd3SwitchPreferenceItem(
                         title = "接收预发布版本",
-                        summary = "同时检测 Alpha、Beta 和预览发布",
                         checked = previewUpdates,
                         onCheckedChange = { previewUpdates = it; updateManager.includePrereleases = it },
                     )
@@ -226,13 +220,11 @@ fun AboutScreen(navigator: DestinationsNavigator) {
                 Card {
                     YumeMd3PreferenceItem(
                         title = "Issues",
-                        summary = "反馈问题和提供改进建议",
                         onClick = { openUrl(context, "https://github.com/Yizuka17/YumeBox-MaterialDesign/issues") },
                         trailingContent = { ChevronText() },
                     )
                     YumeMd3PreferenceItem(
                         title = "Readme",
-                        summary = "项目介绍与使用说明",
                         onClick = { navigator.navigate(ReadmeScreenDestination) },
                         trailingContent = { ChevronText() },
                     )
@@ -244,13 +236,11 @@ fun AboutScreen(navigator: DestinationsNavigator) {
                 Card {
                     YumeMd3PreferenceItem(
                         title = MLang.About.License.Libraries,
-                        summary = MLang.About.License.LibrariesSummary,
                         onClick = { navigator.navigate(OpenSourceLicensesScreenDestination) },
                         trailingContent = { ChevronText() },
                     )
                     YumeMd3PreferenceItem(
                         title = MLang.About.License.AgplName,
-                        summary = MLang.About.License.AgplDescription,
                         showDivider = false,
                     )
                 }

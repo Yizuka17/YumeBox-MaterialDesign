@@ -23,14 +23,13 @@ package com.github.yumelira.yumebox.screen.acg
 
 import com.github.yumelira.yumebox.presentation.theme.UiDp
 import android.content.Context
-import android.graphics.BitmapFactory
 import android.os.Build
 import android.widget.Toast
 import androidx.compose.animation.*
 import androidx.compose.animation.core.FastOutSlowInEasing
 import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.animation.core.tween
-import androidx.compose.foundation.Image
+import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.background
 import androidx.compose.foundation.gestures.detectTapGestures
 import androidx.compose.foundation.isSystemInDarkTheme
@@ -40,30 +39,27 @@ import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
-import androidx.compose.ui.BiasAlignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clipToBounds
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.graphics.TransformOrigin
 import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.res.vectorResource
 import com.github.yumelira.yumebox.runtime.service.util.ServiceLogoIcons
 import androidx.compose.ui.hapticfeedback.HapticFeedbackType
 import androidx.compose.ui.input.pointer.pointerInput
-import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.layout.onSizeChanged
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalDensity
+import androidx.compose.ui.platform.LocalWindowInfo
+import androidx.compose.ui.unit.IntSize
+import com.github.panpf.sketch.request.LoadState
 import androidx.compose.ui.platform.LocalHapticFeedback
 import androidx.compose.ui.unit.dp
-import androidx.core.net.toUri
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.LifecycleEventObserver
 import androidx.lifecycle.compose.LocalLifecycleOwner
-import com.github.panpf.sketch.rememberAsyncImagePainter
-import com.github.panpf.sketch.request.ImageRequest
-import com.github.panpf.sketch.resize.Precision
 import com.github.yumelira.yumebox.common.util.toast
 import com.github.yumelira.yumebox.core.util.PollingTimerSpecs
 import com.github.yumelira.yumebox.core.util.PollingTimers
@@ -73,6 +69,7 @@ import com.github.yumelira.yumebox.domain.model.TrafficData
 import com.github.yumelira.yumebox.presentation.component.LocalHandlePageChange
 import com.github.yumelira.yumebox.presentation.component.Md3ELoading
 import com.github.yumelira.yumebox.presentation.component.calculateWallpaperViewportLayout
+import com.github.yumelira.yumebox.presentation.component.drawWallpaper
 import com.github.yumelira.yumebox.presentation.icon.AppMd3Icons
 import com.github.yumelira.yumebox.presentation.icon.ShellIcons
 import com.github.yumelira.yumebox.presentation.theme.AppMotion
@@ -81,9 +78,7 @@ import com.github.yumelira.yumebox.screen.home.HomeViewModel
 import com.github.yumelira.yumebox.screen.home.displayableExternalIp
 import com.github.yumelira.yumebox.screen.settings.AppSettingsViewModel
 import dev.oom_wg.purejoy.mlang.MLang
-import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
-import kotlinx.coroutines.withContext
 import com.github.yumelira.yumebox.miuix.YumeMiuixTheme
 import com.github.yumelira.yumebox.miuix.rememberYumeMiuixLayerBackdrop
 import com.github.yumelira.yumebox.miuix.yumeMiuixLayerBackdrop
@@ -275,12 +270,11 @@ fun AcgHomePage(
     }
 
     BoxWithConstraints(modifier = Modifier.fillMaxSize()) {
-        // The window breakpoint must not flip when the app's "100%" slider stores
-        // a fractional scale such as 1.001. Keep enough usable width for the rail.
-        val windowWidthDp = kotlin.math.round(maxWidth.value * pageScale).toInt()
-        val tabletMode = tabletEnabled && maxWidth >= 480.dp &&
-            (windowWidthDp >= 600 || maxWidth / maxHeight >= 0.85f)
-        val wallpaperProfile = if (tabletMode) WallpaperProfile.Tablet else WallpaperProfile.Portrait
+        val wallpaperProfile = acgWallpaperProfile(maxWidth, maxHeight, pageScale, tabletEnabled)
+        val tabletMode = wallpaperProfile == WallpaperProfile.Tablet
+        LaunchedEffect(wallpaperProfile, isActive) {
+            if (isActive) wallpapers.reportActiveProfile(wallpaperProfile)
+        }
         val sidebarIcons = remember(handlePageChange, homeViewModel, wallpaperProfile, dailyWallpaper, wallpaperRefreshing, refreshWallpaperIcon) {
             listOfNotNull(
                 if (dailyWallpaper) AcgSidebarIconItem(
@@ -308,21 +302,25 @@ fun AcgHomePage(
         val useProfileCrop = wallpapers.fileUri(wallpaperOption.staticImage) != null
         val showingDailyImage = dailyWallpaper && wallpapers.fileUri(wallpaperOption.current) != null && wallpaperOption.current != wallpaperOption.staticImage
         val legacyCrop = wallpaperProfile == WallpaperProfile.Portrait && wallpaperUri.isNotBlank() && activeWallpaperUri == wallpaperUri
-        val activeWallpaperZoom = if (showingDailyImage) 1f else if (useProfileCrop) wallpaperOption.zoom else if (legacyCrop) wallpaperZoom else 1f
-        val activeWallpaperBiasX = if (showingDailyImage) 0f else if (useProfileCrop) wallpaperOption.biasX else if (legacyCrop) wallpaperBiasX else 0f
-        val activeWallpaperBiasY = if (showingDailyImage) 0f else if (useProfileCrop) wallpaperOption.biasY else if (legacyCrop) wallpaperBiasY else 0f
+        val crop = when {
+            showingDailyImage -> wallpaperOption.crops[wallpaperOption.current] ?: WallpaperCrop()
+            useProfileCrop -> WallpaperCrop(wallpaperOption.zoom, wallpaperOption.biasX, wallpaperOption.biasY)
+            legacyCrop -> WallpaperCrop(wallpaperZoom, wallpaperBiasX, wallpaperBiasY)
+            else -> defaultWallpaperCrop(wallpaperProfile)
+        }
         LaunchedEffect(wallpaperProfile, dailyWallpaper, isActive, wallpaperOption.apiEnabled, wallpaperOption.apiUrl, wallpaperOption.poolEnabled, wallpaperOption.pool) {
             while (isActive && dailyWallpaper) {
                 wallpapers.refresh(wallpaperProfile)
                 kotlinx.coroutines.delay(60_000L)
             }
         }
-        val sidebarWidth = if (tabletMode) (maxWidth * 0.28f).coerceIn(208.dp, 260.dp)
-            else (maxWidth * AcgUi.Sidebar.Fraction).coerceAtLeast(88.dp)
-        val contentStart = (sidebarWidth - AcgUi.Sidebar.contentOverlap).coerceAtLeast(UiDp.dp0)
+        val frame = acgWallpaperFrame(maxWidth, maxHeight, wallpaperProfile)
+        val sidebarWidth = frame.sidebarWidth
+        val contentStart = frame.sidebarInset
         val collapsedVisibleWidth = AcgUi.Sidebar.collapsedVisibleWidth
-        val heroHeight = maxHeight * 0.66f
-        val heroMaxWidth = maxWidth - (AcgUi.Hero.containerHorizontalInset * 2)
+        val heroHeight = frame.height
+        val key = AcgFrameKey(LocalWindowInfo.current.containerSize, density.density, wallpaperProfile, sidebarExpanded)
+        var measuredHero by remember { mutableStateOf(IntSize.Zero) }
         val heroBottomBlendSolidHeight = 56.dp
         val heroBottomBlendGradientHeight = 90.dp
         val heroBottomBlendTotalHeight = heroBottomBlendSolidHeight + heroBottomBlendGradientHeight
@@ -335,11 +333,10 @@ fun AcgHomePage(
         val sidebarOffset = lerpDp((-56).dp, UiDp.dp0, effectiveSidebarProgress)
         val sidebarAlpha = lerpFloat(0.78f, 1f, effectiveSidebarProgress) * clampedPageProgress
         val contentCorner = lerpDp(UiDp.dp0, UiDp.dp30, effectiveSidebarProgress)
-        val swipePressProgress = FastOutSlowInEasing.transform(1f - clampedPageProgress)
-        val heroImageScale = if (clampedPageProgress >= 0.999f) {
-            1f
-        } else {
-            lerpFloat(1f, 0.972f, swipePressProgress)
+        val settledFrame = isActive && clampedPageProgress >= 0.999f &&
+            if (sidebarExpanded) effectiveSidebarProgress >= 0.999f else effectiveSidebarProgress <= 0.001f
+        LaunchedEffect(key, measuredHero, settledFrame) {
+            if (settledFrame) wallpapers.reportHeroFrame(key, measuredHero)
         }
         val sidebarBlurReady by remember(
             effectiveSidebarProgress
@@ -352,9 +349,9 @@ fun AcgHomePage(
 
         AcgWallpaperBackground(
             wallpaperUri = activeWallpaperUri,
-            wallpaperZoom = activeWallpaperZoom,
-            wallpaperBiasX = activeWallpaperBiasX,
-            wallpaperBiasY = activeWallpaperBiasY,
+            wallpaperZoom = crop.zoom,
+            wallpaperBiasX = crop.x,
+            wallpaperBiasY = crop.y,
             qualityMode = AcgWallpaperQualityMode.BackgroundBlur,
             modifier = Modifier
                 .matchParentSize()
@@ -424,14 +421,12 @@ fun AcgHomePage(
                 ) {
                     AcgWallpaperBackground(
                         wallpaperUri = activeWallpaperUri,
-                        wallpaperZoom = activeWallpaperZoom,
-                        wallpaperBiasX = activeWallpaperBiasX,
-                        wallpaperBiasY = activeWallpaperBiasY,
+                        wallpaperZoom = crop.zoom,
+                        wallpaperBiasX = crop.x,
+                        wallpaperBiasY = crop.y,
                         qualityMode = AcgWallpaperQualityMode.Foreground,
-                        stableRequestWidth = heroMaxWidth,
-                        stableRequestHeight = heroHeight,
-                        foregroundMotionScale = heroImageScale,
-                        modifier = Modifier.matchParentSize(),
+                        onDisplayedSource = { wallpapers.reportDisplayedSource(wallpaperProfile, it) },
+                        modifier = Modifier.fillMaxWidth().height(heroHeight).onSizeChanged { measuredHero = it },
                     )
 
                     Box(
@@ -603,86 +598,49 @@ private fun AcgWallpaperBackground(
     wallpaperBiasX: Float = 0f,
     wallpaperBiasY: Float = 0f,
     qualityMode: AcgWallpaperQualityMode = AcgWallpaperQualityMode.Foreground,
-    stableRequestWidth: androidx.compose.ui.unit.Dp? = null,
-    stableRequestHeight: androidx.compose.ui.unit.Dp? = null,
-    foregroundMotionScale: Float = 1f,
+    onDisplayedSource: ((String) -> Unit)? = null,
 ) {
-    val clampedZoom = wallpaperZoom.coerceIn(1f, 5f)
-    val model: String = wallpaperUri.ifBlank { "file:///android_asset/wallpaper.jpg" }
-    val context: Context = LocalContext.current
-    val density = LocalDensity.current
-
-    val imageBounds by produceState<Pair<Int, Int>?>(initialValue = null, model) {
-        if (model.startsWith("file:///android_asset/")) {
-            value = null
-            return@produceState
-        }
-        value = withContext(Dispatchers.IO) {
-            runCatching {
-                context.contentResolver.openInputStream(model.toUri())?.use { input ->
-                    val options = BitmapFactory.Options().apply { inJustDecodeBounds = true }
-                    BitmapFactory.decodeStream(input, null, options)
-                    if (options.outWidth > 0 && options.outHeight > 0) {
-                        options.outWidth to options.outHeight
-                    } else {
-                        null
-                    }
-                }
-            }.getOrNull()
+    val requested = WallpaperDisplay(
+        wallpaperUri.ifBlank { "file:///android_asset/wallpaper.jpg" },
+        WallpaperCrop(wallpaperZoom, wallpaperBiasX, wallpaperBiasY),
+    )
+    // Keep the visible request remembered while its replacement loads. Source bounds
+    // and crop must change together, including when the new source is already cached.
+    var displayed by remember { mutableStateOf(requested) }
+    val sample = if (qualityMode == AcgWallpaperQualityMode.BackgroundBlur) 1024 else 2048
+    val displayedPainter = key("displayed", displayed.source) {
+        rememberAcgWallpaperPainter(displayed.source, sample, sample)
+    }
+    val pendingPainter = key("pending", requested.source) {
+        rememberAcgWallpaperPainter(requested.source, sample, sample)
+    }
+    val pendingSize = pendingPainter.intrinsicSize
+    val ready = pendingPainter.state.loadState is LoadState.Success &&
+        pendingSize.width.isFinite() && pendingSize.width > 0f &&
+        pendingSize.height.isFinite() && pendingSize.height > 0f
+    val active = if (ready) requested else displayed
+    val painter = if (ready) pendingPainter else displayedPainter
+    SideEffect {
+        if (ready) {
+            if (displayed != requested) displayed = requested
+            onDisplayedSource?.invoke(requested.source)
         }
     }
 
-    BoxWithConstraints(modifier = modifier) {
-        val containerWidthPx = with(density) { maxWidth.toPx() }.coerceAtLeast(1f)
-        val containerHeightPx = with(density) { maxHeight.toPx() }.coerceAtLeast(1f)
-
-        val sampleMultiplier = if (qualityMode == AcgWallpaperQualityMode.BackgroundBlur) 0.75f else 1.35f
-        val stableWidthPx = stableRequestWidth?.let { with(density) { it.toPx() } } ?: 0f
-        val stableHeightPx = stableRequestHeight?.let { with(density) { it.toPx() } } ?: 0f
-        val requestBaseWidthPx = maxOf(containerWidthPx, stableWidthPx)
-        val requestBaseHeightPx = maxOf(containerHeightPx, stableHeightPx)
-        val targetRequestWidth = kotlin.math.ceil(requestBaseWidthPx * sampleMultiplier).toInt().coerceAtLeast(1)
-        val targetRequestHeight = kotlin.math.ceil(requestBaseHeightPx * sampleMultiplier).toInt().coerceAtLeast(1)
-        val request = remember(context, model, targetRequestWidth, targetRequestHeight) {
-            ImageRequest(context, model) {
-                crossfade(true)
-                size(targetRequestWidth, targetRequestHeight)
-                // Keep the source aspect ratio. EXACTLY pre-crops the bitmap and loses
-                // pixels needed when the viewport changes between portrait and landscape.
-                precision(Precision.LESS_PIXELS)
+    Box(modifier = modifier) {
+        Canvas(Modifier.matchParentSize().clipToBounds()) {
+            val intrinsic = painter.intrinsicSize
+            if (intrinsic.width.isFinite() && intrinsic.width > 0f &&
+                intrinsic.height.isFinite() && intrinsic.height > 0f
+            ) {
+                val layout = calculateWallpaperViewportLayout(
+                    size.width, size.height, intrinsic.width, intrinsic.height,
+                    active.crop.zoom, active.crop.x, active.crop.y,
+                )
+                drawWallpaper(painter, layout)
             }
         }
-        val painter = rememberAsyncImagePainter(request = request)
-
-        val intrinsic = painter.intrinsicSize
-        val imageWidthPx = intrinsic.width.takeIf { it > 0f && it.isFinite() }
-            ?: imageBounds?.first?.toFloat()
-        val imageHeightPx = intrinsic.height.takeIf { it > 0f && it.isFinite() }
-            ?: imageBounds?.second?.toFloat()
-        val viewportLayout = calculateWallpaperViewportLayout(
-            containerWidthPx = containerWidthPx,
-            containerHeightPx = containerHeightPx,
-            imageWidthPx = imageWidthPx,
-            imageHeightPx = imageHeightPx,
-            zoom = clampedZoom,
-            biasX = wallpaperBiasX,
-            biasY = wallpaperBiasY,
-        )
-        val foregroundScale = foregroundMotionScale.coerceIn(0.96f, 1.04f)
-        val imageOverscanScale = 1.04f
-        Image(
-            painter = painter,
-            contentDescription = null,
-            contentScale = ContentScale.Crop,
-            alignment = BiasAlignment(viewportLayout.biasX, viewportLayout.biasY),
-            modifier = Modifier
-                .matchParentSize()
-                .graphicsLayer {
-                    scaleX = imageOverscanScale * foregroundScale
-                    scaleY = imageOverscanScale * foregroundScale
-                    transformOrigin = TransformOrigin(0.5f, 0f)
-                    translationY = 2f
-                },
-        )
     }
 }
+
+private data class WallpaperDisplay(val source: String, val crop: WallpaperCrop)

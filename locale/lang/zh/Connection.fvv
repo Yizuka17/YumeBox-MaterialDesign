@@ -23,9 +23,9 @@ Connection = {
 
     RelativeTime = {
         JustNow = "刚刚"
-        MinutesAgo = "%d 分钟前"
-        HoursAgo = "%d 小时前"
-        DaysAgo = "%d 天前"
+        MinutesAgo = "%d分钟前"
+        HoursAgo = "%d小时前"
+        DaysAgo = "%d天前"
         Date = "%02d-%02d"
     }
 

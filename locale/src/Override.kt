@@ -8,7 +8,7 @@ internal val ZhHansYumeStrings_Override: YumeStrings_Override = YumeStrings_Over
         NetworkImport = "链接导入",
     ),
     BuiltIn = YumeStrings_Override_BuiltIn(
-        PreventDnsLeak = "防止 DNS 泄露",
+        PreventDnsLeak = "防止DNS泄露",
         AddDirectRules = "添加直连规则",
         PuddingDog = "布丁狗的订阅转换",
         Acl4ssrOnlineFull = "ACL4SSR Online Full",
@@ -18,7 +18,7 @@ internal val ZhHansYumeStrings_Override: YumeStrings_Override = YumeStrings_Over
         Title = "暂无覆写配置",
         Hint = "点击下方按钮创建新配置，或导入配置文件",
         UserTitle = "暂无导入覆写",
-        UserHint = "可新建或导入 YAML / JS 覆写",
+        UserHint = "可新建或导入YAML / JS覆写",
     ),
     Section = YumeStrings_Override_Section(
         BuiltIn = "内置覆写",
@@ -54,10 +54,10 @@ internal val ZhHansYumeStrings_Override: YumeStrings_Override = YumeStrings_Over
         Failed = "导入失败: %s",
         FileError = "读取文件失败: %s",
         NetworkError = "链接导入失败: %s",
-        InvalidUrl = "请输入 HTTP 或 HTTPS 链接",
-        HttpError = "HTTP 请求失败：%d",
-        UnsupportedType = "仅支持 YAML 或 JS",
-        EmptyJavaScript = "JS 文件为空",
+        InvalidUrl = "请输入HTTP或HTTPS链接",
+        HttpError = "HTTP请求失败：%d",
+        UnsupportedType = "仅支持YAML或JS",
+        EmptyJavaScript = "JS文件为空",
     ),
     Export = YumeStrings_Override_Export(
         Failed = "导出失败：%s",
@@ -72,8 +72,8 @@ internal val ZhHansYumeStrings_Override: YumeStrings_Override = YumeStrings_Over
         ),
         Delete = YumeStrings_Override_Dialog_Delete(
             Title = "删除配置",
-            InUseMessage = "配置 %s 正在被订阅使用，删除后将解除绑定关系.确定要删除吗？此操作不可恢复.",
-            Message = "确定要删除配置 %s 吗？此操作不可恢复.",
+            InUseMessage = "配置 %s正在被订阅使用，删除后将解除绑定关系.确定要删除吗？此操作不可恢复.",
+            Message = "确定要删除配置 %s吗？此操作不可恢复.",
         ),
         Button = YumeStrings_Override_Dialog_Button(
             Cancel = "取消",
@@ -101,7 +101,7 @@ internal val ZhYumeStrings_Override: YumeStrings_Override = YumeStrings_Override
         NetworkImport = "連結匯入",
     ),
     BuiltIn = YumeStrings_Override_BuiltIn(
-        PreventDnsLeak = "防止 DNS 洩漏",
+        PreventDnsLeak = "防止DNS洩漏",
         AddDirectRules = "新增直連規則",
         PuddingDog = "布丁狗的訂閱轉換",
         Acl4ssrOnlineFull = "ACL4SSR Online Full",
@@ -111,7 +111,7 @@ internal val ZhYumeStrings_Override: YumeStrings_Override = YumeStrings_Override
         Title = "暫無覆寫設定",
         Hint = "點下方按鈕建立新設定，或匯入設定檔",
         UserTitle = "暫無匯入覆寫",
-        UserHint = "可新增或匯入 YAML / JS 覆寫",
+        UserHint = "可新增或匯入YAML / JS覆寫",
     ),
     Section = YumeStrings_Override_Section(
         BuiltIn = "內建",
@@ -147,10 +147,10 @@ internal val ZhYumeStrings_Override: YumeStrings_Override = YumeStrings_Override
         Failed = "匯入失敗: %s",
         FileError = "讀取檔案失敗: %s",
         NetworkError = "連結匯入失敗: %s",
-        InvalidUrl = "請輸入 HTTP 或 HTTPS 連結",
-        HttpError = "HTTP 請求失敗：%d",
-        UnsupportedType = "僅支援 YAML 或 JS",
-        EmptyJavaScript = "JS 檔案為空",
+        InvalidUrl = "請輸入HTTP或HTTPS連結",
+        HttpError = "HTTP請求失敗：%d",
+        UnsupportedType = "僅支援YAML或JS",
+        EmptyJavaScript = "JS檔案為空",
     ),
     Export = YumeStrings_Override_Export(
         Failed = "匯出失敗：%s",
@@ -165,8 +165,8 @@ internal val ZhYumeStrings_Override: YumeStrings_Override = YumeStrings_Override
         ),
         Delete = YumeStrings_Override_Dialog_Delete(
             Title = "刪除設定",
-            InUseMessage = "設定 %s 正在被訂閱使用，刪除後將解除綁定關係.確定要刪除嗎？此操作無法復原.",
-            Message = "確定要刪除設定 %s 嗎？此操作無法復原.",
+            InUseMessage = "設定 %s正在被訂閱使用，刪除後將解除綁定關係.確定要刪除嗎？此操作無法復原.",
+            Message = "確定要刪除設定 %s嗎？此操作無法復原.",
         ),
         Button = YumeStrings_Override_Dialog_Button(
             Cancel = "取消",
@@ -289,7 +289,7 @@ internal val JaYumeStrings_Override: YumeStrings_Override = YumeStrings_Override
     BuiltIn = YumeStrings_Override_BuiltIn(
         PreventDnsLeak = "DNS リークを防止",
         AddDirectRules = "直通ルールを追加",
-        PuddingDog = "Pudding Dog 購読変換",
+        PuddingDog = "Pudding Dog購読変換",
         Acl4ssrOnlineFull = "ACL4SSR Online Full",
         CopyName = "%s (コピー)",
     ),
@@ -334,7 +334,7 @@ internal val JaYumeStrings_Override: YumeStrings_Override = YumeStrings_Override
         FileError = "ファイルの読み取りに失敗しました: %s",
         NetworkError = "リンクのインポートに失敗しました: %s",
         InvalidUrl = "HTTP または HTTPS の URL を入力してください",
-        HttpError = "HTTP 要求に失敗しました: %d",
+        HttpError = "HTTP要求に失敗しました: %d",
         UnsupportedType = "YAML または JS のみ対応",
         EmptyJavaScript = "JS ファイルが空です",
     ),
@@ -346,7 +346,7 @@ internal val JaYumeStrings_Override: YumeStrings_Override = YumeStrings_Override
         Create = YumeStrings_Override_Dialog_Create(
             Title = "設定を追加",
             Name = "設定名",
-            Url = "設定 URL",
+            Url = "設定URL",
             Type = "作成種別",
         ),
         Delete = YumeStrings_Override_Dialog_Delete(
