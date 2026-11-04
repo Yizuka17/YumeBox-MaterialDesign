@@ -167,6 +167,10 @@ fun AboutScreen(navigator: DestinationsNavigator) {
 
                 Card {
                     YumeMd3PreferenceItem(
+                        title = "YumeBox MD3",
+                        summary = "A Material Design 3 / Material You fork of YumeBox, an open-source Android client based on Mihomo",
+                    )
+                    YumeMd3PreferenceItem(
                         title = MLang.About.License.CheckUpdate,
                         summary = if (updateUiState.isChecking) {
                             MLang.Component.Update.Message.Checking
