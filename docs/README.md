@@ -16,7 +16,7 @@ YumeBox MD3 is a Material Design 3 / Material You fork based on [YumeBox](https:
 
 ## Screenshots
 
-<img src="images/app-overview.jpg" width="100%" alt="ACG home, proxies, profiles and settings">
+<img width="3888" height="2160" alt="IMG_20261105_012207" src="https://github.com/user-attachments/assets/6201c62f-6795-4636-b51d-fc6fbe354e6b" />
 
 Tablet mode :
 
