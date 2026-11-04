@@ -16,7 +16,7 @@
 
 ## 界面展示
 
-<img src="docs/images/app-overview.jpg" width="100%" alt="ACG 首页、代理、配置与设置">
+<img width="3888" height="2160" alt="IMG_20261105_012207" src="https://github.com/user-attachments/assets/d78d4394-8f2a-4939-a5f9-bcc45ce05e3f" />
 
 平板模式：
 
