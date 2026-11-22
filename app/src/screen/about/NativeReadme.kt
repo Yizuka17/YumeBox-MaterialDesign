@@ -219,19 +219,23 @@ private fun ReadmePicture(media: ReadmeImage, path: String, openLink: (String) -
             if (exists) source = "file:///android_asset/readme/" + local
         }
     }
-    if (state.loadState is LoadState.Error && alt.isNotBlank()) Text(alt, style = MaterialTheme.typography.bodyMedium)
-    else SketchAsyncImage(
-        request = ImageRequest(context, source),
-        contentDescription = alt.ifBlank { "Readme图片" },
-        state = state,
-        contentScale = ContentScale.Fit,
+    Box(
         modifier = (if (logo) Modifier.width(96.dp) else if (badge) Modifier.height(28.dp)
-            else Modifier.fillMaxWidth()).aspectRatio(ratio).let { modifier ->
-            modifier.clickable {
+            else Modifier.fillMaxWidth()).aspectRatio(ratio).clickable {
                 if (badge && media.link != null) openLink(media.link) else preview = true
-            }
-        },
-    )
+            },
+    ) {
+        // Keep the loader in composition so a failed remote request can retry its bundled source.
+        SketchAsyncImage(
+            request = ImageRequest(context, source),
+            contentDescription = alt.ifBlank { "Readme图片" },
+            state = state,
+            contentScale = ContentScale.Fit,
+            modifier = Modifier.fillMaxSize(),
+        )
+        if (state.loadState is LoadState.Error && alt.isNotBlank()) Text(alt,
+            style = MaterialTheme.typography.bodyMedium, modifier = Modifier.align(Alignment.Center))
+    }
     if (preview) ReleaseCoverPreview(source, onDismiss = { preview = false },
         description = alt.ifBlank { "Readme图片" })
 }
