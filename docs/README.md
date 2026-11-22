@@ -50,6 +50,8 @@ YumeBox MD3 keeps the core capabilities of the original project while continuing
 - **Tablets and daily wallpapers**: wide-screen sidebars and natural-height grids for Home, proxies, profiles and settings, with separate portrait/tablet APIs, image pools, daily rotation, cached fallbacks, and image preview/save actions.
 - **HyperOS Super Island**: displays proxy status and live traffic; tapping the island resumes the previous page, while the proxy notification opens Home.
 
+> **Super Island and notifications**: Enabling HyperOS Super Island blocks network access for Xiaomi Service Framework (com.xiaomi.xmsf). Apps using Xiaomi Push may stop receiving notifications. Disabling Super Island attempts to restore network access. Keep Super Island off if you need those notifications.
+
 ## Changelog
 
 For the full changelog, APK assets, and version tags, see:
