@@ -6,7 +6,7 @@
 
 ## YumeBox MD3
 
-[![Latest release](https://img.shields.io/github/v/release/Yizuka17/YumeBox-MaterialDesign?label=Release&logo=github)](https://github.com/Yizuka17/YumeBox-MaterialDesign/releases/latest)
+[![Latest release](https://img.shields.io/github/v/release/Yizuka17/YumeBox-MaterialDesign?logo=android)](https://github.com/Yizuka17/YumeBox-MaterialDesign/releases/latest)
 [![GitHub License](https://img.shields.io/github/license/Yizuka17/YumeBox-MaterialDesign?logo=gnu)](https://github.com/Yizuka17/YumeBox-MaterialDesign/blob/Yume/LICENSE)
 [![Downloads](https://img.shields.io/github/downloads/Yizuka17/YumeBox-MaterialDesign/total?logo=github)](https://github.com/Yizuka17/YumeBox-MaterialDesign/releases)
 
