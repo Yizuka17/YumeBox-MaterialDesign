@@ -91,7 +91,9 @@ fun ReleaseCoverPreview(source: String, onDismiss: () -> Unit, localImage: Boole
     }
 
     Dialog(onDismissRequest = onDismiss, properties = DialogProperties(usePlatformDefaultWidth = false, decorFitsSystemWindows = false)) {
-        Box(Modifier.fillMaxSize().background(Color.Black).windowInsetsPadding(WindowInsets.safeDrawing)) {
+        Box(Modifier.fillMaxSize().background(Color.Black)
+            .pointerInput(onDismiss) { detectTapGestures(onTap = { onDismiss() }) }
+            .windowInsetsPadding(WindowInsets.safeDrawing)) {
             AsyncImage(
                 uri = source,
                 state = imageState,
@@ -104,10 +106,22 @@ fun ReleaseCoverPreview(source: String, onDismiss: () -> Unit, localImage: Boole
                         translationX = offset.x; translationY = offset.y
                     }
                     .semantics { onLongClick(if (localImage) MLang.AppSettings.Wallpaper.ImageActions else saveTitle) { showSave = true; true } }
-                    .pointerInput(source) {
+                    .pointerInput(source, bounds, imageInfo) {
+                        fun insideImage(point: Offset): Boolean {
+                            val info = imageInfo?.takeIf { it.width > 0 && it.height > 0 } ?: return false
+                            val fit = minOf(bounds.width.toFloat() / info.width, bounds.height.toFloat() / info.height)
+                            val halfWidth = info.width * fit / 2f
+                            val halfHeight = info.height * fit / 2f
+                            return kotlin.math.abs(point.x - bounds.width / 2f) <= halfWidth &&
+                                kotlin.math.abs(point.y - bounds.height / 2f) <= halfHeight
+                        }
                         detectTapGestures(
-                            onLongPress = { showSave = true },
-                            onDoubleTap = { scale = if (scale > 1f) 1f else 2.5f; offset = Offset.Zero },
+                            onTap = { if (!insideImage(it)) onDismiss() },
+                            onLongPress = { if (insideImage(it)) showSave = true else onDismiss() },
+                            onDoubleTap = {
+                                if (!insideImage(it)) onDismiss()
+                                else { scale = if (scale > 1f) 1f else 2.5f; offset = Offset.Zero }
+                            },
                         )
                     }
                     .pointerInput(source, bounds, imageInfo) {

@@ -162,7 +162,7 @@ fun ProxyPager(
     }
     val gridState = rememberRetainedStaggeredGridState(
         "main_proxy_${displayTunnelMode.name}_${effectiveSelectedGroupName.orEmpty()}",
-        layoutKey = "${configuration.screenWidthDp}:${configuration.screenHeightDp}:${configuration.fontScale}:$tabletLayout",
+        layoutKey = "${configuration.screenWidthDp}:${configuration.screenHeightDp}:${LocalDensity.current.fontScale}:${LocalDensity.current.density}:$tabletLayout",
     )
     val modes = remember { listOf(TunnelState.Mode.Rule, TunnelState.Mode.Global, TunnelState.Mode.Direct) }
 
@@ -432,7 +432,7 @@ private fun ProxySurfboardContent(
         val scrollModeSelector = !tabletLayout && (LocalConfiguration.current.screenHeightDp < 400 ||
             maxHeight - mainInnerPadding.calculateBottomPadding() < 160.dp)
             LazyVerticalStaggeredGrid(
-                columns = if (tabletLayout) StaggeredGridCells.Adaptive(190.dp * LocalDensity.current.fontScale.coerceAtLeast(1f)) else StaggeredGridCells.Fixed(2),
+                columns = if (tabletLayout) StaggeredGridCells.Adaptive(176.dp * LocalDensity.current.fontScale.coerceAtLeast(1f)) else StaggeredGridCells.Fixed(2),
                 state = gridState,
                 modifier = Modifier
                     .fillMaxSize()

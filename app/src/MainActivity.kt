@@ -158,10 +158,10 @@ class MainActivity : FragmentActivity() {
             val wallpaperModel = remember(wallpaperProfile, wallpaperOptions, dailyWallpaper, legacyWallpaper, displayedWallpapers) {
                 displayedWallpapers[wallpaperProfile] ?: wallpapers.displayUri(wallpaperProfile, dailyWallpaper)
             }
-            val wallpaperSeed by produceState<Long?>(null, colorTheme, wallpaperModel) {
-                value = if (colorTheme == AppColorTheme.AcgWallpaper) withContext(Dispatchers.Default) {
-                    extractWallpaperSeed(this@MainActivity, wallpaperModel)
-                } else null
+            val paletteSeeds by wallpapers.paletteSeeds.collectAsState()
+            val wallpaperSeed = paletteSeeds[wallpaperModel]
+            LaunchedEffect(colorTheme, wallpaperModel) {
+                if (colorTheme == AppColorTheme.AcgWallpaper) wallpapers.preparePalette(wallpaperModel)
             }
             val effectiveColorTheme = if (colorTheme == AppColorTheme.AcgWallpaper && wallpaperSeed == null) {
                 AppColorTheme.MonetDynamic

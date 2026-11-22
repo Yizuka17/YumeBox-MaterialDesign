@@ -1,134 +1,95 @@
 package com.github.yumelira.yumebox.screen.about
 
-import android.webkit.WebResourceRequest
-import android.webkit.WebResourceResponse
-import android.webkit.WebView
-import android.webkit.WebViewClient
 import androidx.activity.compose.BackHandler
-import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.padding
-import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.Scaffold
+import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.itemsIndexed
+import androidx.compose.foundation.lazy.rememberLazyListState
+import androidx.compose.foundation.text.selection.SelectionContainer
+import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.luminance
-import androidx.compose.ui.graphics.toArgb
 import androidx.compose.ui.platform.LocalContext
-import androidx.compose.ui.platform.LocalDensity
-import androidx.compose.ui.viewinterop.AndroidView
+import androidx.compose.ui.unit.dp
 import com.github.yumelira.yumebox.common.util.openUrl
+import com.github.yumelira.yumebox.common.util.toast
 import com.github.yumelira.yumebox.presentation.component.TopBar
+import com.github.yumelira.yumebox.presentation.icon.AppMd3Icons
 import com.ramcosta.composedestinations.annotation.Destination
 import com.ramcosta.composedestinations.annotation.RootGraph
 import com.ramcosta.composedestinations.navigation.DestinationsNavigator
-import java.io.ByteArrayInputStream
-import java.net.URLConnection
-
-private const val README_HOST = "yumebox-readme.invalid"
-private const val README_START = "https://$README_HOST/README.md"
-private val readmePages = setOf("/README.md", "/docs/README.md", "/docs/README_ZH_HANS.md")
+import kotlinx.coroutines.CancellationException
+import kotlinx.coroutines.launch
 
 @Composable
 @Destination<RootGraph>
 fun ReadmeScreen(navigator: DestinationsNavigator) {
     val context = LocalContext.current
-    val colors = MaterialTheme.colorScheme
-    fun cssColor(value: androidx.compose.ui.graphics.Color) = "#%06x".format(value.toArgb() and 0xffffff)
-    val css = "--bg:${cssColor(colors.surface)};--fg:${cssColor(colors.onSurface)};" +
-        "--link:${cssColor(colors.primary)};--muted:${cssColor(colors.surfaceContainer)};" +
-        "--border:${cssColor(colors.outlineVariant)};--scheme:${if (colors.surface.luminance() < .5f) "dark" else "light"};"
-    val latestCss by rememberUpdatedState(css)
-    var restoreScroll by remember { mutableStateOf<Int?>(null) }
-    val textZoom = (LocalDensity.current.fontScale * 100).toInt()
-    var currentUrl by rememberSaveable { mutableStateOf(README_START) }
-    var scrollY by rememberSaveable { mutableIntStateOf(0) }
-    var webView by remember { mutableStateOf<WebView?>(null) }
-    BackHandler {
-        val view = webView
-        if (view != null && view.canGoBack()) view.goBack() else navigator.popBackStack()
+    val repository = remember(context) { ReadmeRepository(context.applicationContext) }
+    var path by rememberSaveable { mutableStateOf("README.md") }
+    var refresh by remember { mutableIntStateOf(0) }
+    var markdown by remember(path) { mutableStateOf("") }
+    var loading by remember { mutableStateOf(false) }
+    val state = rememberLazyListState()
+    val scope = rememberCoroutineScope()
+    val blocks = remember(markdown) { parseReadme(markdown) }
+    var history by rememberSaveable { mutableStateOf(listOf<String>()) }
+
+    LaunchedEffect(path, refresh) {
+        loading = true
+        try {
+            if (markdown.isEmpty()) markdown = repository.stored(path)
+            markdown = repository.refresh(path, force = refresh > 0)
+        } catch (error: CancellationException) {
+            throw error
+        } catch (error: Exception) {
+            android.util.Log.w("Readme", "Unable to refresh " + path, error)
+            if (refresh > 0) context.toast("无法刷新，显示离线内容")
+        } finally { loading = false }
     }
-
-    Scaffold(topBar = { TopBar(title = "Readme") }) { innerPadding ->
-        AndroidView(
-            modifier = Modifier.fillMaxSize().padding(innerPadding),
-            factory = { viewContext ->
-                val restoreY = scrollY
-                WebView(viewContext).apply {
-                    webView = this
-                    tag = css
-                    restoreScroll = restoreY
-                    settings.javaScriptEnabled = false
-                    settings.allowFileAccess = false
-                    settings.allowContentAccess = false
-                    settings.builtInZoomControls = true
-                    settings.displayZoomControls = false
-                    settings.textZoom = textZoom
-                    setBackgroundColor(colors.surface.toArgb())
-                    setOnScrollChangeListener { _, _, y, _, _ -> scrollY = y }
-                    webViewClient = object : WebViewClient() {
-                        override fun shouldInterceptRequest(view: WebView, request: WebResourceRequest): WebResourceResponse? {
-                            val uri = request.url
-                            if (uri.host != README_HOST) return null
-                            val path = uri.path.orEmpty()
-                            if (path.split('/').any { it == ".." }) return missingAsset()
-                            return try {
-                                val input = context.assets.open("readme$path")
-                                if (path in readmePages) {
-                                    val html = input.bufferedReader().use { it.readText() }.replace("/*APP_THEME*/", latestCss)
-                                    WebResourceResponse("text/html", "utf-8", ByteArrayInputStream(html.toByteArray()))
-                                } else WebResourceResponse(when (path.substringAfterLast('.').lowercase()) {
-                                    "webp" -> "image/webp"
-                                    "svg" -> "image/svg+xml"
-                                    else -> URLConnection.guessContentTypeFromName(path) ?: "application/octet-stream"
-                                }, null, input)
-                            } catch (_: java.io.IOException) { missingAsset() }
-                        }
-
-                        override fun shouldOverrideUrlLoading(view: WebView, request: WebResourceRequest): Boolean {
-                            val uri = request.url
-                            if (uri.host == README_HOST && uri.path in readmePages) return false
-                            if (uri.scheme in setOf("https", "http")) {
-                                val target = if (uri.host == README_HOST) {
-                                    "https://github.com/Yizuka17/YumeBox-MaterialDesign/blob/Yume${uri.encodedPath}" +
-                                        (uri.encodedFragment?.let { "#$it" } ?: "")
-                                } else uri.toString()
-                                openUrl(context, target)
-                            }
-                            return true
-                        }
-
-                        override fun doUpdateVisitedHistory(view: WebView, url: String?, isReload: Boolean) {
-                            if (url != null) currentUrl = url
-                        }
-
-                        override fun onPageFinished(view: WebView, url: String) {
-                            currentUrl = url
-                            restoreScroll?.let { y -> view.scrollTo(0, y); restoreScroll = null }
-                        }
-                    }
-                    loadUrl(currentUrl)
+    val openLink: (String) -> Unit = { target ->
+        runCatching { readmeLink(path, target) }.getOrNull()?.let { uri ->
+            val local = localReadmePath(uri)
+            if (local != null) {
+                if (local != path) {
+                    history = history + path
+                    path = local
+                    scope.launch { state.scrollToItem(0) }
+                } else if (uri.fragment != null) {
+                    val index = blocks.indexOfFirst { it.anchor == uri.fragment }
+                    if (index >= 0) scope.launch { state.animateScrollToItem(index) }
                 }
-            },
-            update = { view ->
-                view.settings.textZoom = textZoom
-                if (view.tag != css) {
-                    restoreScroll = view.scrollY
-                    view.tag = css
-                    view.setBackgroundColor(colors.surface.toArgb())
-                    view.reload()
+            } else if (uri.scheme in setOf("https", "http")) openUrl(context, uri.toString())
+        }
+    }
+    BackHandler(history.isNotEmpty()) {
+        path = history.last()
+        history = history.dropLast(1)
+        scope.launch { state.scrollToItem(0) }
+    }
+    Scaffold(
+        containerColor = MaterialTheme.colorScheme.surface,
+        topBar = {
+            TopBar(title = "Readme", actions = {
+                IconButton(onClick = { refresh++ }, enabled = !loading) {
+                    if (loading) CircularProgressIndicator(Modifier.size(22.dp), strokeWidth = 2.dp)
+                    else Icon(AppMd3Icons.Action.Refresh, contentDescription = "刷新Readme")
                 }
-            },
-            onRelease = { view ->
-                webView = null
-                view.stopLoading()
-                view.setOnScrollChangeListener(null)
-                view.webViewClient = WebViewClient()
-                view.destroy()
-            },
-        )
+            })
+        },
+    ) { padding ->
+        SelectionContainer {
+            LazyColumn(
+                state = state,
+                modifier = Modifier.fillMaxSize().padding(padding),
+                contentPadding = PaddingValues(20.dp),
+                verticalArrangement = Arrangement.spacedBy(16.dp),
+            ) {
+                itemsIndexed(blocks, key = { index, _ -> path + ":" + index }) { _, block ->
+                    NativeReadmeBlock(block.node, path, openLink)
+                }
+            }
+        }
     }
 }
-
-private fun missingAsset() = WebResourceResponse("text/plain", "utf-8", 404, "Not Found", emptyMap(),
-    ByteArrayInputStream("Not found".toByteArray()))

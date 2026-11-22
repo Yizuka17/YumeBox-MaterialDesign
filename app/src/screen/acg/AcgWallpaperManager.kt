@@ -63,6 +63,20 @@ class AcgWallpaperManager(private val context: Context, val settings: AppSetting
     private val _displayedSources = MutableStateFlow<Map<WallpaperProfile, String>>(emptyMap())
     val displayedSources = _displayedSources.asStateFlow()
 
+    private val paletteLock = Mutex()
+    private val _paletteSeeds = MutableStateFlow<Map<String, Long>>(emptyMap())
+    val paletteSeeds = _paletteSeeds.asStateFlow()
+
+    /** Prepare while decoding/downloading the next image, before publishing it to the home. */
+    internal suspend fun preparePalette(source: String): Long? = paletteLock.withLock {
+        _paletteSeeds.value[source]?.let { return@withLock it }
+        val seed = withContext(Dispatchers.Default) { extractWallpaperSeed(context, source) }
+        if (seed != null) _paletteSeeds.update {
+            (it - source + (source to seed)).entries.toList().takeLast(64).associate { entry -> entry.toPair() }
+        }
+        seed
+    }
+
     fun reportDisplayedSource(profile: WallpaperProfile, source: String) {
         _displayedSources.update { if (it[profile] == source) it else it + (profile to source) }
     }
@@ -82,6 +96,13 @@ class AcgWallpaperManager(private val context: Context, val settings: AppSetting
         .readTimeout(12, TimeUnit.SECONDS).callTimeout(20, TimeUnit.SECONDS).build()
 
     init {
+        scope.launch {
+            combine(options, settings.acgDailyWallpaperEnabled.state, settings.acgWallpaperUri.state) { _, daily, _ ->
+                WallpaperProfile.entries.map { displayUri(it, daily) }
+            }.distinctUntilChanged().collectLatest { sources ->
+                sources.forEach { preparePalette(it) }
+            }
+        }
         scope.launch {
             settings.acgWallpaperConfigJson.state.collect {
                 synchronized(stateLock) { _options.value = readOptions() }
@@ -206,6 +227,7 @@ class AcgWallpaperManager(private val context: Context, val settings: AppSetting
     suspend fun setStatic(profile: WallpaperProfile, uri: String, zoom: Float, x: Float, y: Float): String = withContext(Dispatchers.IO) {
         val saved = importImage(profile, "static", uri)
         val previous = options.value.getValue(profile).staticImage
+        fileUri(saved)?.let { preparePalette(it) }
         update(profile) { it.copy(staticImage = saved, zoom = zoom.coerceIn(1f, 5f), biasX = x.coerceIn(-1f, 1f), biasY = y.coerceIn(-1f, 1f)) }
         if (previous != saved) file(previous)?.delete()
         checkNotNull(fileUri(saved))
@@ -294,6 +316,7 @@ class AcgWallpaperManager(private val context: Context, val settings: AppSetting
                 val fallback = selected ?: choose(pool) ?: choose(option.history.filter { fileUri(it) != null })
                     ?: option.current.takeIf { fileUri(it) != null } ?: option.staticImage.takeIf { fileUri(it) != null }
                 if (fallback == null) return@withLock false
+                fileUri(fallback)?.let { preparePalette(it) }
                 // Settings may have changed while the network request was running. Do not publish an obsolete source.
                 val published = synchronized(stateLock) {
                     val latest = readOptions().getValue(profile)
