@@ -99,3 +99,5 @@ dependencies:
   - org.commonmark:commonmark-ext-gfm-tables:0.26.0
   - org.commonmark:commonmark-ext-gfm-strikethrough:0.26.0
   - org.commonmark:commonmark-ext-autolink:0.26.0
+
+  - com.caverock:androidsvg-aar:1.4

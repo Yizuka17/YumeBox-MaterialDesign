@@ -201,8 +201,13 @@ private fun ReadmePicture(media: ReadmeImage, path: String, openLink: (String) -
     }
     if (!remote.startsWith("https://") && !remote.startsWith("http://")) return
     val badge = remote.startsWith("https://img.shields.io/")
-    val raster = if (badge) remote.replace("https://img.shields.io/", "https://raster.shields.io/") else remote
-    var source by remember(remote) { mutableStateOf(raster) }
+    if (badge) {
+        NativeReadmeBadge(remote, media.image.plainText()) {
+            media.link?.let(openLink)
+        }
+        return
+    }
+    var source by remember(remote) { mutableStateOf(remote) }
     var preview by remember(remote) { mutableStateOf(false) }
     val state = rememberAsyncImageState()
     val alt = media.image.plainText()
@@ -211,7 +216,6 @@ private fun ReadmePicture(media: ReadmeImage, path: String, openLink: (String) -
     val ratio = info?.takeIf { it.width > 0 && it.height > 0 }?.let { it.width.toFloat() / it.height }
         ?: if (logo) 1f else if (badge) 5f else 16f / 9f
     LaunchedEffect(state.loadState, remote) {
-        if (state.loadState is LoadState.Error && badge && source == raster) source = remote
         if (state.loadState is LoadState.Error && source == remote &&
             remote.startsWith("https://raw.githubusercontent.com/Yizuka17/YumeBox-MaterialDesign/Yume/docs/")) {
             val local = remote.substringAfter("/Yume/")
