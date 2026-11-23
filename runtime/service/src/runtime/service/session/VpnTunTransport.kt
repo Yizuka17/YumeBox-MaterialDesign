@@ -118,25 +118,33 @@ class VpnTunTransport(
     /**
      * Route table: explicit config route excludes win (native excludeRoute on API 33+, computed
      * included routes below), then the private-network bypass list, otherwise route everything.
-     * Every partial table also routes the tun DNS address.
+     * Every partial table also routes the tun DNS address, and unless it already covers the
+     * any-local address it carries a 0.0.0.0/32 entry: Android's VPN hotspot upstream selection
+     * matches destination 0.0.0.0 against the VPN link properties, so a split table without that
+     * entry leaves the shared hotspot without a usable upstream (same guard as Bettbox v1.19.8).
      */
     private fun VpnService.Builder.configureRoutes(ipv6: Boolean) {
         val excludes = store.tunRouteExcludeAddress.map(String::trim).filter(String::isNotEmpty)
+        var anyLocalIpv4Covered = false
         when {
             excludes.isNotEmpty() && Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU -> {
                 addRoute(NET_ANY, 0)
                 if (ipv6) addRoute(NET_ANY6, 0)
+                anyLocalIpv4Covered = true
                 excludes.map(::parseCIDR).forEach {
                     runCatching { excludeRoute(IpPrefix(InetAddress.getByName(it.ip), it.prefix)) }
                 }
             }
             excludes.isNotEmpty() -> {
                 val routes = buildIncludedRoutesFromExcludedCidrs(excludes, includeIpv6 = ipv6)
-                routes.ipv4.forEach { addRoute(it.ip, it.prefix) }
+                routes.ipv4.forEach {
+                    addRoute(it.ip, it.prefix)
+                    if (it.ip == NET_ANY) anyLocalIpv4Covered = true
+                }
                 if (ipv6) routes.ipv6.forEach { addRoute(it.ip, it.prefix) }
             }
             store.bypassPrivateNetwork -> {
-                addRoutes(R.array.bypass_private_route)
+                anyLocalIpv4Covered = addRoutes(R.array.bypass_private_route)
                 if (ipv6) addRoutes(R.array.bypass_private_route6)
             }
             else -> {
@@ -147,12 +155,16 @@ class VpnTunTransport(
         }
         addRoute(TUN_DNS, 32)
         if (ipv6) addRoute(TUN_DNS6, 128)
+        if (!anyLocalIpv4Covered) addRoute(NET_ANY, 32)
     }
 
-    private fun VpnService.Builder.addRoutes(cidrArray: Int) {
+    private fun VpnService.Builder.addRoutes(cidrArray: Int): Boolean {
+        var anyLocalIpv4Covered = false
         vpnService.resources.getStringArray(cidrArray).map(::parseCIDR).forEach {
             addRoute(it.ip, it.prefix)
+            if (it.ip == NET_ANY) anyLocalIpv4Covered = true
         }
+        return anyLocalIpv4Covered
     }
 
     /** Core sockets are protected individually; the app's own traffic must stay in the VPN. */
