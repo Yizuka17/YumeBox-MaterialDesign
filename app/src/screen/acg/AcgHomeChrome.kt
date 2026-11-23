@@ -55,6 +55,7 @@ import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
@@ -194,13 +195,13 @@ internal fun AcgQuoteText(
             Text(
                 text = "— ${quote.author}",
                 modifier = Modifier
-                    .align(Alignment.End)
+                    .fillMaxWidth()
                     .padding(top = AcgUi.Quote.authorTopGap),
                 color = color.copy(alpha = AcgUi.Quote.authorAlpha),
-                style = MiuixTheme.textStyles.footnote1,
+                style = MiuixTheme.textStyles.footnote1.copy(textAlign = TextAlign.End),
                 fontWeight = FontWeight.Medium,
                 fontSize = AcgUi.Quote.authorSize,
-                softWrap = false,
+                softWrap = true,
             )
         }
     }
