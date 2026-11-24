@@ -10,6 +10,7 @@ NetworkSettings = {
 
     VpnService = {
         RouteTrafficTitle = "路由系统流量"
+        HotspotSharingTitle = "热点VPN共享"
         RouteTrafficSummary = "选择当前用于接管系统流量的代理模式"
         VpnMode = "VPN模式"
         RootTunMode = "Root TUN"

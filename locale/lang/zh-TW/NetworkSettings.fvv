@@ -9,6 +9,7 @@ NetworkSettings = {
     }
 
     VpnService = {
+        HotspotSharingTitle = "熱點VPN共享"
         RouteTrafficTitle = "路由系統流量"
         RouteTrafficSummary = "選擇目前用於接管系統流量的代理模式"
         VpnMode = "VPN模式"

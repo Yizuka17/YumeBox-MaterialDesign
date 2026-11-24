@@ -9,6 +9,7 @@ NetworkSettings = {
     }
 
     VpnService = {
+        HotspotSharingTitle = "VPN hotspot sharing"
         RouteTrafficTitle = "Route System Traffic"
         RouteTrafficSummary = "Select which proxy mode should take over system traffic"
         VpnMode = "VPN Mode"

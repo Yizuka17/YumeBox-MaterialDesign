@@ -615,6 +615,7 @@ object MLang {
         "NetworkSettings.VpnOptions.SystemProxySummary" to "Only in VPN mode, set an HTTP proxy for apps outside the TUN path",
         "NetworkSettings.VpnOptions.SystemProxyTitle" to "VPN Built-in System Proxy",
         "NetworkSettings.VpnService.RootTunMode" to "Root TUN",
+        "NetworkSettings.VpnService.HotspotSharingTitle" to "VPN hotspot sharing",
         "NetworkSettings.VpnService.RouteTrafficSummary" to "Select which proxy mode should take over system traffic",
         "NetworkSettings.VpnService.RouteTrafficTitle" to "Route System Traffic",
         "NetworkSettings.VpnService.SystemProxy" to "HTTP System Proxy",
@@ -1885,6 +1886,7 @@ object MLang {
         "NetworkSettings.VpnOptions.SystemProxyTitle" to "VPN系统代理",
         "NetworkSettings.VpnService.RootTunMode" to "Root TUN",
         "NetworkSettings.VpnService.RouteTrafficSummary" to "选择当前用于接管系统流量的代理模式",
+        "NetworkSettings.VpnService.HotspotSharingTitle" to "热点VPN共享",
         "NetworkSettings.VpnService.RouteTrafficTitle" to "路由系统流量",
         "NetworkSettings.VpnService.SystemProxy" to "HTTP系统代理",
         "NetworkSettings.VpnService.VpnMode" to "VPN模式",
@@ -3154,6 +3156,7 @@ object MLang {
         "NetworkSettings.VpnOptions.SystemProxyTitle" to "VPN系統代理",
         "NetworkSettings.VpnService.RootTunMode" to "Root TUN",
         "NetworkSettings.VpnService.RouteTrafficSummary" to "選擇目前用於接管系統流量的代理模式",
+        "NetworkSettings.VpnService.HotspotSharingTitle" to "熱點VPN共享",
         "NetworkSettings.VpnService.RouteTrafficTitle" to "路由系統流量",
         "NetworkSettings.VpnService.SystemProxy" to "HTTP系統代理",
         "NetworkSettings.VpnService.VpnMode" to "VPN模式",
@@ -4608,6 +4611,7 @@ object MLang {
             val SystemProxyTitle: String get() = text("NetworkSettings.VpnOptions.SystemProxyTitle")
         }
         object VpnService {
+            val HotspotSharingTitle: String get() = text("NetworkSettings.VpnService.HotspotSharingTitle")
             val RootTunMode: String get() = text("NetworkSettings.VpnService.RootTunMode")
             val RouteTrafficSummary: String get() = text("NetworkSettings.VpnService.RouteTrafficSummary")
             val RouteTrafficTitle: String get() = text("NetworkSettings.VpnService.RouteTrafficTitle")

@@ -56,6 +56,8 @@ import com.ramcosta.composedestinations.generated.destinations.AccessControlScre
 import com.ramcosta.composedestinations.navigation.DestinationsNavigator
 import dev.oom_wg.purejoy.mlang.MLang
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.withContext
 import org.koin.androidx.compose.koinViewModel
 
 @Composable
@@ -133,6 +135,9 @@ private fun NetworkVpnServiceSection(
 ) {
     val context = LocalContext.current
     val coroutineScope = rememberCoroutineScope()
+    val vpnHotspotSettings by produceState<android.content.Intent?>(null, context) {
+        value = withContext(Dispatchers.IO) { VpnHotspotSettings.resolve(context) }
+    }
 
     Title(MLang.NetworkSettings.Section.VpnService)
     Card {
@@ -172,6 +177,15 @@ private fun NetworkVpnServiceSection(
                         }
                     }
 
+                }
+            },
+        )
+        PreferenceArrowItem(
+            title = MLang.NetworkSettings.VpnService.HotspotSharingTitle,
+            enabled = configuredMode == RunMode.VpnService && vpnHotspotSettings != null,
+            onClick = {
+                VpnHotspotSettings.resolve(context)?.let { intent ->
+                    runCatching { context.startActivity(intent) }
                 }
             },
         )
